@@ -20,6 +20,14 @@ parser.add_argument('-cf', type=float, default=-1, help='Max peak energy cuttoff
 parser.add_argument('-sp', type=float, default=-1, help='Gaussian envelope spread. Give in the requeted units (nm or eV)')
 parser.add_argument('-nopeaks', type=bool, default=False, help='Remove the peaks in the spectra .jpg file')
 parser.add_argument('-i', type=bool, default=False, help='Interactive mode, will not save a .jpg file')
+
+# display help message if there is no arguments
+
+if len(sys.argv)==1:
+    parser.print_help(sys.stderr)
+    sys.exit(1)
+
+
 args=parser.parse_args()
 
 
@@ -49,7 +57,7 @@ elif args.u == 'eV':
     X = np.linspace(0, 15, 1000)
 
 if args.sp == -1:
-    if args.u == nm:
+    if args.u == 'nm':
         spread = 10
     else:
         spread = 0.5

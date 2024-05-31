@@ -16,6 +16,14 @@ parser.add_argument('-ex', type=str, required=True, nargs='+', default=42, help=
 parser.add_argument('-O', type=str, default=42, help='Output file extension (default=".in.out")')
 parser.add_argument('-o', type=str, default=42, help='Output image filename')
 parser.add_argument('-r', type=str, default=42, help='Generate a report table in output file')
+
+# display help message if there is no arguments
+
+if len(sys.argv)==1:
+    parser.print_help(sys.stderr)
+    sys.exit(1)
+
+
 args=parser.parse_args()
 
 
