@@ -3,7 +3,7 @@ import os
 import numpy as np 
 import re
 import matplotlib.pyplot as plt 
-
+import sys
 
 # Parser is used to input via terminal the required arguments for Emma
 parser=argparse.ArgumentParser(
