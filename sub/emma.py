@@ -90,7 +90,7 @@ for file in excited_files:
         geom_end = []
         iroots = []
         coordinates = []
-
+        print('Reading data from file: ', file)
         for line in ex_cont:
             if 'FINAL SINGLE POINT ENERGY' in line:
                 energies.append(float(line.strip().split()[-1]))
@@ -102,10 +102,14 @@ for file in excited_files:
                 for atom in [l.strip().split() for l in ex_cont[geom_start:geom_end]]:
                     coordinates.append(np.array([float(atom[1]), float(atom[2]), float(atom[3])])) 
         
-        excited_optimization_states.append(file)   
-        excited_optimization_final_roots.append(iroots[-1])
-        excited_optimization_final_energies.append(energies[-1])
-        excited_optimization_coordinates.append(coordinates)
+        if iroots == [] or energies == []:
+            print(file, ' did not contain extractable information')
+
+        else:
+            excited_optimization_states.append(file)   
+            excited_optimization_final_roots.append(iroots[-1])
+            excited_optimization_final_energies.append(energies[-1])
+            excited_optimization_coordinates.append(coordinates)
  
 # Data has been parsed, now RMSD (or something alike is computed)
 
