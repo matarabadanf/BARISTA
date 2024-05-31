@@ -141,16 +141,21 @@ whitespaces = ''.join(['0' for i in range(longest)])
 for name in range(len(excited_optimization_states)):
     excited_optimization_states[name] += ''.join([' ' for i in range(longest-len(excited_optimization_states[name]))])
 
+final_array = []
+
+for i in range(len(RMSDs)):
+    final_array.append(np.array([str(excited_optimization_states[i]), float(excited_optimization_final_energies[i]), float(excited_optimization_final_energies[i] - gs_energy), float((excited_optimization_final_energies[i] - gs_energy)*27.211), float(excited_optimization_final_roots[i]), float(RMSDs[i])]))
+
+final_array = sorted(final_array,key=lambda x: x[3])
+
 if isinstance(args.r, str):
     file = open(args.r, 'w')
     file.write('NAME, FINAL ENERGY, DELTA_E (Hartree), Delta_E (eV), Final State, RMDS\n')
-    for i in range(len(RMSDs)):
-        data = [excited_optimization_states[i], excited_optimization_final_energies[i], excited_optimization_final_energies[i] - gs_energy,\
-        (excited_optimization_final_energies[i] - gs_energy)*27.211, excited_optimization_final_roots[i], RMSDs[i]]
-
+    for datat in final_array:
+        data = [datat[0], float(datat[1]), float(datat[2]), float(datat[3]), float(datat[4]), float(datat[5])]
         file.write(f'{data[0]:<25}{data[1]:^20.6f}{data[2]:^20.6f}{data[3]:^20.2f}{data[4]:^20}{data[5]:^20.4f}\n')
     for fi in non_converged:
-        file.write('%s did not converge in geometry optimization' % fi)
+        file.write('%s did not converge in geometry optimization\n' % fi)
 
 # Obtain and save the Figure:
 
@@ -167,9 +172,13 @@ plt.ylabel('$\Delta$E')
 plt.xlabel('RMSD')
 plt.legend()
 
+handles, labels = plt.gca().get_legend_handles_labels()
+by_label = dict(zip(labels, handles))
+plt.legend(by_label.values(), by_label.keys(), bbox_to_anchor=(1, 1))
+
 
 if isinstance(args.o, str):
-    plt.savefig(args.o, dpi=600)
+    plt.savefig(args.o, dpi=600, bbox_inches='tight')
 else:
     plt.show()
 
