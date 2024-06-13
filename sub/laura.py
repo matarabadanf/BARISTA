@@ -10,8 +10,7 @@ parser=argparse.ArgumentParser(
         \nIt compares the energy, RMSD and final root, plotting the results in an image. ''',
     epilog="""It should run appropriately with ORCA 5.0.X""")
 
-parser.add_argument('-O', type=str, default=42, help='Output file extension (default=".in.out")')
-parser.add_argument('-o', type=str, default=42, help='Output image filename')
+parser.add_argument('-f', type=str, default=42, help='File name')
 
 # display help message if there is no arguments
 
@@ -25,7 +24,7 @@ args=parser.parse_args()
 
 # The directory content is listed and the gs geometry is searched. 
 
-f = open(args.O, 'r')
+f = open(args.f, 'r')
 cont = f.readlines()
 
 for i in range(len(cont)):
@@ -42,7 +41,7 @@ for i in cont[starting_index:end_index]:
     print(i.strip())
 
 
-name = args.O.replace('.in', '').replace('.out', '') + '.xyz'
+name = args.f.replace('.in', '').replace('.out', '') + '.xyz'
 out_file = open(name, 'w')
 out_file.write(str(len(cont[starting_index:end_index])) + '\n')
 out_file.write(str(ener) + '\n')

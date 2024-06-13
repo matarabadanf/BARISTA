@@ -44,7 +44,8 @@ total_list = [[] for i in range(0, max(n_os))]
 print(total_list)
 
 cis_energies = []
- 
+states = []
+
 for line in cont:
     if 'STATE' in line and 'TD-DFT/TDA EXCITED STATES (SINGLETS)' not in line and 'EXCITED STATE GRADIENT DONE' not in line:
         index = int(line.strip().split()[1].replace(':', '')) - 1
@@ -52,9 +53,11 @@ for line in cont:
         total_list[index].append(energy)
     elif 'E(SCF)' in line:
         cis_energies.append(float(line.strip().split()[2]))
+    elif '(Root' in line:
+        states.append(int(line.strip().split()[5].replace(')', '')))
 
 print(total_list)
-
+print(states)
 cis_array = np.array(cis_energies)
 total_arrays = [np.array(l) for l in total_list]
 
@@ -68,9 +71,19 @@ plt.plot(x, cis_array, label='Ground state')
 for i in range(len(total_arrays)):
     plt.plot(x, cis_array+total_arrays[i], label='Root %i'%(i+1))
 
-plt.legend()
+states_ener = [total_list[states[i]-1][i] + cis_array[i] for i in range(len(states))]
+
+print(states_ener)
+
+plt.scatter(x, states_ener, label='Actual root', marker='x', c='black')
+
+plt.legend(bbox_to_anchor=[1.3, 0.5], loc='center right')
 
 plt.xlabel('Step')
 plt.ylabel('Energy / Hartree')
 
-plt.show()
+
+if args.o != 42:
+    plt.savefig(args.o, dpi=800,  bbox_inches='tight')
+else:
+    plt.show()
