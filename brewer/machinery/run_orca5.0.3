@@ -1,0 +1,87 @@
+#!/bin/bash
+
+xchem_host=` hostname | grep -c xchem `
+if [ $xchem_host -eq 1 ]; then
+ exit
+ module load gcc/8.4.0
+ ScrDir0="/temporal/$USER/slurm_tmp_${SLURM_JOBID}"
+ OMPI=/scratch/jgv/programs/openmpi/openmpi_3.1.5-gcc-8.4.0/
+else
+ module load gcc/11.2.0
+ module load openmpi/gnu/4.1.1_gnu_11.2.0
+ module load orca/5.0.3
+ export OMP_NUM_THREADS=1
+ ScrDir0="/temporal/$USER/slurm_tmp_${SLURM_JOBID}"
+ ScrDir1="/scratch/$USER/slurm_tmp_${SLURM_JOBID}"
+ ScrDir2="$PWD/slurm_tmp_${SLURM_JOBID}"
+fi
+
+if [ ! $1 ]; then
+ echo "An input file is required"
+ exit
+else
+ project=` basename $1 .inp `
+fi
+if [ -e $project ]; then
+ inpfile=$project
+elif [ -e $project.inp ]; then
+ inpfile=$project.inp
+fi
+
+export CurrDir=$PWD
+if [ ! -d $ScrDir0 ]; then
+ mkdir -p $ScrDir0
+ export ScrDir=$ScrDir0
+fi
+if [ ! -d $ScrDir ]; then
+ mkdir -p $ScrDir1
+ export ScrDir=$ScrDir1
+fi
+if [ ! -d $ScrDir ]; then
+ mkdir -p $ScrDir2
+ export ScrDir=$ScrDir2
+fi
+
+for i in "$@"; do
+ cp $i $ScrDir/
+done
+
+cd $ScrDir
+hostname > $CurrDir/$project.out
+pwd     >> $CurrDir/$project.out
+check_par=` grep -c -i pal $inpfile `
+if [ $check_par -eq 0 ]; then
+ if [ ! -z $SLURM_NTASKS ]; then
+  if [ $SLURM_NTASKS -ne 1 ]; then
+   nprocs=$SLURM_NTASKS
+   check_par=1
+  fi
+ fi
+ if [ $check_par -eq 1 ]; then
+  echo "%pal
+  nprocs $nprocs
+  end" >> $inpfile
+ fi
+fi
+
+#ORCA_PATH=` which orca `
+#ORCA_PATH=` dirname $ORCA_PATH `
+ORCA_PATH=/home/jgv/programs/orca/orca5.0.3_CCC
+
+$ORCA_PATH/orca $inpfile >> $CurrDir/$project.out
+
+for i in "$@"; do
+ if [ "$i" != "$1" ]; then
+  rm -f $i
+ fi
+done
+gzip *.log
+
+
+df -h >> $CurrDir/$project.out
+rm -f $inpfile
+cd $CurrDir
+cp $ScrDir/* .  
+
+rm -rf $ScrDir
+
