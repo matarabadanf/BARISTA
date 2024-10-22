@@ -108,7 +108,7 @@ if args.r != 42:
 
     if args.md == True:
         peaksfile = open(name+'_peaks.md', 'w')
-        peakfiles.write('|State|Wavelength|Energy / ev | Norm. Osc. Str.|\n|-----|-----|-----|-----|\n')
+        peaksfile.write('|State|Wavelength|Energy / ev | Norm. Osc. Str.|\n|-----|-----|-----|-----|\n')
         for i, peak in enumerate(spectra_peaks):
             peaksfile.write('|S%i|%.5f|%.5f|%.5f|\n' % (i, peak[0], 1239.8/peak[0] , peak[1]))
         peaksfile.close()
