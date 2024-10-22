@@ -110,17 +110,17 @@ if args.r != 42:
         peaksfile = open(name+'_peaks.md', 'w')
         peaksfile.write('|State|Wavelength|Energy / ev | Norm. Osc. Str.|\n|-----|-----|-----|-----|\n')
         for i, peak in enumerate(spectra_peaks):
-            peaksfile.write('|S%i|%.5f|%.5f|%.5f|\n' % (i, peak[0], 1239.8/peak[0] , peak[1]))
+            peaksfile.write('|S%i|%.1f|%.5f|%.5f|\n' % (i+1, peak[0], 1239.8/peak[0] , peak[1]))
         peaksfile.close()
 
     else:
         peaksfile = open(name+'_peaks.dat', 'w')
         for peak in spectra_peaks:
-            peaksfile.write('%.5f %.5f\n' % (peak[0], peak[1]))
+            peaksfile.write('%.1f %.5f\n' % (peak[0], peak[1]))
         peaksfile.close()
         spectre_file = open(name+'_spectre.dat', 'w')
         for point in final_spectra:
-            spectre_file.write('%.5f %.5f\n' % (peak[0], peak[1]))
+            spectre_file.write('%.1f %.5f\n' % (peak[0], peak[1]))
         spectre_file.close()
 
 
