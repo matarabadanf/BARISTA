@@ -20,6 +20,7 @@ parser.add_argument('-cf', type=float, default=-1, help='Max peak energy cuttoff
 parser.add_argument('-sp', type=float, default=-1, help='Gaussian envelope spread. Give in the requeted units (nm or eV)')
 parser.add_argument('-nopeaks', type=bool, default=False, help='Remove the peaks in the spectra .jpg file')
 parser.add_argument('-i', type=bool, default=False, help='Interactive mode, will not save a .jpg file')
+parser.add_argument('-md', type=bool, default=False, help='request Markdown table format')
 
 # display help message if there is no arguments
 
@@ -105,14 +106,22 @@ if args.r != 42:
     else:
         name = args.r
 
-    peaksfile = open(name+'_peaks.dat', 'w')
-    for peak in spectra_peaks:
-        peaksfile.write('%.5f %.5f' % (peak[0], peak[1]))
-    peaksfile.close()
-    spectre_file = open(name+'_spectre.dat', 'w')
-    for point in final_spectra:
-        spectre_file.write('%.5f %.5f' % (peak[0], peak[1]))
-    spectre_file.close()
+    if args.md == True:
+        peaksfile = open(name+'_peaks.md', 'w')
+        peakfiles.write('|State|Wavelength|Energy / ev | Norm. Osc. Str.|\n|-----|-----|-----|-----|\n')
+        for i, peak in enumerate(spectra_peaks):
+            peaksfile.write('|S%i|%.5f|%.5f|%.5f|\n' % (i, peak[0], 1239.8/peak[0] , peak[1]))
+        peaksfile.close()
+
+    else:
+        peaksfile = open(name+'_peaks.dat', 'w')
+        for peak in spectra_peaks:
+            peaksfile.write('%.5f %.5f\n' % (peak[0], peak[1]))
+        peaksfile.close()
+        spectre_file = open(name+'_spectre.dat', 'w')
+        for point in final_spectra:
+            spectre_file.write('%.5f %.5f\n' % (peak[0], peak[1]))
+        spectre_file.close()
 
 
 if args.i == True:
