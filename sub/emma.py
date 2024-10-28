@@ -12,10 +12,11 @@ parser=argparse.ArgumentParser(
     epilog="""It should run appropriately with ORCA 5.0.X""")
 
 parser.add_argument('-fc', type=str, required=True, default=42, help='Optimized ground state .xyz file')
-parser.add_argument('-ex', type=str, required=True, nargs='+', default=42, help='Excited state optimization .out "filenames" (*_N.in.out)')
+parser.add_argument('-ex', type=str, required=True, nargs='+', default=42, help='Excited state optimization .out "filenames" (it is important that the name ends with *_N.in.out)')
 parser.add_argument('-O', type=str, default=42, help='Output file extension (default=".in.out")')
 parser.add_argument('-o', type=str, default=42, help='Output image filename')
 parser.add_argument('-r', type=str, default=42, help='Generate a report table in output file')
+parser.add_argument('-md', type=str, default=True, help='generate report in MD format (default is True)')
 
 # display help message if there is no arguments
 
@@ -47,6 +48,8 @@ else:
 
 # Search for the excited optimization files of interest
 excited_files = []
+starting = []
+follow = []
 
 for string in excited_strings:
     for directory_file in dir_cont:
@@ -81,6 +84,14 @@ excited_optimization_states = []
 excited_optimization_final_roots = []
 excited_optimization_final_energies = []
 non_converged = []
+
+for file in excited_files:
+    if 'follow' in file:
+        follow.append(True)
+    else:
+        follow.append(False)
+    starting.append(file.replace('.in.out', '').split('_')[-1])
+
 
 for file in excited_files:
     ex_file = open(file, 'r')
@@ -144,16 +155,23 @@ for name in range(len(excited_optimization_states)):
 final_array = []
 
 for i in range(len(RMSDs)):
-    final_array.append(np.array([str(excited_optimization_states[i]), float(excited_optimization_final_energies[i]), float(excited_optimization_final_energies[i] - gs_energy), float((excited_optimization_final_energies[i] - gs_energy)*27.211), float(excited_optimization_final_roots[i]), float(RMSDs[i])]))
+    final_array.append(np.array([int(starting[i]), str(follow[i]), float(excited_optimization_final_energies[i]), float(excited_optimization_final_energies[i] - gs_energy), float((excited_optimization_final_energies[i] - gs_energy)*27.211), int(excited_optimization_final_roots[i]), float(RMSDs[i])]))
 
 final_array = sorted(final_array,key=lambda x: x[3])
 
 if isinstance(args.r, str):
     file = open(args.r, 'w')
-    file.write('NAME, FINAL ENERGY, DELTA_E (Hartree), Delta_E (eV), Final State, RMDS\n')
+    if args.md == True:
+        file.write('|STARTING ROOT | FOLLOWIROOT | FINAL ENERGY | $\Delta E$ / Hartree |  $\Delta E$ / eV | Final State | RMDS|\n')
+        file.write('|--------------|-------------|--------------|----------------------|------------------|-------------|-----|\n')
+    else:
+        file.write('STARTING ROOT, FOLLOWIROOT, FINAL ENERGY, DELTA_E (Hartree), Delta_E (eV), Final State, RMDS\n')
     for datat in final_array:
-        data = [datat[0], float(datat[1]), float(datat[2]), float(datat[3]), float(datat[4]), float(datat[5])]
-        file.write(f'{data[0]:<25}{data[1]:^20.6f}{data[2]:^20.6f}{data[3]:^20.2f}{data[4]:^20}{data[5]:^20.4f}\n')
+        data = [int(datat[0]), str(datat[1]), float(datat[2]), float(datat[3]), float(datat[4]), int(datat[5]), float(datat[6])]
+        if args.md == True:
+            file.write(f'|${data[0]:<3}$|{data[1]:<6}|${data[2]:^20.6f}$|${data[3]:^20.6f}$|${data[4]:^20.2f}$|${data[5]:^20}$|${data[6]:^20.4f}$|\n'.replace(' ', ''))
+        else:
+            file.write(f'{data[0]:<3}{data[1]:<6}{data[2]:^20.6f}{data[3]:^20.6f}{data[4]:^20.2f}{data[5]:^20}{data[6]:^20.4f}\n')
     for fi in non_converged:
         file.write('%s did not converge in geometry optimization\n' % fi)
 
