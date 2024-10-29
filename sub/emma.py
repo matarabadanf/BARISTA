@@ -86,14 +86,6 @@ excited_optimization_final_energies = []
 non_converged = []
 
 for file in excited_files:
-    if 'follow' in file:
-        follow.append(True)
-    else:
-        follow.append(False)
-    starting.append(file.replace('.in.out', '').split('_')[-1])
-
-
-for file in excited_files:
     ex_file = open(file, 'r')
     if re.findall('did not converge', ex_file.read()):
         non_converged.append(file)
@@ -103,6 +95,11 @@ for file in excited_files:
     ex_file = open(file, 'r')
     if re.findall('ORCA TERMINATED NORMALLY', ex_file.read()):
         ex_file.seek(0)
+        if 'follow' in file:
+            follow.append(True)
+        else:
+            follow.append(False)
+        starting.append(file.replace('.in.out', '').split('_')[-1])
         ex_cont = ex_file.readlines()
         energies = []
         geom_start = []
