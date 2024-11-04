@@ -159,7 +159,7 @@ final_array = sorted(final_array,key=lambda x: x[3])
 if isinstance(args.r, str):
     file = open(args.r, 'w')
     if args.md == True:
-        file.write('|STARTING ROOT | FOLLOWIROOT | FINAL ENERGY | $\Delta E$ / Hartree |  $\Delta E$ / eV | Final State | RMDS|\n')
+        file.write('|STARTING ROOT | FOLLOWIROOT | FINAL ENERGY | $\Delta E$ / Hartree |  $\Delta E$ / eV | Final State | RMSD|\n')
         file.write('|--------------|-------------|--------------|----------------------|------------------|-------------|-----|\n')
     else:
         file.write('STARTING ROOT, FOLLOWIROOT, FINAL ENERGY, DELTA_E (Hartree), Delta_E (eV), Final State, RMDS\n')
