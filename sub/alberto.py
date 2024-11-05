@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import sys
 
 # Parser is used to input via terminal the required arguments for Emma
-parser=argparse.ArgumentParser(description='''Takes the ground state geometry of a molecule and compares it to optimized TDDFT geometries run in ORCA.\ \nIt compares the energy, RMSD and final root, plotting the results in an image. ''', epilog="""It should run appropriately with ORCA 5.0.X""")
+parser=argparse.ArgumentParser(description='''Takes a excited state optimization in ORCA and plots the energy of each state at each step of the opitmizaiton and the actual root.''', epilog="""It should run appropriately with ORCA 5.0.X""")
 
 parser.add_argument('-f', type=str, required=True, default=42, help='Optimized ground state .xyz file')
 parser.add_argument('-o', type=str, default=42, help='Output image filename')
