@@ -20,7 +20,9 @@ parser.add_argument('-cf', type=float, default=-1, help='Max peak energy cuttoff
 parser.add_argument('-sp', type=float, default=-1, help='Gaussian envelope spread. Give in the requeted units (nm or eV)')
 parser.add_argument('-nopeaks', type=bool, default=False, help='Remove the peaks in the spectra .jpg file')
 parser.add_argument('-i', type=bool, default=False, help='Interactive mode, will not save a .jpg file')
-parser.add_argument('-md', type=bool, default=False, help='request Markdown table format')
+parser.add_argument('-md', type=bool, default=False, help='Request Markdown table format')
+parser.add_argument('-exp',type=str, default='', help='Experimental data for comparison')
+parser.add_argument('-shift',type=float, default=0, help='Shift in nm of the spectrum')
 
 # display help message if there is no arguments
 
@@ -123,6 +125,16 @@ if args.r != 42:
             spectre_file.write('%.1f %.5f\n' % (peak[0], peak[1]))
         spectre_file.close()
 
+if args.exp != '':
+    experimental = np.loadtxt(args.exp, delimiter=',')
+    experimental[:,1] /= max(experimental[:,1])
+    experimental[:,0] -= args.shift
+    if args.shift > 0 and args.shift != 0: 
+        lab = 'Experimental, shifted -%.2f nm' % args.shift
+    
+    plt.plot(experimental[:,0], experimental[:,1], label=lab)
+
+plt.legend()
 
 if args.i == True:
     plt.show()
