@@ -32,11 +32,9 @@ n_os = []
 for line in cont:
     if 'TD-DFT/TDA EXCITED STATES (SINGLETS)' in line:
         counter+=1
-        print('aaaa')
         if counter >= 2:
             break
     elif 'STATE' in line and 'TD-DFT/TDA EXCITED STATES (SINGLETS)' not in line and 'EXCITED STATE GRADIENT DONE' not in line:
-        print(line)
         n_os.append(int(line.strip().split()[1].replace(':', '')))
 
 
@@ -58,7 +56,6 @@ total_arrays = [np.array(l) for l in total_list]
 
 x = np.arange(1, len(total_list[0])+1, 1)
 
-print(cis_array)
 
 plt.plot(x, cis_array, label='Ground state')
 
@@ -66,12 +63,8 @@ plt.plot(x, cis_array, label='Ground state')
 curr_energy = []
 for line in cont:
     if 'DE(CIS) =' in line:
-        print(line)
         curr_energy.append(float(line.strip().split()[-4].replace(')', '')))
 
-print(total_arrays)
-
-print(curr_energy)
 
 for i in range(len(total_arrays)):
     plt.plot(x, cis_array + total_arrays[i], label='Root %i'%(i+1))
@@ -79,5 +72,5 @@ plt.scatter(x, cis_array + curr_energy, label='Active root', marker='x', c='rebe
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.xlabel('Step')
 plt.ylabel('Energy / Hartree')
-plt.savefig('asdf', dpi=600, bbox_inches='tight')
+plt.savefig(args.f.replace('.in.out', '.jpg'), dpi=600, bbox_inches='tight')
 plt.show()
