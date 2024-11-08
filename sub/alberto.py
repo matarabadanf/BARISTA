@@ -72,5 +72,6 @@ plt.scatter(x, cis_array + curr_energy, label='Active root', marker='x', c='rebe
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.xlabel('Step')
 plt.ylabel('Energy / Hartree')
-plt.savefig(args.f.replace('.in.out', '.jpg'), dpi=600, bbox_inches='tight')
-plt.show()
+plt.title(args.f.replace('.in.out', ''))
+plt.savefig(args.f.replace('.in.out', '.jpg'), dpi=250, bbox_inches='tight')
+#plt.show()
