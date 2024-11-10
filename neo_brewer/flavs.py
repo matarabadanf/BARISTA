@@ -6,8 +6,9 @@ from ase.calculators.calculator import FileIOCalculator
 
 class Penalty(FileIOCalculator):
     # Tthe calculator needs a command that is what the program will execute. 
-    # Therefore it is needed to prepare the inputs. 
-    command = "orca engrad_0.in > engrad_0.in.out && orca engrad_1.in > engrad_1.in.out "
+    # Therefore it is needed to prepare the inputs.
+    # The command should point to an executable to run orca. In my case it is in my bin
+    command = "bash ~/bin/run_orca5.0.3 engrad_0.in  && ~/bin/run_orca5.0.3  engrad_1.in "
     
     # ASE requires to define the implemented properties of a calculator 
     implemented_properties = ["forces", "energy"]
@@ -27,6 +28,7 @@ class Penalty(FileIOCalculator):
         basis="cc-pvdz",
         alpha=0.02,
         sigma=3.5,
+        n_procs=1
     ):
         # The class methods have to be inherited or they will die
         super().__init__(
@@ -48,7 +50,7 @@ class Penalty(FileIOCalculator):
         self.atoms = atoms
         self.alpha = alpha
         self.sigma = sigma
-
+        self.n_procs = n_procs
         # this prepares a current geometry
         with open(self.label + ".xyz", "w") as fd:
             ase.io.write(fd, self.atoms, format="xyz")
@@ -69,7 +71,7 @@ class Penalty(FileIOCalculator):
         for index, root in enumerate([self.iroot, self.jroot]):
             with open("engrad_%i.in" % index, "w") as engrad_file:
                 engrad_file.write(
-                    "! engrad {} {} \n".format(self.functional[0], self.basis)
+                    "! engrad {} {} \n! NoAutostart\n\n\n".format(self.functional[0], self.basis)
                 )
                 engrad_file.write("")
                 engrad_file.write(
@@ -81,7 +83,9 @@ class Penalty(FileIOCalculator):
                     cont = xyzfile.readlines()
                 for line in cont[2:]:
                     engrad_file.write(line)
-                engrad_file.write("*")
+                engrad_file.write("*\n\n")
+                if self.n_procs != 1:
+                    engrad_file.write("%%pal NPROCS %i END" % self.n_procs)
 
 
     def read_results(self):
