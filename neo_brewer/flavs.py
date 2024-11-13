@@ -132,7 +132,7 @@ class CICalculator(FileIOCalculator):
         with open('energies.dat', 'a') as endat:
             en1 = np.loadtxt("engrad_0_energy.dat")
             en2 = np.loadtxt("engrad_1_energy.dat")
-            endat.write('%.6f %.6f, %.6f\n' % (en1, en2, (en2-en1)*27.211))
+            endat.write('%.6f %.6f %.6f\n' % (en1, en2, (en2-en1)*27.211))
 
         self.penalty_results()
    
