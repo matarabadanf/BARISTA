@@ -58,12 +58,11 @@ except:
     pass
 
 if len(root) > 0:
-    parameters['iroot'] = root[-1] - 1
-    parameters['jroot'] = root[-1]  
+    parameters['iroot'] = root[-1]
+    parameters['jroot'] = root[-1] + 1 
     parameters['n_roots'] = root[-1] + 2
     
 print(parameters)
-
 
 # determine the number of cores for the task  
 n_procs = int(os.popen('echo $SLURM_NTASKS').read())
@@ -71,6 +70,8 @@ n_procs = int(os.popen('echo $SLURM_NTASKS').read())
 # generate atoms object, associate calculator and get forces 
 molecule = ase.io.read(parameters['geom'])
 molecule.calc = CICalculator(atoms=molecule, n_procs=n_procs, **parameters)
+molecule.get_forces()
+
 
 with open('optimization.log', "w") as f:
     with redirect_stdout(f):
