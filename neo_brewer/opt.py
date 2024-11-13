@@ -29,7 +29,7 @@ print(cont)
 
 if cont['mode'] == 'ci':
     parameters = dict((
-        ('profile', None),
+        ('profile', 'penalty'),
         ('n_roots', 10),
         ('iroot', 0),
         ('jroot', 1),

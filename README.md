@@ -20,8 +20,8 @@ profile = penalty
 iroot = 0
 jroot = 1
 n_roots = 10
-alpha  = 0.02 
-sigma = 3.5
+alpha  = 3.5
+sigma = 0.02
 ``` 
 These are default optional values. The profile selects the CI optimization method. Penalty is based on the penalty algorithm [citation needed]. UPB is based on the updated branching plane algorithm [citation needed] (Not yet implemented).
 

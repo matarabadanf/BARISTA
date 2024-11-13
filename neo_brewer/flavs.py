@@ -20,7 +20,7 @@ class CICalculator(FileIOCalculator):
         atoms=None,
         command=command,
         mode=None,
-        profile=None,
+        profile='penalty',
         n_roots=10,
         iroot=0,
         jroot=1,
@@ -52,6 +52,7 @@ class CICalculator(FileIOCalculator):
         self.alpha = alpha
         self.sigma = sigma
         self.n_procs = n_procs
+        self.profile = profile 
         # this prepares a current geometry
         with open(self.label + ".xyz", "w") as fd:
             ase.io.write(fd, self.atoms, format="xyz")
@@ -133,9 +134,11 @@ class CICalculator(FileIOCalculator):
             en1 = np.loadtxt("engrad_0_energy.dat")
             en2 = np.loadtxt("engrad_1_energy.dat")
             endat.write('%.6f %.6f %.6f\n' % (en1, en2, (en2-en1)*27.211))
-
-        self.penalty_results()
-   
+        
+        if self.profile == 'penalty':
+            self.penalty_results()
+        if self.profile == 'gp':
+            self.gradient_projection_forces()
  
     def penalty_results(self):
         # management of the energies
@@ -164,3 +167,27 @@ class CICalculator(FileIOCalculator):
         self.results["energy"] = en * ase.units.Hartree
         self.results["forces"] = grad
         self.results["forces"] *= -ase.units.Hartree / ase.units.Bohr
+    
+    def gradient_projection_forces(self):
+        en1 = np.loadtxt("engrad_0_energy.dat")
+        en2 = np.loadtxt("engrad_1_energy.dat")
+
+        # management of the gradients
+        grad1 = np.loadtxt("engrad_0_gradient.dat")
+        grad2 = np.loadtxt("engrad_1_gradient.dat")
+        
+        grad1 = grad1.reshape(-1)
+        grad2 = grad2.reshape(-1)
+        
+        x = (grad1-grad2)
+        x /= np.linalg.norm(x)
+         
+        g_diff = 2 * (en1 - en2) * x
+        
+        P = np.identity(len(grad1)) - x @ x.T
+
+        total_gradient = g_diff + P @ (grad1 + grad2)/2
+        total_gradient = total_gradient.reshape([-1,3])
+        
+        self.results["energy"] = en2 - en1  
+        self.results["forces"] = - total_gradient * (ase.units.Hartree / ase.units.Bohr)
