@@ -29,7 +29,7 @@ print(cont)
 
 if cont['mode'] == 'ci':
     parameters = dict((
-        ('profile', None),
+        ('profile', 'penalty'),
         ('n_roots', 10),
         ('iroot', 0),
         ('jroot', 1),
@@ -71,6 +71,9 @@ n_procs = int(os.popen('echo $SLURM_NTASKS').read())
 # generate atoms object, associate calculator and get forces 
 molecule = ase.io.read(parameters['geom'])
 molecule.calc = CICalculator(atoms=molecule, n_procs=n_procs, **parameters)
+# molecule.calc = CICalculator(atoms=molecule, n_procs=1, **parameters)
+
+# molecule.calc.read_results()
 
 with open('optimization.log', "w") as f:
     with redirect_stdout(f):
