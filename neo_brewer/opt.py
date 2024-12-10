@@ -88,5 +88,5 @@ for geom in a:
 
 os.system('mkdir AUX_FILES')
 os.system('mv *engrad* AUX_FILES')
-os.system('mv *.energy* AUX_FILES')
+os.system('mv *.ener* AUX_FILES')
 os.system('rm -rf __pycache__/')

@@ -7,7 +7,7 @@ from ase.calculators.calculator import FileIOCalculator
 class CICalculator(FileIOCalculator):
     # Tthe calculator needs a command that is what the program will execute. 
     # Therefore it is needed to prepare the inputs. 
-    command = " bash ~/bin/run_orca5.0.3 engrad_0.in; cp engrad_0.gbw tmp.gbw;  bash ~/bin/run_orca5.0.3 engrad_1.in"
+    command = " ~/bin/run_orca.sh engrad_0.in; cp engrad_0.gbw tmp.gbw;  ~/bin/run_orca.sh engrad_1.in"
     
     # ASE requires to define the implemented properties of a calculator 
     implemented_properties = ["forces", "energy"]
@@ -146,13 +146,8 @@ class CICalculator(FileIOCalculator):
             self.penalty_results()
         if self.profile == 'gp':
             self.gradient_projection_forces()
-<<<<<<< HEAD
-=======
         if self.profile == 'ubp':
             self.ubp_forces()
-        
-
->>>>>>> baee16ce8e61aec0eb31e545a8da9f512bcb8766
  
     def penalty_results(self):
         # management of the energies
@@ -198,52 +193,53 @@ class CICalculator(FileIOCalculator):
          
         g_diff = 2 * (en1 - en2) * x
         
-<<<<<<< HEAD
-        P = np.identity(len(grad1)) - x @ x.T
-=======
         P = np.identity(len(grad1)) - np.outer(x,x)
->>>>>>> baee16ce8e61aec0eb31e545a8da9f512bcb8766
 
         total_gradient = g_diff + P @ (grad1 + grad2)/2
         total_gradient = total_gradient.reshape([-1,3])
         
         self.results["energy"] = en2 - en1  
         self.results["forces"] = - total_gradient * (ase.units.Hartree / ase.units.Bohr)
-<<<<<<< HEAD
-=======
 
     def ubp_forces(self):
         en1 = np.loadtxt("engrad_0_energy.dat")
         en2 = np.loadtxt("engrad_1_energy.dat")
     
         # management of the gradients
-        grad1 = np.loadtxt("engrad_0_gradient.dat")
-        grad2 = np.loadtxt("engrad_1_gradient.dat")
+        grad1 = np.loadtxt("engrad_0_gradient.dat").reshape(-1)
+        grad2 = np.loadtxt("engrad_1_gradient.dat").reshape(-1)
     
         try:
             x_minus_one = np.loadtxt('x_minus_one.dat')
             y_minus_one = np.loadtxt('y_minus_one.dat')
-            x_minus_one = x_minus_one
-            y_minus_one = y_minus_one
             first_iter = False
         except:
             first_iter = True
-    
-        grad1 = grad1
-        grad2 = grad2
-    
-        x = (grad1-grad2)
+
+
+        # x is the unit vector parallel to the difference gradient vector
+        x = (grad1-grad2).reshape(-1)
         x /= np.linalg.norm(x)
-        print(x)
-    
+        
+        # this is a section to reshape everything so it has the correct dimensions 
+        if not first_iter:
+            x_minus_one = x_minus_one.reshape(-1)
+            y_minus_one = y_minus_one.reshape(-1)
+        x = x.reshape(-1)
+
+        # in the first iteration, the (normalized) mean energy gradient vector is chosen as y_0    
         if first_iter == True:
-            y = (grad1 + grad2)/2
+            y = (grad1 + grad2).reshape(-1)/2
             y /= np.linalg.norm(y)
-    
+        
+        # in the rest of iterations, y is calculated from the previous steps as the formula states. 
         else:
-            y = ((y_minus_one @ x) * x_minus_one - (x_minus_one @ x) * y_minus_one) / ((y_minus_one @ x)**2 + (x_minus_one @ x)**2)**0.5
+            y = (np.dot(y_minus_one, x) * x_minus_one - np.dot(x_minus_one, x) * y_minus_one) / (np.dot(y_minus_one, x)**2 + np.dot(x_minus_one, x)**2)**0.5
             y /= np.linalg.norm(y)
-    
+        
+        y = y.reshape(-1)
+
+        # All vectors x, y, x_minus and y_minus should have dimension 1 
     
         g_diff = 2 * (en1 - en2) * x
     #     g_diff /= np.linalg.norm(g_diff)
@@ -263,12 +259,13 @@ class CICalculator(FileIOCalculator):
         print(P)
         print(len(P))
     
-        print(len(g_diff[0]), 'is the dimension x of g_diff')
-        print(len(mean_grad[0]), 'is the dimension x of mean_grad')
+        print(len(g_diff), 'is the dimension x of g_diff')
+        print(len(mean_grad), 'is the dimension x of mean_grad')
     
         total_gradient = g_diff.reshape(-1) + P @ mean_grad.reshape(-1)
     
         total_gradient = total_gradient.reshape([-1,3])
+        
         x = x.reshape([-1,3])
         y = y.reshape([-1,3])
     
@@ -283,4 +280,3 @@ class CICalculator(FileIOCalculator):
         with open('y_minus_one.dat', 'w') as y_min_file:
             for atom in y:
                 y_min_file.write('%.6f %.6f %.6f\n' % (atom[0], atom[1], atom[2]))
->>>>>>> baee16ce8e61aec0eb31e545a8da9f512bcb8766
