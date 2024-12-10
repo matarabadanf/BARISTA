@@ -8,4 +8,3 @@ module load hdf5 && module load python/3.12.1
 
 python3 opt.py
 
-%pal nprocs 36 end
