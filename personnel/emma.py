@@ -4,6 +4,7 @@ import os
 import numpy as np
 import re
 import matplotlib.pyplot as plt
+import pandas as pd 
 import sys
 
 # Parser is used to input via terminal the required arguments for Emma
@@ -64,7 +65,7 @@ def emma(
     markdown_format: bool = False,
     interactive: bool = False,
     output_imagename: str = 42,
-):
+) -> [float, pd.DataFrame]:
     # The directory content is listed and the gs geometry is searched.
     dir_cont = os.listdir(".")
 
@@ -242,7 +243,20 @@ def emma(
             )
         )
 
-    final_array = sorted(final_array, key=lambda x: x[3])
+    final_array = np.array(sorted(final_array, key=lambda x: x[3]))
+
+    emma_dataframe_dict = {
+        'Starting' : final_array[:,0],
+        'Followiroot' : final_array[:,1],
+        'Final energy' : final_array[:,2],
+        'D_E / Hartree' : final_array[:,3],
+        'D_E / eV' : final_array[:,4],
+        'Final state' : final_array[:,5],
+        'RMSD' : final_array[:,6],
+    }
+
+    emma_dataframe = pd.DataFrame(emma_dataframe_dict)
+    print(emma_dataframe)
 
     if isinstance(report, str):
         file = open(report, "w")
@@ -307,7 +321,7 @@ def emma(
     elif interactive:
         plt.show()
     
-    return gs_energy
+    return gs_energy, emma_dataframe
 
 
 if __name__ == "__main__":
