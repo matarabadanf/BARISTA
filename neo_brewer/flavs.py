@@ -245,22 +245,22 @@ class CICalculator(FileIOCalculator):
     #     g_diff /= np.linalg.norm(g_diff)
         mean_grad = (grad1 + grad2)/2
     #     mean_grad /= np.linalg.norm(mean_grad)
-        print('gdiff is:')
-        print(g_diff)
-        print('mean_grad is:')
-        print(mean_grad)
+    #    print('gdiff is:')
+    #    print(g_diff)
+    #    print('mean_grad is:')
+    #    print(mean_grad)
     
         x = x.reshape(-1)
         y = y.reshape(-1)
-        print(x)
-        print(y)
+    #    print(x)
+    #    print(y)
         P = np.identity(len(grad1.reshape(-1))) - np.outer(x,x) - np.outer(y,y)
-        print('P is:')
-        print(P)
-        print(len(P))
+    #    print('P is:')
+    #    print(P)
+    #    print(len(P))
     
-        print(len(g_diff), 'is the dimension x of g_diff')
-        print(len(mean_grad), 'is the dimension x of mean_grad')
+    #    print(len(g_diff), 'is the dimension x of g_diff')
+    #    print(len(mean_grad), 'is the dimension x of mean_grad')
     
         total_gradient = g_diff.reshape(-1) + P @ mean_grad.reshape(-1)
     
@@ -269,7 +269,7 @@ class CICalculator(FileIOCalculator):
         x = x.reshape([-1,3])
         y = y.reshape([-1,3])
     
-        print(total_gradient)
+    #    print(total_gradient)
         self.results["energy"] = en2 - en1
         self.results["forces"] = - total_gradient * (ase.units.Hartree / ase.units.Bohr)
     
