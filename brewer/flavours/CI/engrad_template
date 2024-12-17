@@ -1,9 +1,0 @@
-! wB97x-D3 cc-pvdz engrad
-
-%tddft
- nroots 10
- tda TRUE
-end
-
-
-* xyzfile 0 1 geom.xyz

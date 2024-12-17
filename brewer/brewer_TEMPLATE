@@ -1,8 +1,0 @@
-BASIS=cc-pvdz
-Functional=wB97x-D3 
-geometry= wasabidienone.xyz
-name= wasabidienone_ci
-type=CI penalty 
-state0 = 1
-state1 = 2 
- 
