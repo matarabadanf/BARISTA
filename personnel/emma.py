@@ -4,7 +4,7 @@ import os
 import numpy as np
 import re
 import matplotlib.pyplot as plt
-import pandas as pd 
+import pandas as pd
 import sys
 
 # Parser is used to input via terminal the required arguments for Emma
@@ -246,13 +246,13 @@ def emma(
     final_array = np.array(sorted(final_array, key=lambda x: x[3]))
 
     emma_dataframe_dict = {
-        'Starting' : final_array[:,0],
-        'Followiroot' : final_array[:,1],
-        'Final energy' : final_array[:,2],
-        'D_E / Hartree' : final_array[:,3],
-        'D_E / eV' : final_array[:,4],
-        'Final state' : final_array[:,5],
-        'RMSD' : final_array[:,6],
+        "Starting": final_array[:, 0],
+        "Followiroot": final_array[:, 1],
+        "Final energy": final_array[:, 2],
+        "D_E / Hartree": final_array[:, 3],
+        "D_E / eV": final_array[:, 4],
+        "Final state": final_array[:, 5],
+        "RMSD": final_array[:, 6],
     }
 
     emma_dataframe = pd.DataFrame(emma_dataframe_dict)
@@ -320,7 +320,7 @@ def emma(
         plt.savefig(output_imagename, dpi=600, bbox_inches="tight")
     elif interactive:
         plt.show()
-    
+
     return gs_energy, emma_dataframe
 
 
@@ -330,6 +330,6 @@ if __name__ == "__main__":
         sys.exit(1)
 
     args = parser.parse_args()
-    
+
     a = emma(args.ex, args.fc, args.O, args.r, args.md, args.i, args.o)
     print(a)
