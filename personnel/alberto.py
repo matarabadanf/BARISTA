@@ -12,6 +12,7 @@ parser=argparse.ArgumentParser(description='''Takes a excited state optimization
 parser.add_argument('-f', type=str, required=True, default=42, help='ORCA optimization file')
 parser.add_argument('-o', type=str, default=True, help='Output image filename')
 parser.add_argument('-en', type=float, default=0, help='Reference energy of the ground state optimized energy')
+parser.add_argument('-u', type=str, default='eV', help='Energy units')
 
 # display help message if there is no arguments
 
@@ -98,4 +99,4 @@ if __name__ == '__main__':
     
     args=parser.parse_args()
 
-    a = alberto(args.f, args.en, args.o)
+    a = alberto(args.f, args.en, args.o, args.u)
