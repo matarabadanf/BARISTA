@@ -11,11 +11,12 @@ parser=argparse.ArgumentParser(
     description='''Exctract the final geometry of an optimization run in ORCA.''',
     epilog="""It should run appropriately with ORCA 5.0.X""")
 
-parser.add_argument('-f', type=str, default=42, help='Input file name')
+parser.add_argument('-f', type=str, required=True, default=42, help='Input file name')
 parser.add_argument('-o', type=str, default=True, help='Output file name')
+parser.add_argument('-g', type=str, default=False, help='Generate an xyz file')
 
 
-def laura(filename: str, default_name:str = True) -> [float, df]:    
+def laura(filename: str, default_name:str = True, generate_file:bool = False) -> [float, pd.DataFrame]:    
     # The directory content is listed and the gs geometry is searched. 
     
     f = open(filename, 'r')
@@ -33,17 +34,20 @@ def laura(filename: str, default_name:str = True) -> [float, df]:
     print(ener)
     for i in cont[starting_index:end_index]:
         print(i.strip())
+
+    print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaa', generate_file)
     
-    if default_name == True:
-        output_name = filename.replace('.in', '').replace('.out', '') + '.xyz'
-    else:
-        output_name = default_name
-    out_file = open(output_name, 'w')
-    out_file.write(str(len(cont[starting_index:end_index])) + '\n')
-    out_file.write(str(ener) + '\n')
-    for i in cont[starting_index:end_index]:
-        out_file.write(i.strip()+'\n')
-    
+    if generate_file == 'True':    
+        if default_name == True:
+            output_name = filename.replace('.in', '').replace('.out', '') + '.xyz'
+        else:
+            output_name = default_name
+        out_file = open(output_name, 'w')
+        out_file.write(str(len(cont[starting_index:end_index])) + '\n')
+        out_file.write(str(ener) + '\n')
+        for i in cont[starting_index:end_index]:
+            out_file.write(i.strip()+'\n')
+        
     positions = np.array([np.array(vector.strip().split()[1:]).astype(float) for vector in cont[starting_index:end_index]])
     labels = [np.array(vector.strip().split()[0]) for vector in cont[starting_index:end_index]]
 
@@ -59,6 +63,6 @@ if __name__ == '__main__':
         sys.exit(1)
 
     args=parser.parse_args()
-    
-    a = laura(args.f, args.o)
+    print(args.g) 
+    a = laura(args.f, args.o, args.g)
     print(a[1])
