@@ -13,7 +13,7 @@ parser=argparse.ArgumentParser(
 
 parser.add_argument('-f', type=str, required=True, default=42, help='Input file name')
 parser.add_argument('-o', type=str, default=True, help='Output file name')
-parser.add_argument('-g', type=str, default=False, help='Generate an xyz file')
+parser.add_argument('-g', type=str, default='True', help='Generate an xyz file')
 
 
 def laura(filename: str, default_name:str = True, generate_file:bool = False) -> [float, pd.DataFrame]:    
@@ -35,8 +35,6 @@ def laura(filename: str, default_name:str = True, generate_file:bool = False) ->
     for i in cont[starting_index:end_index]:
         print(i.strip())
 
-    print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaa', generate_file)
-    
     if generate_file == 'True':    
         if default_name == True:
             output_name = filename.replace('.in', '').replace('.out', '') + '.xyz'
