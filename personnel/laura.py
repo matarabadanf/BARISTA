@@ -4,6 +4,7 @@ import os
 import numpy as np 
 import matplotlib.pyplot as plt 
 import sys
+import pandas as pd
 
 # Parser is used to input via terminal the required arguments for Emma
 parser=argparse.ArgumentParser(
@@ -14,7 +15,7 @@ parser.add_argument('-f', type=str, default=42, help='Input file name')
 parser.add_argument('-o', type=str, default=True, help='Output file name')
 
 
-def laura(filename: str, default_name:str = True) -> None:    
+def laura(filename: str, default_name:str = True) -> [float, df]:    
     # The directory content is listed and the gs geometry is searched. 
     
     f = open(filename, 'r')
@@ -34,7 +35,7 @@ def laura(filename: str, default_name:str = True) -> None:
         print(i.strip())
     
     if default_name == True:
-        output_name = args.f.replace('.in', '').replace('.out', '') + '.xyz'
+        output_name = filename.replace('.in', '').replace('.out', '') + '.xyz'
     else:
         output_name = default_name
     out_file = open(output_name, 'w')
@@ -42,7 +43,13 @@ def laura(filename: str, default_name:str = True) -> None:
     out_file.write(str(ener) + '\n')
     for i in cont[starting_index:end_index]:
         out_file.write(i.strip()+'\n')
+    
+    positions = np.array([np.array(vector.strip().split()[1:]).astype(float) for vector in cont[starting_index:end_index]])
+    labels = [np.array(vector.strip().split()[0]) for vector in cont[starting_index:end_index]]
 
+    df = pd.DataFrame({'Atom labels': labels, 'x' : positions[:,0], 'y' : positions[:,1], 'z' : positions[:,2]})
+
+    return ener, df
 
 if __name__ == '__main__':
 
@@ -53,4 +60,5 @@ if __name__ == '__main__':
 
     args=parser.parse_args()
     
-    laura(args.f, args.o)
+    a = laura(args.f, args.o)
+    print(a[1])
