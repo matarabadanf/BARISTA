@@ -37,6 +37,8 @@ def laura(
 
     gs_energy = 0
 
+    engrad = False
+
     if engrad == True:
         for line in cont:
             if 'Total Energy ' in line:

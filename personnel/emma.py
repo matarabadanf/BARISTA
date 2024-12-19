@@ -117,7 +117,7 @@ def emma(
 
     gs_file = open(ground_state_xyz_file, "r")
     gs_contents = gs_file.readlines()
-    gs_energy = float(gs_contents[1].strip().split()[-1])
+    gs_energy = float(gs_contents[1].strip().split()[0])
     gs_coordinates = []
 
     for atom in gs_contents[2:]:
