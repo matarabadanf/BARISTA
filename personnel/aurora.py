@@ -82,23 +82,55 @@ def aurora(
     
     pes_energies = [fc_energies]
 
-    print(filenames)
-
     for name in filenames:
-        print(name)
         with open(name, 'r') as f:
             cont = f.readlines()
         pes_energies.append((np.array([float(energy) for energy in cont[1].strip().split()])-reference_energy)*27.2114)
-    print(pes_energies)
 
     pes_energies = np.array(pes_energies).T
+    
+    x_tics = ['FC']
+
+    for i in identifiers:
+        if max(i) == -1:
+            x_tics.append('CI')
+        else:
+            x_tics.append('Minimum\n %i surface %i' % (i[-2], i[-1]))
+
+    
+    highlighted = [identifiers[0][0]]
+
+    for identifier in identifiers:
+        highlighted.append(identifier[1])
+
+    for i, highlight in enumerate(highlighted):
+        if highlight == -1:
+            highlighted[i] = highlighted[i-1]
+
+    print('highlihgts are ', highlighted)
+
+    highlighted_values = []
 
     print(pes_energies)
 
+    print(highlighted)
+
+    for i, highlight in enumerate(highlighted):
+        print(highlight, i)
+        highlighted_values.append(pes_energies[highlight][i])
+
     x = np.arange(len(pes_energies[0]))
+    
+    plt.xticks(x, x_tics)
+
+    plt.ylabel('$\Delta$E / eV')
 
     for i, energy in enumerate(pes_energies):
-        plt.plot(x, energy, alpha=.5, linestyle='--')
+        plt.plot(x, energy, alpha=.5, linestyle=':')
+        plt.scatter(x, energy, alpha=.5)
+
+    plt.plot(x, highlighted_values, c='black', linestyle='-.', label='PES path')
+    plt.legend()
     plt.show()
 
     plt.savefig(filenames[-1].replace('xyz', 'jpg'))
