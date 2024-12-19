@@ -1,7 +1,7 @@
 # BARISTA 
 A collection of scripts and small programs to assist in PES exploration in excited states with (currently) TDDFT. Currently it is composed of:
- - [Personnel](##Personnel): A collection of scripts. See descriptions.
- - [Brewer](##Brewer): Small program based in ASE that implements different CI searching algorithms. 
+ - [Personnel](#Personnel): A collection of scripts. See descriptions.
+ - [Brewer](#Brewer): Small program based in ASE that implements different CI searching algorithms. 
 ## Personnel
 These are small scripts to make short tasks more bearable (like coffee). Each person is specialized in a certain flavour:
  - Emma.py: In the context of excited state optimizations, to distinguish if different states fall to the same minima, the difference from the ground state structure can be seen by checking the RMSD of the resulting excited optimized structure. This script takes the ground state .xyz file and the list of optimized structures and plots the energy and RMSD of the excited state minima found. 
