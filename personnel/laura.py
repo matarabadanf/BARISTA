@@ -4,6 +4,8 @@ import sys
 import pandas as pd
 import numpy as np
 
+np.set_printoptions(linewidth=np.inf)
+
 # Parser is used to input via terminal the required arguments for Emma
 parser = argparse.ArgumentParser(
     description="""Exctract the final geometry of an optimization run in ORCA.""",
@@ -27,6 +29,43 @@ def laura(
     f = open(filename, "r")
     cont = f.readlines()
 
+    for line in cont:
+        if "Number of roots to be determined" in line:
+            n_roots = int(line.strip().split()[-1])
+        elif 'ORCA SCF GRADIENT CALCULATION' in line:
+            engrad = True
+
+    gs_energy = 0
+
+    if engrad == True:
+        for line in cont:
+            if 'Total Energy ' in line:
+                gs_energy = float(line.strip().split()[-4])
+
+    for line in cont:
+         if "E(SCF)  =" in line:
+             gs_energy = float(line.strip().split()[-2])
+             print('ground state energy is', gs_energy)
+
+    energies = np.zeros(n_roots + 1)
+    energies[0] = gs_energy
+
+    counter = 0 
+
+    for line in cont:
+        if (
+            "STATE" in line
+            and "TD-DFT/TDA EXCITED STATES (SINGLETS)" not in line
+            and "EXCITED STATE GRADIENT DONE" not in line
+            and "NATURAL" not in line
+        ):
+            index = int(line.replace(':',' ').strip().split()[1])
+            energies[index] = float(line.strip().split()[3])
+
+    energies[1:] += gs_energy
+
+    print(energies)
+
     for i in range(len(cont)):
         if "CARTESIAN COORDINATES (ANGSTROEM)" in cont[i]:
             starting_index = i + 2
@@ -49,7 +88,7 @@ def laura(
             output_name = default_name
         out_file = open(output_name, "w")
         out_file.write(str(len(cont[starting_index:end_index])) + "\n")
-        out_file.write(str(ener) + "\n")
+        out_file.write(str(energies).replace(']', '').replace('[', '') + "\n")
         for i in cont[starting_index:end_index]:
             out_file.write(i.strip() + "\n")
 
