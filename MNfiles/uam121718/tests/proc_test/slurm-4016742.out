@@ -1,0 +1,3 @@
+remove impi/2021.10.0 (PATH, MANPATH, LD_LIBRARY_PATH)
+load openmpi/4.1.5 (LD_LIBRARY_PATH)
+load ORCA/5.0.3 (PATH, LD_LIBRARY_PATH)

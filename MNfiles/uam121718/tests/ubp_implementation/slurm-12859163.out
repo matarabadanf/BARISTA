@@ -1,0 +1,243 @@
+load ORCA/5.0.3 (PATH, LD_LIBRARY_PATH)
+Lmod has detected the following error: Cannot load module "orca/5.0.3" without
+these module(s) loaded:
+   openmpi
+
+While processing the following module(s):
+    Module fullname  Module Filename
+    ---------------  ---------------
+    orca/5.0.3       /apps/GPP/modulefiles/applications/orca/5.0.3.lua
+
+load HDF5/1.14.1-2 (PATH, LD_LIBRARY_PATH, LIBRARY_PATH, C_INCLUDE_PATH,
+CPLUS_INCLUDE_PATH, HDF5_DIR, HDF5_ROOT,CFLAGS, CPPFLAGS, LDFLAGS) 
+load PYTHON/3.12.1 (PATH, MANPATH, LD_LIBRARY_PATH, LIBRARY_PATH,
+PKG_CONFIG_PATH, C_INCLUDE_PATH, CPLUS_INCLUDE_PATH, PYTHONHOME, PYTHONPATH) 
+load SQLITE3/3.45.2 (PATH)
+/apps/GPP/PYTHON/3.12.1/INTEL/lib/python3.12/site-packages/ase/calculators/calculator.py:508: FutureWarning: The keyword "ignore_bad_restart_file" is deprecated and will be removed in a future version of ASE.  Passing more than one positional argument to Calculator is also deprecated and will stop functioning in the future.  Please pass arguments by keyword (key=value) except optionally the "restart" keyword.
+  warnings.warn(FutureWarning(
+remove impi/2021.10.0 (PATH, MANPATH, LD_LIBRARY_PATH)
+load openmpi/4.1.5 (LD_LIBRARY_PATH)
+Lmod has detected the following error: The following module(s) are unknown:
+"/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+load ORCA/5.0.3 (PATH, LD_LIBRARY_PATH)
+cp: cannot stat '/home/uam/uam121718/tests/ubp_implementation/tmp.gbw': No such file or directory
+remove impi/2021.10.0 (PATH, MANPATH, LD_LIBRARY_PATH)
+load openmpi/4.1.5 (LD_LIBRARY_PATH)
+Lmod has detected the following error: The following module(s) are unknown:
+"/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+load ORCA/5.0.3 (PATH, LD_LIBRARY_PATH)
+remove impi/2021.10.0 (PATH, MANPATH, LD_LIBRARY_PATH)
+load openmpi/4.1.5 (LD_LIBRARY_PATH)
+Lmod has detected the following error: The following module(s) are unknown:
+"/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+load ORCA/5.0.3 (PATH, LD_LIBRARY_PATH)
+and the name is
+remove impi/2021.10.0 (PATH, MANPATH, LD_LIBRARY_PATH)
+load openmpi/4.1.5 (LD_LIBRARY_PATH)
+Lmod has detected the following error: The following module(s) are unknown:
+"/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+load ORCA/5.0.3 (PATH, LD_LIBRARY_PATH)
+and the name is
+remove impi/2021.10.0 (PATH, MANPATH, LD_LIBRARY_PATH)
+load openmpi/4.1.5 (LD_LIBRARY_PATH)
+Lmod has detected the following error: The following module(s) are unknown:
+"/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+load ORCA/5.0.3 (PATH, LD_LIBRARY_PATH)
+and the name is
+remove impi/2021.10.0 (PATH, MANPATH, LD_LIBRARY_PATH)
+load openmpi/4.1.5 (LD_LIBRARY_PATH)
+Lmod has detected the following error: The following module(s) are unknown:
+"/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+load ORCA/5.0.3 (PATH, LD_LIBRARY_PATH)
+and the name is
+remove impi/2021.10.0 (PATH, MANPATH, LD_LIBRARY_PATH)
+load openmpi/4.1.5 (LD_LIBRARY_PATH)
+Lmod has detected the following error: The following module(s) are unknown:
+"/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+load ORCA/5.0.3 (PATH, LD_LIBRARY_PATH)
+and the name is
+remove impi/2021.10.0 (PATH, MANPATH, LD_LIBRARY_PATH)
+load openmpi/4.1.5 (LD_LIBRARY_PATH)
+Lmod has detected the following error: The following module(s) are unknown:
+"/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+load ORCA/5.0.3 (PATH, LD_LIBRARY_PATH)
+and the name is
+remove impi/2021.10.0 (PATH, MANPATH, LD_LIBRARY_PATH)
+load openmpi/4.1.5 (LD_LIBRARY_PATH)
+Lmod has detected the following error: The following module(s) are unknown:
+"/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+load ORCA/5.0.3 (PATH, LD_LIBRARY_PATH)
+and the name is
+remove impi/2021.10.0 (PATH, MANPATH, LD_LIBRARY_PATH)
+load openmpi/4.1.5 (LD_LIBRARY_PATH)
+Lmod has detected the following error: The following module(s) are unknown:
+"/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+load ORCA/5.0.3 (PATH, LD_LIBRARY_PATH)
+and the name is
+remove impi/2021.10.0 (PATH, MANPATH, LD_LIBRARY_PATH)
+load openmpi/4.1.5 (LD_LIBRARY_PATH)
+Lmod has detected the following error: The following module(s) are unknown:
+"/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+load ORCA/5.0.3 (PATH, LD_LIBRARY_PATH)
+and the name is
+remove impi/2021.10.0 (PATH, MANPATH, LD_LIBRARY_PATH)
+load openmpi/4.1.5 (LD_LIBRARY_PATH)
+Lmod has detected the following error: The following module(s) are unknown:
+"/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+load ORCA/5.0.3 (PATH, LD_LIBRARY_PATH)
+and the name is
+remove impi/2021.10.0 (PATH, MANPATH, LD_LIBRARY_PATH)
+load openmpi/4.1.5 (LD_LIBRARY_PATH)
+Lmod has detected the following error: The following module(s) are unknown:
+"/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+load ORCA/5.0.3 (PATH, LD_LIBRARY_PATH)
+and the name is
+remove impi/2021.10.0 (PATH, MANPATH, LD_LIBRARY_PATH)
+load openmpi/4.1.5 (LD_LIBRARY_PATH)
+Lmod has detected the following error: The following module(s) are unknown:
+"/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "/apps/GPP/modulefiles/applications/orca/5.0.3"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+load ORCA/5.0.3 (PATH, LD_LIBRARY_PATH)
+and the name is
+{'geom': 'water.xyz', 'mode': 'ci', 'iroot': '2', 'jroot': '3', 'profile': 'ubp', 'label': 'water'}
+{'profile': 'ubp', 'n_roots': 10, 'iroot': '2', 'jroot': '3', 'functional': 'CAM-B3LYP', 'basis': 'cc-pvdz', 'alpha': 0.02, 'sigma': 3.5, 'geom': 'water.xyz', 'mode': 'ci', 'label': 'water'}
+/scratch/slurm/job12859163/slurm_script: line 11: fg: no job control
