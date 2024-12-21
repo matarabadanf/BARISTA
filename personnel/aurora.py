@@ -95,7 +95,7 @@ def aurora(
         if max(i) == -1:
             x_tics.append('CI')
         else:
-            x_tics.append('Minimum\n %i surface %i' % (i[-1], i[-2]))
+            x_tics.append('Minimum\n #%i $S_{%i}$' % (i[-1], i[-2]))
 
     
     highlighted = [identifiers[0][0]]
@@ -132,7 +132,7 @@ def aurora(
     plt.plot(x, highlighted_values, c='black', linestyle='-.', label='PES path')
     plt.legend()
 
-    plt.savefig(filenames[-1].replace('xyz', 'jpg'))
+    plt.savefig(filenames[-1].replace('xyz', 'jpg'), dpi=300)
 
 if __name__ == "__main__":
 
