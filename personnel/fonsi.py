@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+import os 
 
 # Parser is used to input via terminal the required arguments for Emma
 parser = argparse.ArgumentParser(
@@ -25,7 +26,7 @@ parser.add_argument("-u", type=str, default="eV", help="Energy units")
 # display help message if there is no arguments
 
 
-def alberto(
+def fonsi(
     filename: str,
     reference_energy: float = 0,
     output_image: str = True,
@@ -43,15 +44,29 @@ def alberto(
     plt.plot(x, energies[:,0])
     plt.plot(x, energies[:,1])
 
-    if output_image is True:
-        output_image = filename
 
-    plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+    if '/' in filename:
+        title = filename.strip().split('/')[-2]
+    else:
+        title = os.getcwd().strip().split('/')[-1]
+
+
+    if output_image is True:
+        output_image = title
+       
+        if '/' in filename:
+            output_image = '/'.join(filename.strip().split('/')[0:-1])+'/'+filename.strip().split('/')[-2]
+        else:
+            output_image = os.getcwd().strip().split('/')[-1]
+
+    plt.title(title)
     plt.xlabel("Step")
     plt.ylabel("Energy / %s" % units)
+    print(output_image)
     plt.savefig(
         output_image.replace(".dat", ".jpg"), dpi=250, bbox_inches="tight"
     )
+    
     plt.show()
 
     return None
@@ -64,4 +79,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    a = alberto(args.f, args.en, args.o, args.u)
+    a = fonsi(args.f, args.en, args.o, args.u)

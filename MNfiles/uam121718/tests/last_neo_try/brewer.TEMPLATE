@@ -1,0 +1,5 @@
+geom= beta-carboline_min_1_1_shaken.xyz
+
+mode =ci
+profile =gp 
+

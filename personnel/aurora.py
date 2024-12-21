@@ -126,8 +126,9 @@ def aurora(
     plt.ylabel('$\Delta$E / eV')
 
     for i, energy in enumerate(pes_energies):
-        plt.plot(x, energy, alpha=.5, linestyle=':')
-        plt.scatter(x, energy, alpha=.5)
+        le = len(energy)
+        plt.plot(x[0:le], energy, alpha=.5, linestyle=':')
+        plt.scatter(x[0:le], energy, alpha=.5)
 
     plt.plot(x, highlighted_values, c='black', linestyle='-.', label='PES path')
     plt.legend()

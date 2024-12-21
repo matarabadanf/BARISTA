@@ -1,0 +1,6 @@
+geom= water.xyz
+
+mode = ci 
+iroot = 2
+jroot = 3
+profile = ubp 
