@@ -1,6 +1,7 @@
 # BARISTA 
 
-A collection of scripts and programs for computational chemistry packages.
+A collection of scripts and small programs to assist in PES exploration in excited states with (currently) TDDFT.
+
 ## Brewer
 This is a coffee machine in development that would be able to perform tasks that require some interfacing between programs. It is based in the python module ase.io. The idea is that via ase.io it is possible to interface electronic structure calculations with some highly customizable algorithms in order to perform complex tasks such as search of MECIs, perform NEBs (in development) and many more. As of today it should be possible to:
  - Obtain MECIs using the penalty and update branch methods. In theory, but the coffe machine was not used in a while and needs to be tested again. 
