@@ -25,6 +25,20 @@ parser.add_argument("-u", type=str, default="eV", help="Energy units")
 
 # display help message if there is no arguments
 
+class Fonsi:
+
+    def __init__(self, fc_energy, energies_filename):
+        self.fc_energy = fc_energy
+        self.energies_filename = energies_filename
+
+
+    def _load_energies:
+        try:
+            self.energies_array = np.loadtxt(self.energies_filename) - self.reference_energy
+        except:
+            pass
+    def _test(self):
+        pass 
 
 def fonsi(
     filename: str,
@@ -68,7 +82,9 @@ def fonsi(
     )
     
     plt.show()
-
+    
+    print(energies[:,1][-1])
+    
     return None
 
 
