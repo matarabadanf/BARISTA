@@ -222,7 +222,7 @@ class Aurora:
             if max(i) == -1:
                 x_tics.append('CI')
             else:
-                x_tics.append('Minimum\n #%i $S_{%i}$' % (i[-2], i[-1]))
+                x_tics.append('Minimum\n #%i $S_{%i}$' % (i[-1], i[-2]))
 
         x = [i for i in range(1 + int(max(self._pes_dataFrame['Step'].unique())))]
 
