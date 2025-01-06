@@ -137,6 +137,10 @@ class NXSpecReader:
         maximum = max(self.energy_intensities_df["Energy"]) + 2
         self.x_grid = np.linspace(minimum, maximum, npoints)
 
+    def _generate_xgrid_nm(self) -> None:
+        """Generate wavelength grid in nanometers."""
+        self.x_grid_nm = 1239.8 / self.x_grid
+
     def _convolute_spectrum(
         self, filtered_df: pd.DataFrame
     ) -> NDArray[np.float64]:
@@ -178,9 +182,10 @@ class NXSpecReader:
         self.full_spectrum = spectrum
         return spectrum
 
-    def _generate_xgrid_nm(self) -> None:
-        """Generate wavelength grid in nanometers."""
-        self.x_grid_nm = 1239.8 / self.x_grid
+    def return_semiclassical_spectrum(self):
+        spec = np.copy(self.generate_spectrum())
+        spec /= max(spec)
+        return [np.copy(self.x_grid), spec]
 
     def save_to_file(self, filename: str) -> None:
         """
