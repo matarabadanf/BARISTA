@@ -3,13 +3,15 @@ BREWER is a small homebrew inteface with electronic structure programs (currentl
 
 
 ## Implemented Brewer functionality 
+Currently supported calcuations are:
+- MECI search with TDDFT in ORCA.
 
 ### MECI calculations
 
 MECI calculations can be performed with BREWER using the following algorithms: 
- - Penalty algorithm
- - Updated branching plane (no NACME)
- - Updated branching plane (Estimated NACME)
+ - Penalty algorithm.
+ - Updated branching plane (no NACME).
+ - Updated branching plane (Estimated NACME).
 
 The first is implemented as in [](). The second is implemented as in ![]().
 
@@ -18,9 +20,9 @@ The first is implemented as in [](). The second is implemented as in ![]().
 
 
 ## Configuring Brewer
-Brewer needs to be configured: it needs the path to a suitable ORCA (currently only orca, could be expanded) launcher. To set up the launcher scripts, use `setup_launchers.py`. Launchers should be able to copy `.xyz` and `.gbw` files to the `\$WorkDir`. We include an example launcher for ORCA in the `data/` folder. 
+Brewer needs to be configured: it needs the path to a suitable ORCA (currently only orca, could be expanded) launcher. To set up the launcher scripts, use `setup_launchers.py`. Launchers should be able to copy `.xyz` and `.gbw` files to the `$WorkDir`. We include an example launcher for ORCA in the `data/` folder. 
 
-Due to the way we handled input generation, it is not necessary that the ORCA launcher manages the parrallelization `\%pal n_cores' section in orca inputs. 
+Due to the way we handled input generation, it is not necessary that the ORCA launcher manages the parrallelization `\%pal n_cores` section in orca inputs. 
 
 ## Using Brewer
 Brewer requires a `brewer.TEMPLATE` input file. The `barista/brewer/setup_brewer_calculation.py` script generates the brewer.TEMPLATE input file and copies the required files for the calculation. These can include:
