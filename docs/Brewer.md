@@ -58,11 +58,11 @@ Where the `molecule.xyz` is the starting geometry with and `mode` is the type of
 | `profile`  | MECI search algoritm. Options are `penalty`, `gp` (Gradient projection) and `ubp` (Updated Branching plane).|
 | `iroot`    | Lower state potential energy surface. Default is $0$.           |
 | `jroot`    | Higher state potential energy surface. Default is `iroot`$+1$.           |
-| `n\_roots` | Number of excited states calculated by the electronic structure program. Default is $10$.       |
+| `n_roots` | Number of excited states calculated by the electronic structure program. Default is $10$.       |
 | `alpha`    | Alpha value for penalty method (see reference). Default is $3.5$.           |
 | `sigma`    | Sigma value for penalty method (see reference). Default is $0.02$.          |
 
-The default 'brewer.TEMPLATE' configuration is:
+The default `brewer.TEMPLATE` configuration is:
 
 ```
 name = molecule.xyz
