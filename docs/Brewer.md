@@ -27,8 +27,7 @@ Due to the way we handled input generation, it is not necessary that the ORCA la
 ## Using Brewer
 Brewer requires a `brewer.TEMPLATE` input file. The `barista/brewer/setup_brewer_calculation.py` script generates the brewer.TEMPLATE input file and copies the required files for the calculation. These can include:
 - `opt.py`: Main function, manages reading the input and performs the optimization
-
-- `flavs.py`: Contains the calculator called by ASE. ASE requires the use of calculators to obtain properties such as forces and energies. A calculator should be able to: 1. write an input file, 2. perform the calculation of the input file with an external command (such as a call to ORCA) and 3. parse the results of the file and obtain the forces to feed to the optimization algorithm. 
+- `flavs.py`: Contains the calculator called by ASE. ASE requires the use of calculators to obtain properties such as forces and energies.
 
 To run a calculation with BREWER in a SLURM queue system, it can be done as:
 ```Bash
