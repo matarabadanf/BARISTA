@@ -3,6 +3,7 @@
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 # Parser is used to input via terminal the required arguments
 parser = argparse.ArgumentParser(
@@ -68,6 +69,7 @@ class Alberto:
         self._get_cis_energies()
         self._get_energy_array()
         self._rescale_units(self.units)
+        self._get_current_energy()
 
     def _get_file_content(self):
         """
@@ -134,7 +136,7 @@ class Alberto:
         self.number_of_steps = len(self.cis_array)
 
     def _get_energy_array(self):
-        total_energy_list = [[] for i in range(self.number_of_states)]
+        total_energy_list = [[] for i in range(self.number_of_states + 1)]
 
         for line in self.content_list:
             if (
@@ -147,12 +149,31 @@ class Alberto:
                 total_energy_list[index].append(energy)
 
         self.energy_array = np.zeros(
-            [self.number_of_states, self.number_of_steps]
+            [self.number_of_states + 1, self.number_of_steps]
         )
 
         for pes_index, state in enumerate(total_energy_list):
             for index, energy in enumerate(state):
-                self.energy_array[pes_index, index] = energy
+                self.energy_array[pes_index + 1, index] = energy
+
+        self.energy_array[0] = self.cis_array
+
+    def _get_current_energy(self):
+
+        curr_energy_index = np.zeros(self.number_of_steps, dtype=int)
+        counter = 0
+
+        for line in self.content_list:
+            if "DE(CIS) =" in line:
+                curr_energy_index[counter] = int(
+                    line.strip().split()[-1].replace(")", "")
+                )
+                counter += 1
+
+        self.curr_energy = np.zeros(self.number_of_steps)
+
+        for i, index in enumerate(curr_energy_index):
+            self.curr_energy[i] = self.energy_array[index][i]
 
     def set_units(self, units):
         prev_units = self.units
@@ -199,11 +220,30 @@ class Alberto:
         """
         self.output_image = image_name
 
-    def plot(self):
+    def _prepare_plot(self):
+        fig, ax = plt.subplots()
+
         x_range = np.arange(0, self.number_of_steps, 1)
-        for state in self.energy_array:
-            plt.plot(x_range, state)
-        plt.plot(x_range, self.cis_array)
+        for surface, state in enumerate(self.energy_array):
+            ax.plot(x_range, state, label=f"$S{surface}$")
+
+        ax.scatter(
+            x_range,
+            self.curr_energy,
+            label="Current surface",
+            c="rebeccapurple",
+            marker="x",
+        )
+
+        ax.set_ylabel(f"Energy difference / {self.units}")
+        ax.set_xlabel("Step")
+        ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+        fig.set_size_inches(8, 4)
+
+        return fig, ax
+
+    def plot(self):
+        fig, ax = self._prepare_plot()
 
     def generate_image(self, output_image_name: str):
 
@@ -212,109 +252,14 @@ class Alberto:
         plt.savefig(output_image_name, dpi=300)
 
 
-def alberto(
-    filename: str,
-    reference_energy: float = 0,
-    output_image: str = True,
-    units: str = "eV",
-) -> np.array:
-    # get the file and content
-
-    file = open(filename, "r")
-    cont = file.readlines()
-    # grep the lines of interest
-    counter = 0
-    n_os = []
-
-    for line in cont:
-        if "TD-DFT/TDA EXCITED STATES (SINGLETS)" in line:
-            counter += 1
-            if counter >= 2:
-                break
-        elif (
-            "STATE" in line
-            and "TD-DFT/TDA EXCITED STATES (SINGLETS)" not in line
-            and "EXCITED STATE GRADIENT DONE" not in line
-        ):
-            n_os.append(int(line.strip().split()[1].replace(":", "")))
-
-    total_list = [[] for i in range(0, max(n_os))]
-    cis_energies = []
-
-    for line in cont:
-        if (
-            "STATE" in line
-            and "TD-DFT/TDA EXCITED STATES (SINGLETS)" not in line
-            and "EXCITED STATE GRADIENT DONE" not in line
-        ):
-            index = int(line.strip().split()[1].replace(":", "")) - 1
-            energy = float(line.strip().split()[3].replace(":", ""))
-            total_list[index].append(energy)
-        elif "E(SCF)" in line:
-            cis_energies.append(float(line.strip().split()[2]))
-
-    # print(total_list)
-
-    cis_array = np.array(cis_energies) - reference_energy
-    total_arrays = [np.array(l) for l in total_list]
-
-    if units == "eV":
-        cis_array *= 27.2114
-        for i in total_arrays:
-            i *= 27.2114
-    else:
-        units = "Hartree"
-
-    x = np.arange(1, len(total_list[0]) + 1, 1)
-
-    plt.plot(x, cis_array, label="Ground state")
-
-    # obtain the state of the actual root
-    curr_energy = []
-    curr_energy_index = []
-    for line in cont:
-        if "DE(CIS) =" in line:
-            curr_energy_index.append(
-                float(line.strip().split()[-1].replace(")", ""))
-            )
-
-    for i, root in enumerate(curr_energy_index):
-        curr_energy.append(total_arrays[int(root) - 1][i])
-
-    if output_image is True:
-        output_image = filename
-
-    for i in range(len(total_arrays)):
-        plt.plot(x, cis_array + total_arrays[i], label="Root %i" % (i + 1))
-
-    plt.scatter(
-        x,
-        cis_array + curr_energy,
-        label="Active root",
-        marker="x",
-        c="rebeccapurple",
-    )
-    plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
-    plt.xlabel("Step")
-    plt.ylabel("Energy / %s" % units)
-    plt.title(output_image.replace(".in.out", ""))
-    plt.savefig(
-        output_image.replace(".in.out", ".jpg"), dpi=250, bbox_inches="tight"
-    )
-    # plt.show()
-
-    to_return = [np.array(cis_array + array) for array in total_arrays]
-
-    to_return.append(cis_array + curr_energy)
-
-    return to_return
-
-
 if __name__ == "__main__":
-    # if len(sys.argv) == 1:
-    #     parser.print_help(sys.stderr)
-    #     sys.exit(1)
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
 
-    # args = parser.parse_args()
+    args = parser.parse_args()
 
-    a = Alberto("upgrades/beta-carboline_opt_followiroot_3.in.out")
+    a = Alberto(args.f, args.en, args.u)
+
+    if args.o is not True:
+        a.generate_image(args.o)
