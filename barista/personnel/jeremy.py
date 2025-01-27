@@ -30,7 +30,9 @@ class Jeremy:
     #     Public interface methods
     # =========================================================================
 
-    def override_connectivity_matrix(self, connectivity_matrix: ArrayLike):
+    def override_connectivity_matrix(
+        self, connectivity_matrix: ArrayLike
+    ) -> None:
         """
         Override connectivity matrix to generate internals from a reference.
 
@@ -56,8 +58,15 @@ class Jeremy:
         if connectivity_matrix.shape != self.connectivity_matrix.shape:
             raise ValueError("The dimensions of both molecules are not equal")
 
-    def clear_cache(self):
+    def clear_cache(self) -> None:
+        """
+        Clear cached properties.
 
+        Returns
+        -------
+        None
+
+        """
         cached_properties = [
             "xyz_df",
             "connectivity_matrix",
@@ -91,7 +100,7 @@ class Jeremy:
         return np.copy(self._position_array)
 
     @property
-    def atom_labels(self):
+    def atom_labels(self) -> list:
         return self._atom_labels.copy()
 
     @property
@@ -119,7 +128,7 @@ class Jeremy:
         return self.bond_values + self.angle_values + self.dihedral_values
 
     @cached_property
-    def connectivity_matrix(self):
+    def connectivity_matrix(self) -> ArrayLike:
         """
         Build connectivity matrix.
 
@@ -185,7 +194,7 @@ class Jeremy:
         return _xyz_df.copy()
 
     @cached_property
-    def distance_matrix(self):
+    def distance_matrix(self) -> ArrayLike:
         _distance_matrix = np.zeros([self._n_atoms, self._n_atoms])
         for i in range(0, self._n_atoms):
             for j in range(i, self._n_atoms):
@@ -196,7 +205,7 @@ class Jeremy:
         return np.copy(_distance_matrix)
 
     @cached_property
-    def r_vector_matrix(self):
+    def r_vector_matrix(self) -> ArrayLike:
         _r_vector_matrix = []
 
         for i in range(self._n_atoms):
@@ -212,7 +221,7 @@ class Jeremy:
     # Build internals
 
     @cached_property
-    def bond_list(self):
+    def bond_list(self) -> list:
 
         _bond_list = []
 
@@ -265,7 +274,7 @@ class Jeremy:
         return _angle_list.copy()
 
     @cached_property
-    def dihedral_list(self):
+    def dihedral_list(self) -> list:
         """Build the dihedral list.
 
         It is done by adding an atom to the end of the angles forwards and
@@ -305,7 +314,7 @@ class Jeremy:
     # Calculate internals
 
     @cached_property
-    def bond_values(self):
+    def bond_values(self) -> list:
         _bond_values = []
 
         for bond in self.bond_list:
@@ -315,7 +324,7 @@ class Jeremy:
         return _bond_values.copy()
 
     @cached_property
-    def angle_values(self):
+    def angle_values(self) -> list:
         """Calculate the angles.
 
         Uses theta = arccos((r_ba · r_bc)/(||r_ba||*||r_bc||)) * 180/pi.
@@ -345,7 +354,7 @@ class Jeremy:
         return angle_values.copy()
 
     @cached_property
-    def dihedral_values(self):
+    def dihedral_values(self) -> list:
         """Calculate the dihedral angles.
 
         Done with the atan(sin_phi, cos_phi) formula.
@@ -376,7 +385,7 @@ class Jeremy:
     #     Internal computation preparation methods
     # =========================================================================
 
-    def _read_xyzfile(self):
+    def _read_xyzfile(self) -> None:
         try:
             with open(self.xyzfile, "r") as f:
                 self._file_content_list = f.readlines()[2:]
@@ -387,12 +396,12 @@ class Jeremy:
                 f'"{self.xyzfile}" geometry file was not found'
             ) from exc
 
-    def _extract_atoms(self):
+    def _extract_atoms(self) -> None:
         self._atom_labels = []
         for atom in self._file_content_list:
             self._atom_labels.append(atom.strip().split()[0].capitalize())
 
-    def _extract_positions(self):
+    def _extract_positions(self) -> None:
         self._position_array = np.zeros([self._n_atoms, 3], dtype=float)
 
         for i, atom in enumerate(self._file_content_list):
@@ -400,7 +409,7 @@ class Jeremy:
                 atom.strip().split()[1:], dtype=float
             )
 
-    def _extend_labels(self):
+    def _extend_labels(self) -> None:
         counter_labels = list(set(self._atom_labels))
         counter = np.zeros(len(counter_labels))
 
