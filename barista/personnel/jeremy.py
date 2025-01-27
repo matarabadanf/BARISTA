@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from functools import cached_property
+
 import numpy as np
 import pandas as pd
 from numpy.typing import ArrayLike
@@ -11,72 +13,22 @@ class Jeremy:
     #     Magic Methods
     # =========================================================================
 
-    def __init__(self, xyzfile):
+    def __init__(self, xyzfile, bond_thresh: float = 1.6):
         self.xyzfile = xyzfile
 
         self._position_array = None
 
-        self._connectivity_matrix = None
-
-        self._bond_list = None
-        self._angle_list = None
-        self._dihedral_list = None
-
-        self._bond_values = None
-        self._angle_values = None
-        self._dihedral_values = None
+        self._custom_connectivity = None
+        self.bond_thresh = bond_thresh
 
         self._read_xyzfile()
         self._extract_atoms()
         self._extract_positions()
         self._extend_labels()
-        self._build_xyz_dataframe()
-        self._build_distance_matrix()
-        self._calculate_r_vector_matrix()
 
-    # Public interface methods
-    def build_connectivity_matrix(self, bond_thresh: float = 1.6):
-        """
-        Build connectivity matrix.
-
-        If below the threshold, will fill with 1. If no connection below the
-        threshold, it will search for the nearest atom and assign the value 10
-        in order to leave no atom unconnected.
-
-
-        Parameters
-        ----------
-        bond_thresh : float, optional
-            Bond threshold. The default is 1.6.
-
-        Returns
-        -------
-        connectivity_matrix : ArrayLike
-            Connectivity matrix of the molecule.
-
-        """
-        self._connectivity_matrix = np.zeros([self._n_atoms, self._n_atoms])
-
-        for i in range(0, self._n_atoms):
-            for j in range(i, self._n_atoms):
-                r_ij = np.linalg.norm(
-                    self._position_array[i] - self._position_array[j]
-                )
-                if r_ij < bond_thresh and i != j:
-                    self._connectivity_matrix[i][j] = self._connectivity_matrix[
-                        j
-                    ][i] = 1
-
-        for i, row in enumerate(self._connectivity_matrix):
-            if sum(row) == 0:
-
-                distances = sorted(self.distance_matrix[i], reverse=False)
-
-                j = np.where(self.distance_matrix[i] == distances[1])
-
-                self._connectivity_matrix[i][j[0][0]] = (
-                    self._connectivity_matrix[j[0][0]][i]
-                ) = 10
+    # =========================================================================
+    #     Public interface methods
+    # =========================================================================
 
     def override_connectivity_matrix(self, connectivity_matrix: ArrayLike):
         """
@@ -101,13 +53,27 @@ class Jeremy:
         None.
 
         """
-        if connectivity_matrix.shape != self._connectivity_matrix.shape:
+        if connectivity_matrix.shape != self.connectivity_matrix.shape:
             raise ValueError("The dimensions of both molecules are not equal")
 
-        self._connectivity_matrix = connectivity_matrix
-        self._get_bond_list()
-        self._build_angles()
-        self._build_dihedrals()
+    def clear_cache(self):
+
+        cached_properties = [
+            "xyz_df",
+            "connectivity_matrix",
+            "distance_matrix",
+            "r_vector_matrix",
+            "bond_list",
+            "angle_list",
+            "dihedral_list",
+            "bond_values",
+            "angle_values",
+            "dihedral_values",
+        ]
+
+        for prop in cached_properties:
+            if prop in self.__dict__:
+                del self.__dict__[prop]
 
     # =========================================================================
     #     Property methods
@@ -125,77 +91,8 @@ class Jeremy:
         return np.copy(self._position_array)
 
     @property
-    def connectivity_matrix(self) -> ArrayLike:
-        """
-        Return a copy of the system connectivity matrix.
-
-        Returns
-        -------
-        ArrayLike
-            DESCRIPTION.
-
-        """
-        if self._connectivity_matrix is None:
-            self.build_connectivity_matrix()
-
-        return np.copy(self._connectivity_matrix)
-
-    @property
-    def xyz_df(self) -> pd.DataFrame:
-        """
-        Return copy of the cartesian dataframe.
-
-        Returns
-        -------
-        pd.DataFrame
-
-        """
-        if self._xyz_df is None:
-            self._build_xyz_dataframe()
-
-        return self._xyz_df.copy()
-
-    @property
-    def bond_list(self) -> list:
-        """
-        Return copy of the bond list.
-
-        Returns
-        -------
-        list
-
-        """
-        if self._bond_list is None:
-            self._get_bond_list()
-        return self._bond_list.copy()
-
-    @property
-    def angle_list(self) -> list:
-        """
-        Return copy of the angle list.
-
-        Returns
-        -------
-        list
-
-        """
-        if self._angle_list is None:
-            self._build_angles()
-        return self._angle_list.copy()
-
-    @property
-    def dihedral_list(self) -> list:
-        """
-        Return copy of the dihedral list.
-
-        Returns
-        -------
-        list
-
-        """
-        if self._dihedral_list is None:
-            self._build_dihedrals()
-        return self._dihedral_list.copy()
+    def atom_labels(self):
+        return self._atom_labels.copy()
 
     @property
     def internal_list(self) -> list:
@@ -207,7 +104,7 @@ class Jeremy:
         list
 
         """
-        return self._build_internal_coordinates().copy()
+        return self.bond_list + self.angle_list + self.dihedral_list
 
     @property
     def internal_values(self) -> list:
@@ -219,47 +116,88 @@ class Jeremy:
         list
 
         """
-        return np.array(self._calculate_internals().copy())
+        return self.bond_values + self.angle_values + self.dihedral_values
 
-    # =========================================================================
-    #     Internal computation preparation methods
-    # =========================================================================
+    @cached_property
+    def connectivity_matrix(self):
+        """
+        Build connectivity matrix.
 
-    def _read_xyzfile(self):
-        try:
-            with open(self.xyzfile, "r") as f:
-                self._file_content_list = f.readlines()[2:]
-            self._n_atoms = len(self._file_content_list)
+        If below the threshold, will fill with 1. If no connection below the
+        threshold, it will search for the nearest atom and assign the value 10
+        in order to leave no atom unconnected.
 
-        except FileNotFoundError as exc:
-            raise FileNotFoundError(
-                f'"{self.xyzfile}" geometry file was not found'
-            ) from exc
 
-    def _extract_atoms(self):
-        self.atom_labels = []
-        for atom in self._file_content_list:
-            self.atom_labels.append(atom.strip().split()[0].capitalize())
+        Parameters
+        ----------
+        bond_thresh : float, optional
+            Bond threshold. The default is 1.6.
 
-    def _extract_positions(self):
-        self._position_array = np.zeros([self._n_atoms, 3], dtype=float)
+        Returns
+        -------
+        connectivity_matrix : ArrayLike
+            Connectivity matrix of the molecule.
 
-        for i, atom in enumerate(self._file_content_list):
-            self._position_array[i] = np.array(
-                atom.strip().split()[1:], dtype=float
-            )
+        """
+        if self._custom_connectivity is not None:
+            return np.copy(self._custom_connectivity)
 
-    def _build_distance_matrix(self):
-        self.distance_matrix = np.zeros([self._n_atoms, self._n_atoms])
+        _connectivity_matrix = np.zeros([self._n_atoms, self._n_atoms])
+
         for i in range(0, self._n_atoms):
             for j in range(i, self._n_atoms):
                 r_ij = np.linalg.norm(
                     self._position_array[i] - self._position_array[j]
                 )
-                self.distance_matrix[i][j] = self.distance_matrix[j][i] = r_ij
+                if r_ij < self.bond_thresh and i != j:
+                    _connectivity_matrix[i][j] = _connectivity_matrix[j][i] = 1
 
-    def _calculate_r_vector_matrix(self):
-        self.r_vector_matrix = []
+        for i, row in enumerate(_connectivity_matrix):
+            if sum(row) == 0:
+
+                distances = sorted(self.distance_matrix[i], reverse=False)
+
+                j = np.where(self.distance_matrix[i] == distances[1])
+
+                _connectivity_matrix[i][j[0][0]] = _connectivity_matrix[
+                    j[0][0]
+                ][i] = 10
+        return np.copy(_connectivity_matrix)
+
+    @cached_property
+    def xyz_df(self) -> pd.DataFrame:
+        """
+        Return copy of the cartesian dataframe.
+
+        Returns
+        -------
+        pd.DataFrame
+
+        """
+        position_data = {
+            "Atom": self.atom_labels,
+            "x": self.position_array[:, 0],
+            "y": self.position_array[:, 1],
+            "z": self.position_array[:, 2],
+        }
+        _xyz_df = pd.DataFrame.from_dict(position_data)
+
+        return _xyz_df.copy()
+
+    @cached_property
+    def distance_matrix(self):
+        _distance_matrix = np.zeros([self._n_atoms, self._n_atoms])
+        for i in range(0, self._n_atoms):
+            for j in range(i, self._n_atoms):
+                r_ij = np.linalg.norm(
+                    self._position_array[i] - self._position_array[j]
+                )
+                _distance_matrix[i][j] = _distance_matrix[j][i] = r_ij
+        return np.copy(_distance_matrix)
+
+    @cached_property
+    def r_vector_matrix(self):
+        _r_vector_matrix = []
 
         for i in range(self._n_atoms):
             append_list = []
@@ -267,82 +205,46 @@ class Jeremy:
                 append_list.append(
                     -(self._position_array[j] - self._position_array[i])
                 )
-            self.r_vector_matrix.append(append_list)
+            _r_vector_matrix.append(append_list)
 
-    def _extend_labels(self):
-        counter_labels = list(set(self.atom_labels))
-        counter = np.zeros(len(counter_labels))
+        return np.copy(np.array(_r_vector_matrix))
 
-        extended_labels = []
-
-        for label in self.atom_labels:
-            counter[counter_labels.index(label)] += 1
-            extended_labels.append(
-                label + str(int(counter[counter_labels.index(label)]))
-            )
-
-        self.atom_labels = extended_labels
-
-    def _build_xyz_dataframe(self):
-        position_data = {
-            "Atom": self.atom_labels,
-            "x": self._position_array[:, 0],
-            "y": self._position_array[:, 1],
-            "z": self._position_array[:, 2],
-        }
-        self._xyz_df = pd.DataFrame.from_dict(position_data)
-
-    # =========================================================================
-    #     Computations
-    # =========================================================================
-
-    def _build_internal_coordinates(self):
-
-        self._calculate_r_vector_matrix()
-
-        return self.bond_list + self.angle_list + self.dihedral_list
-
-    def _calculate_internals(self):
-        return (
-            self._calculate_bonds()
-            + self._calculate_angles()
-            + self._calculate_dihedrals()
-        )
-
-    # =========================================================================
     # Build internals
-    # =========================================================================
 
-    def _get_bond_list(self):
+    @cached_property
+    def bond_list(self):
 
-        if self._connectivity_matrix is None:
-            self.build_connectivity_matrix()
-
-        self._bond_list = []
+        _bond_list = []
 
         for i in range(self._n_atoms):
             for j in range(i, self._n_atoms):
                 if (
-                    self._connectivity_matrix[i][j] == 1
-                    or self._connectivity_matrix[i][j] == 10
+                    self.connectivity_matrix[i][j] == 1
+                    or self.connectivity_matrix[i][j] == 10
                 ):
-                    self._bond_list.append([i, j])
+                    _bond_list.append([i, j])
 
-    def _build_angles(self):
-        """Build the angle list.
+        return _bond_list.copy()
+
+    @cached_property
+    def angle_list(self) -> list:
+        """
+        Build the angle list.
 
         Done by adding an atom to the end of the bonds forwards and backwards.
-        If the angle is new it is stored. If not, discarded
+        If the angle is new it is stored. If not, discarded.
+
+        Returns
+        -------
+        list
+            Angle list with atomic indices.
 
         """
-        if self._bond_list is None:
-            self._get_bond_list()
-
-        self._angle_list = []
+        _angle_list = []
         angle_raw_list = []  # placeholder list for bonds that can be repeated
 
         for _ in range(2):  # we iterate twice, once forward and once backwards
-            self._bond_list = [
+            self.bond_list = [
                 bond[::-1] for bond in self.bond_list
             ]  # reverse bond indexes
             for bond in self.bond_list:
@@ -355,17 +257,15 @@ class Jeremy:
 
         for angle in angle_raw_list:
             # check uniqueness (avoid repetition of the same angle indexes flipped)
-            if (
-                angle not in self._angle_list
-                and angle[::-1] not in self._angle_list
-            ):
-                self._angle_list.append(angle)
+            if angle not in _angle_list and angle[::-1] not in _angle_list:
+                _angle_list.append(angle)
 
-        self._angle_list.sort(
-            key=lambda x: x[0]
-        )  # sort the list by the first index
+        _angle_list.sort(key=lambda x: x[0])  # sort the list by the first index
 
-    def _build_dihedrals(self):
+        return _angle_list.copy()
+
+    @cached_property
+    def dihedral_list(self):
         """Build the dihedral list.
 
         It is done by adding an atom to the end of the angles forwards and
@@ -373,13 +273,13 @@ class Jeremy:
 
         """
         dihedral_raw_list = []
-        self._dihedral_list = []
+        _dihedral_list = []
 
         for _ in range(2):  # same as before, two iterations
-            self._angle_list = [
-                angle[::-1] for angle in self._angle_list
+            self.angle_list = [
+                angle[::-1] for angle in self.angle_list
             ]  # reverse angle indexes
-            for angle in self._angle_list:
+            for angle in self.angle_list:
                 for atom in range(self._n_atoms):
                     if (
                         self.connectivity_matrix[angle[-1]][atom] == 1
@@ -391,44 +291,39 @@ class Jeremy:
 
         for dihedral in dihedral_raw_list:
             if (
-                dihedral not in self._dihedral_list
-                and dihedral[::-1] not in self._dihedral_list
+                dihedral not in _dihedral_list
+                and dihedral[::-1] not in _dihedral_list
             ):  # check uniqueness
-                self._dihedral_list.append(dihedral)
+                _dihedral_list.append(dihedral)
 
-        self._dihedral_list.sort(
+        _dihedral_list.sort(
             key=lambda x: x[0]
         )  # sort the list by the first index
 
-        return self._dihedral_list
+        return _dihedral_list
 
-    # =========================================================================
-    #  Calculate internals
-    # =========================================================================
+    # Calculate internals
 
-    def _calculate_bonds(self):
-        bond_values = []
+    @cached_property
+    def bond_values(self):
+        _bond_values = []
 
         for bond in self.bond_list:
             i, j = bond
-            bond_values.append(self.distance_matrix[i][j])
+            _bond_values.append(self.distance_matrix[i][j])
 
-        self._bond_values = bond_values
+        return _bond_values.copy()
 
-        return self._bond_values.copy()
-
-    def _calculate_angles(self):
+    @cached_property
+    def angle_values(self):
         """Calculate the angles.
 
         Uses theta = arccos((r_ba · r_bc)/(||r_ba||*||r_bc||)) * 180/pi.
 
         """
-        if self._angle_values is None:
-            self._build_internal_coordinates()
-
         angle_values = []
 
-        for angle in self._angle_list:
+        for angle in self.angle_list:
             a, b, c = angle
             angle_values.append(
                 float(
@@ -447,11 +342,10 @@ class Jeremy:
                 )
             )
 
-        self._angle_values = angle_values
+        return angle_values.copy()
 
-        return self._angle_values.copy()
-
-    def _calculate_dihedrals(self):
+    @cached_property
+    def dihedral_values(self):
         """Calculate the dihedral angles.
 
         Done with the atan(sin_phi, cos_phi) formula.
@@ -476,9 +370,49 @@ class Jeremy:
 
             dih_val.append(phi)
 
-        self._dihedral_values = dih_val
+        return dih_val.copy()
 
-        return self._dihedral_values.copy()
+    # =========================================================================
+    #     Internal computation preparation methods
+    # =========================================================================
+
+    def _read_xyzfile(self):
+        try:
+            with open(self.xyzfile, "r") as f:
+                self._file_content_list = f.readlines()[2:]
+            self._n_atoms = len(self._file_content_list)
+
+        except FileNotFoundError as exc:
+            raise FileNotFoundError(
+                f'"{self.xyzfile}" geometry file was not found'
+            ) from exc
+
+    def _extract_atoms(self):
+        self._atom_labels = []
+        for atom in self._file_content_list:
+            self._atom_labels.append(atom.strip().split()[0].capitalize())
+
+    def _extract_positions(self):
+        self._position_array = np.zeros([self._n_atoms, 3], dtype=float)
+
+        for i, atom in enumerate(self._file_content_list):
+            self._position_array[i] = np.array(
+                atom.strip().split()[1:], dtype=float
+            )
+
+    def _extend_labels(self):
+        counter_labels = list(set(self._atom_labels))
+        counter = np.zeros(len(counter_labels))
+
+        extended_labels = []
+
+        for label in self._atom_labels:
+            counter[counter_labels.index(label)] += 1
+            extended_labels.append(
+                label + str(int(counter[counter_labels.index(label)]))
+            )
+
+        self._atom_labels = extended_labels
 
 
 if __name__ == "__main__":
