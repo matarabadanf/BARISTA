@@ -9,8 +9,20 @@ BARISTA can be installed with
 pip install -e . 
 ```
 
+To ensure that the scripts can be executed, use:
+```Bash
+chmod 700 config/setup_barista.py
+setup_barista.sh
+```
+Which will set the scripts as executables.
+
+To configure the electronic_structure launchers, use:
+```bash
+config/setup_launchers.py
+```
+
 ## Brewer
-Brewer is an interface between electronic structure programs that allows to perform calculations. See the documentation. 
+Brewer is an interface between electronic structure programs that allows to perform calculations. [See the documentation](https://github.com/matarabadanf/BARISTA/blob/main/docs/Brewer.md). 
 
 ## Personel
-This is a collection of scripts to make short tasks. These modules serve as an interface between this program and electronic structure codes. See the documentation
+This is a collection of scripts to make short tasks. These modules serve as an interface between this program and electronic structure codes. [See the documentation](https://github.com/matarabadanf/BARISTA/blob/main/docs/Personnel.md).
