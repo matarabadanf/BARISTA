@@ -1,5 +1,5 @@
 # Brewer
-BREWER is a small homebrew inteface with electronic structure programs (currently only ORCA) based in the python module `ase.io`. Via `ase.io` it is possible to interface electronic structure calculations with some highly customizable algorithms in order to perform complex tasks such as MECI calculations, NEBs (in development)... 
+BREWER is a small homebrew inteface with electronic structure programs (currently only ORCA) based in the python module `ase.io`. Via `ase.io` it is possible to interface electronic structure calculations with some highly customizable algorithms in order to perform complex tasks such as MECI calculations, NEBs... 
 
 
 ## Implemented Brewer functionality 
