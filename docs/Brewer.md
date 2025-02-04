@@ -94,4 +94,6 @@ Once a MECI calculation has finished, The resulting files are:
 - `optimization.log`: contains the optimizer steps, energies and max_force at each step. 
 - `energies.dat`: shows the energy of the requested states at each step and their energy difference in eV.
 - `molecule_ci_search_traj.xyz`: shows the geometrical trajectory of the optimization.
-- `AUX_FILES/` folder containing the last step gradient calculations, geometries, output files and CDV and DGV if it was a GP or UBP calculation.  
+- `AUX_FILES/` folder containing the last step gradient calculations, geometries, output files and CDV and DGV if it was a GP or UBP calculation.
+
+The energy profile of the states of interest can be plotted with `barista/personnel/fonsi.py`. 
