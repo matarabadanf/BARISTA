@@ -7,12 +7,12 @@ import os
 
 # Parser is used to input via terminal the required arguments for Emma
 parser = argparse.ArgumentParser(
-    description="""Takes a excited state optimization in ORCA and plots the energy of each state at each step of the opitmizaiton and the actual root.""",
+    description="""Takes a brewer optimizaiton energies.dat and plots the energy at each step.""",
     epilog="""It should run appropriately with ORCA 5.0.X""",
 )
 
 parser.add_argument(
-    "-f", type=str, required=True, default=42, help="ORCA optimization file"
+    "-f", type=str, required=True, default=42, help="energies.dat file"
 )
 parser.add_argument("-o", type=str, default=True, help="Output image filename")
 parser.add_argument(
