@@ -24,5 +24,5 @@ config/setup_launchers.py
 ## Brewer
 Brewer is an interface between electronic structure programs that allows to perform MECI calculations. [See the documentation](https://github.com/matarabadanf/BARISTA/blob/main/docs/Brewer.md). 
 
-## Personel
+## Personnel
 This is a collection of scripts to make short tasks. These modules serve as an interface between this program and electronic structure codes. [See the documentation](https://github.com/matarabadanf/BARISTA/blob/main/docs/Personnel.md).
