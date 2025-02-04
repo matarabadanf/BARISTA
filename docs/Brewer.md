@@ -30,9 +30,10 @@ Where the configuration file should look like:
 ~/bin/run_orca.sh ! orca launcher
 ```
 
-**IMPORTANT**: ORCA launchers should be able to copy `.xyz` and `.gbw` files to the `$WorkDir`. We include an example launcher for ORCA in the `data/` folder. This is in order to avoid recoputing the SCF optimization in both states, eventually saving some computation time. 
+**IMPORTANT**: 
+- ORCA launchers should be able to copy `.xyz` and `.gbw` files to the `$WorkDir`. We include an example launcher for ORCA in the `data/` folder. This is in order to avoid recoputing the SCF optimization in both states, eventually saving some computation time. 
 
-Due to the way we handled input generation, it is not necessary that the ORCA launcher manages the parrallelization `\%pal n_cores` section in orca inputs. 
+- Due to the way we handled input generation, it is not necessary that the ORCA launcher manages the parrallelization `\%pal n_cores` section in orca inputs. 
 
 ## Using Brewer
 Brewer requires a `brewer.TEMPLATE` input file. The `barista/brewer/brewer_setup.py ` script generates a directory with the `brewer.TEMPLATE` input file and copies the required files for the calculation with:
