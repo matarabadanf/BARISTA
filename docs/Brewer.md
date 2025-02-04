@@ -13,7 +13,7 @@ MECI calculations can be performed with BREWER using the following algorithms:
  - Updated branching plane (no NACME).
  - Updated branching plane (Estimated NACME).
 
-The first is implemented as in [J. Phys. Chem. B 2008, 112, 2, 405–413](https://pubs.acs.org/doi/10.1021/jp0761618). The second is implemented as in ![J. Chem. Theory Comput. 2010, 6, 1538–1545](https://pubs.acs.org/doi/abs/10.1021/ct1000268).
+The first is implemented as in [J. Phys. Chem. B 2008, 112, 2, 405–413](https://pubs.acs.org/doi/10.1021/jp0761618). The second is implemented as in [J. Chem. Theory Comput. 2010, 6, 1538–1545](https://pubs.acs.org/doi/abs/10.1021/ct1000268).
 
 #### Brief theoretical background of the MECI seatch methods
 
