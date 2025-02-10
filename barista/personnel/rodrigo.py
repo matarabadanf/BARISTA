@@ -23,6 +23,14 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--gaussian",
+    type=bool,
+    required=False,
+    default=True,
+    help="Include gaussian wrap for peaks.",
+)
+
+parser.add_argument(
     "-o",
     type=str,
     default=None,
@@ -148,21 +156,36 @@ class Rodrigo:
         """
         return height * np.exp(-((X - center) ** 2) / (2 * spread**2))
 
+    def _plot_gaussian_nm(self, dispersion: float = 2):
+
+        x_array = np.linspace(
+            min(self.get_peaks_nm()[0]) - 20,
+            max(self.get_peaks_nm()[0]) + 20,
+            1000,
+        )
 
 
-    def _plot_gaussian_nm(self):
+        y_array = np.zeros(len(x_array))
 
-        x, ymax = self.get_peaks_nm()
-        ymin = np.zeros_like(x)
+        for peak in self.get_peaks_nm().T:
+            y_array += self._gaussian(x_array, peak[1], peak[0], dispersion)
 
-        plt.vlines(x, ymin, ymax, colors="black", label="Vertical spectrum")
+        plt.plot(x_array, y_array, label='Convoluted spectrum')
 
-    def _plot_gaussian_eV(self):
+    def _plot_gaussian_eV(self, dispersion: float = 0.1):
 
-        x_array = np.arange(0, max(self.get_peaks[0]) + 2, 1000)
+        x_array = np.linspace(
+            min(self.get_peaks_eV()[0]) - 1,
+            max(self.get_peaks_eV()[0]) + 1,
+            1000,
+        )
 
-        for peak in self.get_peaks().T:
-            print(peak)
+        y_array = np.zeros(len(x_array))
+
+        for peak in self.get_peaks_eV().T:
+            y_array += self._gaussian(x_array, peak[1], peak[0], dispersion)
+
+        plt.plot(x_array, y_array, label='Convoluted spectrum')
 
     def plot_gaussian(self):
         if self.units == "eV":
@@ -170,9 +193,7 @@ class Rodrigo:
 
         elif self.units == "nm":
             self._plot_gaussian_nm()
-            plt.xlim(right=400)
 
- 
     def load_experimental(self, experimental_filename):
         experimental = np.loadtxt(experimental_filename, delimiter=",")
         experimental[:, 1] /= max(experimental[:, 1])
@@ -202,7 +223,6 @@ class Rodrigo:
 
         elif self.units == "nm":
             self._plot_vertical_nm()
-            plt.xlim(right=400)
 
     def plot_additional_spectra(
         self, data, units="eV", label="Imported Spectrum"
@@ -212,10 +232,14 @@ class Rodrigo:
         plt.plot(data[0], data[1], label=label)
 
     def plot(self):
+        plt.xlabel(f'Energy / {self.units}')
+        plt.ylabel('Norm. osc. str. / arb. u.')
         plt.legend()
         plt.show()
 
     def save_image(self, imagename):
+        plt.xlabel(f'Energy / {self.units}')
+        plt.ylabel('Norm. osc. str. / arb. u.')
         plt.legend()
         plt.savefig(imagename, dpi=300)
 
@@ -242,8 +266,11 @@ if __name__ == "__main__":
     # )
 
     a = Rodrigo(args.F, args.u)
+    # a = Rodrigo("tests/xanthine_spectra_tda.in.out", "nm")
 
     a.plot_vertical()
+    if args.gaussian:
+        a.plot_gaussian()
 
     if args.semi is not None:
         nx_specturm = NXSpecReader(args.semi).return_semiclassical_spectrum()
@@ -258,8 +285,10 @@ if __name__ == "__main__":
             units="eV",
             label="Exp. spectrum",
         )
-
-    if args.o is not None:
+    if args.interactive:
+        a.plot()
+    elif args.o is not None:
         a.save_image(args.o)
     else:
         a.save_image(args.F.replace(".in.out", ".jpg"))
+
