@@ -60,7 +60,6 @@ parser.add_argument(
 )
 
 
-# display help message if there is no arguments
 
 
 class Rodrigo:
@@ -245,30 +244,19 @@ class Rodrigo:
 
 
 if __name__ == "__main__":
+    
+    # display help message if there is no arguments
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
 
     args = parser.parse_args()
 
-    # a = rodrigo(
-    #     args.F,
-    #     args.o,
-    #     args.u,
-    #     args.i,
-    #     args.sp,
-    #     args.cf,
-    #     args.r,
-    #     args.nopeaks,
-    #     args.md,
-    #     args.shift,
-    #     args.exp,
-    # )
-
     a = Rodrigo(args.F, args.u)
     # a = Rodrigo("tests/xanthine_spectra_tda.in.out", "nm")
 
     a.plot_vertical()
+    
     if args.gaussian:
         a.plot_gaussian()
 
@@ -285,6 +273,7 @@ if __name__ == "__main__":
             units="eV",
             label="Exp. spectrum",
         )
+    
     if args.interactive:
         a.plot()
     elif args.o is not None:
