@@ -148,6 +148,31 @@ class Rodrigo:
         """
         return height * np.exp(-((X - center) ** 2) / (2 * spread**2))
 
+
+
+    def _plot_gaussian_nm(self):
+
+        x, ymax = self.get_peaks_nm()
+        ymin = np.zeros_like(x)
+
+        plt.vlines(x, ymin, ymax, colors="black", label="Vertical spectrum")
+
+    def _plot_gaussian_eV(self):
+
+        x_array = np.arange(0, max(self.get_peaks[0]) + 2, 1000)
+
+        for peak in self.get_peaks().T:
+            print(peak)
+
+    def plot_gaussian(self):
+        if self.units == "eV":
+            self._plot_gaussian_eV()
+
+        elif self.units == "nm":
+            self._plot_gaussian_nm()
+            plt.xlim(right=400)
+
+ 
     def load_experimental(self, experimental_filename):
         experimental = np.loadtxt(experimental_filename, delimiter=",")
         experimental[:, 1] /= max(experimental[:, 1])
