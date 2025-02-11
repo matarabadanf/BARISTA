@@ -140,6 +140,17 @@ class Alberto:
         self.number_of_steps = len(self.cis_array)
 
     def _get_abs_energy_array(self):
+        '''Parse the ORCA output file to obtain the absolute energies in a.u.
+        
+        The procedure performed is the following:
+         - Extract the energy increase from the current s0 to the excited 
+         - Set the first row of the energy array to the SCF energy
+         - Add the energy of the excited states to the SCF in each state
+
+        This should return the total absolute energy of each of the states 
+        i.e. in the test energies between -562.25 and -561.85.
+
+        '''
         total_energy_list = [[] for i in range(self.number_of_states + 1)]
 
         for line in self.content_list:
