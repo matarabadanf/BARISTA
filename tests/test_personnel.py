@@ -11,4 +11,4 @@ def test_alberto_parsing():
 
     expected_matrix = np.loadtxt("tests/alberto/alberto_absolute_test.dat")
 
-    assert a.bulk_energy_array == expected_matrix
+    assert np.all(a.bulk_energy_array == expected_matrix)
