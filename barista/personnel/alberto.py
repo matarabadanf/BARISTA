@@ -125,7 +125,6 @@ class Alberto:
 
         for line in self.content_list:
             if "E(SCF)" in line:
-                print(line)
                 cis_energies.append(float(line.strip().split()[2]))
 
         if self.reference_energy == 0:
@@ -135,7 +134,6 @@ class Alberto:
         #     - self.reference_energy
         # )
 
-        print(self.cis_array)
 
         self.number_of_steps = len(self.cis_array)
 
@@ -159,7 +157,6 @@ class Alberto:
                 and "TD-DFT/TDA EXCITED STATES (SINGLETS)" not in line
                 and "EXCITED STATE GRADIENT DONE" not in line
             ):
-                print(line)
                 index = int(line.strip().split()[1].replace(":", "")) - 1
                 energy = float(line.strip().split()[3].replace(":", ""))
                 total_energy_list[index + 1].append(energy)
@@ -170,7 +167,6 @@ class Alberto:
 
         self.energy_array[0] = np.copy(self.cis_array)
 
-        print(total_energy_list)
 
         for pes_index, state in enumerate(total_energy_list):
             for index, energy in enumerate(state):
@@ -178,7 +174,6 @@ class Alberto:
                     energy  #  + self.energy_array[pes_index, 0]
                 )
 
-        print(self.energy_array)
 
         self.energy_array[1:] += self.energy_array[0]
 
@@ -287,15 +282,15 @@ class Alberto:
 
 
 if __name__ == "__main__":
-    # if len(sys.argv) == 1:
-    #     parser.print_help(sys.stderr)
-    #     sys.exit(1)
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
 
-    # args = parser.parse_args()
+    args = parser.parse_args()
 
-    # a = Alberto(args.f, args.en, args.u)
+    a = Alberto(args.f, args.en, args.u)
 
-    # if args.o is not True:
-    #     a.generate_image(args.o)
+    if args.o is not True:
+        a.generate_image(args.o)
 
-    a = Alberto("tests/xanthine_opt_followiroot_6.in.out", 0, "eV")
+    # tests a = Alberto("tests/xanthine_opt_followiroot_6.in.out", 0, "eV")
