@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-
-from functools import cached_property
+import inspect
+from functools import cached_property, lru_cache
 
 import numpy as np
 import pandas as pd
@@ -30,9 +30,7 @@ class Jeremy:
     #     Public interface methods
     # =========================================================================
 
-    def override_connectivity_matrix(
-        self, connectivity_matrix: ArrayLike
-    ) -> None:
+    def override_connectivity_matrix(self, cm: ArrayLike) -> None:
         """
         Override connectivity matrix to generate internals from a reference.
 
@@ -55,8 +53,16 @@ class Jeremy:
         None.
 
         """
-        if connectivity_matrix.shape != self.connectivity_matrix.shape:
+        if cm.shape != self.connectivity_matrix.shape:
             raise ValueError("The dimensions of both molecules are not equal")
+
+        self._custom_connectivity = cm
+
+        self.clear_cache()
+
+        _ = self.dihedral_list
+        _ = self.angle_list
+        _ = self.bond_list
 
     def clear_cache(self) -> None:
         """
@@ -77,7 +83,12 @@ class Jeremy:
             "dihedral_list",
             "bond_values",
             "angle_values",
+            "bond_list",
+            "angle_list",
+            "dihedral_list",
             "dihedral_values",
+            "internal_list",
+            "internal_values",
         ]
 
         for prop in cached_properties:
@@ -125,7 +136,9 @@ class Jeremy:
         list
 
         """
-        return self.bond_values + self.angle_values + self.dihedral_values
+        return np.array(
+            self.bond_values + self.angle_values + self.dihedral_values
+        )
 
     @cached_property
     def connectivity_matrix(self) -> ArrayLike:
@@ -257,7 +270,7 @@ class Jeremy:
                 bond[::-1] for bond in self.bond_list
             ]  # reverse bond indexes
             for bond in self.bond_list:
-                for atom in range(len(self.bond_list)):
+                for atom in range(len(self.connectivity_matrix)):
                     if (
                         self.connectivity_matrix[bond[-1]][atom] in [1, 10]
                         and atom not in bond
@@ -269,7 +282,9 @@ class Jeremy:
             if angle not in _angle_list and angle[::-1] not in _angle_list:
                 _angle_list.append(angle)
 
-        _angle_list.sort(key=lambda x: x[0])  # sort the list by the first index
+        _angle_list.sort(
+            key=lambda x: x[0]
+        )  # sort the list by the first index
 
         return _angle_list.copy()
 
@@ -364,8 +379,12 @@ class Jeremy:
 
         for dihedral in self.dihedral_list:
             a, b, c, d = dihedral
-            t = np.cross(self.r_vector_matrix[a][b], self.r_vector_matrix[b][c])
-            u = np.cross(self.r_vector_matrix[b][c], self.r_vector_matrix[c][d])
+            t = np.cross(
+                self.r_vector_matrix[a][b], self.r_vector_matrix[b][c]
+            )
+            u = np.cross(
+                self.r_vector_matrix[b][c], self.r_vector_matrix[c][d]
+            )
             v = np.cross(t, u)
 
             cos_phi = t @ u / (np.linalg.norm(t) * np.linalg.norm(u))
@@ -425,5 +444,7 @@ class Jeremy:
 
 
 if __name__ == "__main__":
-    co2 = Jeremy("updates/asdf.xyz")
-    co2_distorted = Jeremy("updates/jkl.xyz")
+    # a = Jeremy("upgrades/xanthine_opt_iroot_1.xyz")
+    # b = Jeremy("upgrades/xanthine_FC.xyz")
+    pass
+
