@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+from functools import cached_property
 import sys
 import pandas as pd
 import numpy as np
@@ -40,12 +41,22 @@ class Laura:
 
     def _initialize(self):
         self._get_file_content()
+        if not self.converged:
+            print(f'{self.orca_output_filename} did not converge in geometry optimization')
         self._get_nroots()
         self._is_gradient_calculation()
         self._get_gs_energy()
         self._get_excitation_energies()
         self._get_coordinates_section()
         self._extract_coordinates_to_dataframe()
+
+
+    @cached_property
+    def converged(self):
+        for line in self._file_content:
+            if 'THE OPTIMIZATION HAS CONVERGED' in line:
+                return True
+        return False
 
     def _get_file_content(self):
         try:

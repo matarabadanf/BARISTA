@@ -60,6 +60,8 @@ class Alberto:
         self.reference_energy = reference_energy
         self.units = units
         self.content_list = []
+        self._starting_root = None
+        self._final_root = None
 
         self._initialize()
 
@@ -198,6 +200,8 @@ class Alberto:
                     line.strip().split()[-1].replace(")", "")
                 )
                 counter += 1
+        self._starting_root = curr_energy_index[0]
+        self._final_root = curr_energy_index[-1]
 
         self.curr_energy = np.zeros(self.number_of_steps)
 
@@ -280,6 +284,13 @@ class Alberto:
 
         plt.savefig(output_image_name, dpi=300)
 
+    @property
+    def starting_root(self):
+        return np.copy(self._starting_root)
+
+    @property
+    def final_root(self):
+        return np.copy(self._final_root)
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
@@ -289,6 +300,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     a = Alberto(args.f, args.en, args.u)
+
+    print(a.starting_root, a.final_root)
 
     if args.o is not True:
         a.generate_image(args.o)
