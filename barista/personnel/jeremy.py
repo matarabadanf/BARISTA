@@ -95,6 +95,16 @@ class Jeremy:
             if prop in self.__dict__:
                 del self.__dict__[prop]
 
+    def rmsdiff(self, reference):
+        coords_reference = reference._position_array
+        self_coords = self._position_array
+
+        sq_diff = (coords_reference - self_coords)**2
+        mean_square_difference = np.mean(sq_diff)
+        
+        return np.sqrt(mean_square_difference)
+
+
     # =========================================================================
     #     Property methods
     # =========================================================================

@@ -39,6 +39,7 @@ parser.add_argument(
     default=42,
     help='Output file extension (default=".in.out")',
 )
+
 parser.add_argument("-o", type=str, default=42, help="Output image filename")
 
 parser.add_argument(
@@ -75,7 +76,9 @@ class Emma:
         self._WorkDir = WorkDir
         self._geometry_files = []
 
+        self._get_gs_energy()
         self._determine_targets()
+        # print(self._pre_targets)
         self._generate_geometries()
         self._generate_geometry_objects()
 
@@ -85,16 +88,26 @@ class Emma:
             startname = "_".join(template.strip().split("_")[:-1]).replace(
                 self._WorkDir, ""
             )
-
             for file in os.listdir(self._WorkDir):
-                if startname in file and ".xyz" not in file:
-                    self._pre_targets.append(self._WorkDir + file)
+                if startname in file and ".xyz" not in file and '.in.out' in file:
+                    self._pre_targets.append(file)
+
+    
+    def _get_gs_energy(self):
+        with open(self._fc_filename, 'r') as gs_file:
+            cont = gs_file.readlines()
+            try:
+                gs_e = float(cont[1].strip().split()[0])
+                self._reference_energy = gs_e
+            except:
+                self._reference_energy = 0.0
+        print(f'The reference energy is: {self._reference_energy}')
 
 
     def _generate_geometries(self):
         self._targets = []
         for target in self._pre_targets:
-            print(target)
+            # print(target)
             l = Laura.from_file(target)
             if l.converged:
                 l.generate_xyzfile(target.replace(".in.out", ".xyz"))
@@ -102,7 +115,7 @@ class Emma:
                 self._targets.append(target)
 
     def _generate_geometry_objects(self):
-        self._fc_obj = Jeremy(self._fc_filename)
+        self._fc_jeremy_obj = Jeremy(self._fc_filename)
 
         self._target_objects = []
         self._alberto_list = []
@@ -110,56 +123,62 @@ class Emma:
         for geom in self._geometry_files:
             # generate Jeremy objects for analysis of internal coordinates
             J = Jeremy(geom)
-            J.override_connectivity_matrix(self._fc_obj.connectivity_matrix)
+            J.override_connectivity_matrix(self._fc_jeremy_obj.connectivity_matrix)
             self._target_objects.append(J)
-            print('The Geom Iterator is: ', geom)
+            print('The Geom object name used is: ', geom)
             # Generate Alberto objects to extract initial and final root 
-            A = Alberto(geom.replace('.xyz', '.in.out'))
+            A = Alberto(geom.replace('.xyz', '.in.out'), reference_energy=self._reference_energy)
             self._alberto_list.append(A)
 
 
     def internal_deviation(self):
         for geom in self._target_objects:
             geom.rmsd = np.mean(
-                (self._fc_obj.internal_values - geom.internal_values) ** 2
+                (self._fc_jeremy_obj.internal_values - geom.internal_values) ** 2
             )
 
         for index, geom in enumerate(self._target_objects):
-            print(geom.xyzfile, geom.rmsd)
-            print(self._alberto_list[index].starting_root, self._alberto_list[index].final_root)
+            # print(geom.xyzfile, geom.rmsd)
+            # print(self._alberto_list[index].starting_root, self._alberto_list[index].final_root)
+            pass 
 
     def _generate_dataframe(self):
         names = [j.xyzfile for j in self._target_objects]
         starting_roots = [a.starting_root for a in self._alberto_list]
         final_roots = [a.final_root for a in self._alberto_list]
         energies = [a.curr_energy[-1] for a in self._alberto_list]
+        rmsd = [j.rmsdiff(self._fc_jeremy_obj) for j in self._target_objects]
 
         self._dataframe = pd.DataFrame({
                 'Name' : names,
                 'Starting Root':starting_roots,
                 'Final Root':final_roots,
-                r'$\Delta$ E': energies,
+                '$Delta$ E': energies,
+                'RMSD' : rmsd
             })
+        self._dataframe = self._dataframe.sort_values(by='$Delta$ E')
         print(self._dataframe)
 
 if __name__ == "__main__":
-    # if len(sys.argv) == 1:
-    #     parser.print_help(sys.stderr)
-    #     sys.exit(1)
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
 
-    # args = parser.parse_args()
+    args = parser.parse_args()
 
-    # e = emma(args.ex, args.fc, args.O, args.r, args.md, args.i, args.o)
+    a = Emma(args.fc, args.ex) # , args.r, args.md, args.i, args.o)
     # print(a)
+    a._generate_dataframe()
 
-    e = Emma(
-        "upgrades/xanthine_FC.xyz",
-        [
-            "upgrades/xanthine_opt_followiroot_N.in.out",
-            "upgrades/xanthine_opt_iroot_N.in.out",
-        ],
-        WorkDir="upgrades/",
-    )
-
-    e.internal_deviation()
-    e._generate_dataframe()
+    # TESTING
+    # e = Emma(
+    #     "upgrades/xanthine_FC.xyz",
+    #     [
+    #         "upgrades/xanthine_opt_followiroot_N.in.out",
+    #         "upgrades/xanthine_opt_iroot_N.in.out",
+    #     ],
+    #     WorkDir="upgrades/",
+    # )
+    #
+    # e.internal_deviation()
+    # e._generate_dataframe()
