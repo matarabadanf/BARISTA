@@ -153,11 +153,30 @@ class Emma:
                 'Name' : names,
                 'Starting Root':starting_roots,
                 'Final Root':final_roots,
-                '$Delta$ E': energies,
+                r'$\Delta E$ / eV': energies,
                 'RMSD' : rmsd
             })
-        self._dataframe = self._dataframe.sort_values(by='$Delta$ E')
+        self._dataframe = self._dataframe.sort_values(by=r'$\Delta E$ / eV')
         print(self._dataframe)
+
+    def rmsd_report_to_md(self, md_file:str=''):
+        if md_file == '':
+            md_file=self._fc_filename.replace('_FC.xyz', '_rmsd.md')
+
+        columnames = "| " + " | ".join(self._dataframe.columns) + " |"
+        separator = "| " + " | ".join(['-'*len(col) for col in self._dataframe.columns]) + " |"
+        rows = "\n".join("| " + " | ".join(map(str, row)) + " |" for row in self._dataframe.values)
+        
+        rows = "\n".join(
+            "| " + " | ".join(f"{val:.5f}" if isinstance(val, (int, float)) else str(val) for val in row) + " |"
+            for row in self._dataframe.values
+        )
+
+        with open(md_file, 'w') as f:
+            f.write(f"{columnames}\n{separator}\n{rows}")
+
+
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
@@ -169,7 +188,9 @@ if __name__ == "__main__":
     a = Emma(args.fc, args.ex) # , args.r, args.md, args.i, args.o)
     # print(a)
     a._generate_dataframe()
-
+    
+    a.rmsd_report_to_md()
+    
     # TESTING
     # e = Emma(
     #     "upgrades/xanthine_FC.xyz",
