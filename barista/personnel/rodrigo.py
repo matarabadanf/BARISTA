@@ -61,6 +61,14 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "-exp_shift", 
+    type=float, 
+    default=0.0, 
+    required=False,
+    help='Experimental spectrum shift in current energy units. Default is 0.',
+)
+
+parser.add_argument(
     "-semi",
     type=str,
     default=None,
@@ -242,12 +250,12 @@ class Rodrigo:
             self._plot_vertical_nm()
 
     def plot_additional_spectra(
-        self, data, units="eV", label="Imported Spectrum"
+        self, data, units="eV", label="Imported Spectrum", shift=0.0
     ):
         if units != self.units:
             data[0] = 1239.8 / data[0]
         data[1] /= max(data[1])
-        plt.plot(data[0], data[1], label=label)
+        plt.plot(data[0]+shift, data[1], label=label)
 
     def plot(self):
         plt.xlabel(f'Energy / {self.units}')
@@ -287,10 +295,14 @@ if __name__ == "__main__":
         )
 
     if args.exp is not None:
+        label = 'Experimental spectrum'
+        if args.exp_shift != 0.0:
+            label = f'Exp. spectrum shifted {args.exp_shift:.2f} {args.u}'
         a.plot_additional_spectra(
             a.load_experimental(args.exp).T,
             units=args.exp_units,
-            label="Exp. spectrum",
+            label=label,
+            shift=args.exp_shift
         )
     
     if args.interactive:
