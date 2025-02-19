@@ -23,14 +23,6 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--gaussian",
-    type=bool,
-    required=False,
-    default=True,
-    help="Include gaussian wrap for peaks.",
-)
-
-parser.add_argument(
     "-o",
     type=str,
     default=None,
@@ -42,24 +34,44 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--interactive",
-    type=bool,
-    default=False,
-    help="Interactive mode, will not save a .jpg file",
+    "--gaussian",
+    action='store_true',
+    required=False,
+    help="Include gaussian wrap for peaks.",
 )
 
 parser.add_argument(
-    "-exp", type=str, default=None, help="Experimental data for comparison"
+    "-gauss_disp", 
+    type=float, 
+    default=None, 
+    required=False,
+    help='Gaussian dispersion in the current energy unit.',
+)
+
+parser.add_argument(
+    "-exp", type=str, default=None, help="Experimental data for comparison."
+)
+
+parser.add_argument(
+    "-exp_units", 
+    type=str, 
+    default='eV', 
+    required=False,
+    help='Experimental data energy units. Default is eV.',
 )
 
 parser.add_argument(
     "-semi",
     type=str,
     default=None,
-    help="Semiclassical nx log file",
+    help="Semiclassical nx log file.",
 )
 
-
+parser.add_argument(
+    "--interactive",
+    action='store_true',
+    help="Interactive mode, will not save a .jpg file.",
+)
 
 
 class Rodrigo:
@@ -155,7 +167,7 @@ class Rodrigo:
         """
         return height * np.exp(-((X - center) ** 2) / (2 * spread**2))
 
-    def _plot_gaussian_nm(self, dispersion: float = 2):
+    def _plot_gaussian_nm(self, dispersion: float = 7.5):
 
         x_array = np.linspace(
             min(self.get_peaks_nm()[0]) - 20,
@@ -171,7 +183,7 @@ class Rodrigo:
 
         plt.plot(x_array, y_array, label='Convoluted spectrum')
 
-    def _plot_gaussian_eV(self, dispersion: float = 0.1):
+    def _plot_gaussian_eV(self, dispersion: float = 0.2):
 
         x_array = np.linspace(
             min(self.get_peaks_eV()[0]) - 1,
@@ -184,14 +196,20 @@ class Rodrigo:
         for peak in self.get_peaks_eV().T:
             y_array += self._gaussian(x_array, peak[1], peak[0], dispersion)
 
-        plt.plot(x_array, y_array, label='Convoluted spectrum')
+        plt.plot(x_array, y_array/max(y_array), label='Convoluted spectrum')
 
-    def plot_gaussian(self):
+    def plot_gaussian(self, dispersion=None):
         if self.units == "eV":
-            self._plot_gaussian_eV()
+            if dispersion is not None:
+                self._plot_gaussian_eV(dispersion)
+            else:
+                self._plot_gaussian_eV()
 
         elif self.units == "nm":
-            self._plot_gaussian_nm()
+            if dispersion is not None:
+                self._plot_gaussian_nm(dispersion)
+            else:
+                self._plot_gaussian_nm()
 
     def load_experimental(self, experimental_filename):
         experimental = np.loadtxt(experimental_filename, delimiter=",")
@@ -228,6 +246,7 @@ class Rodrigo:
     ):
         if units != self.units:
             data[0] = 1239.8 / data[0]
+        data[1] /= max(data[1])
         plt.plot(data[0], data[1], label=label)
 
     def plot(self):
@@ -258,7 +277,7 @@ if __name__ == "__main__":
     a.plot_vertical()
     
     if args.gaussian:
-        a.plot_gaussian()
+        a.plot_gaussian(args.gauss_disp)
 
     if args.semi is not None:
         nx_specturm = NXSpecReader(args.semi).return_semiclassical_spectrum()
@@ -269,8 +288,8 @@ if __name__ == "__main__":
 
     if args.exp is not None:
         a.plot_additional_spectra(
-            a.load_experimental("beta-carboline_exp.csv").T,
-            units="eV",
+            a.load_experimental(args.exp).T,
+            units=args.exp_units,
             label="Exp. spectrum",
         )
     
