@@ -219,11 +219,11 @@ class Rodrigo:
             else:
                 self._plot_gaussian_nm()
 
-    def load_experimental(self, experimental_filename):
+    def load_experimental(self, experimental_filename, units='eV'):
         experimental = np.loadtxt(experimental_filename, delimiter=",")
         experimental[:, 1] /= max(experimental[:, 1])
-
-        if max(experimental[:, 0]) > 50:
+        
+        if self.units != units and units == 'eV':
             experimental[:, 0] = 1239.8 / experimental[:, 0]
 
         return experimental
@@ -299,7 +299,7 @@ if __name__ == "__main__":
         if args.exp_shift != 0.0:
             label = f'Exp. spectrum shifted {args.exp_shift:.2f} {args.u}'
         a.plot_additional_spectra(
-            a.load_experimental(args.exp).T,
+            a.load_experimental(args.exp, units=args.exp_units).T,
             units=args.exp_units,
             label=label,
             shift=args.exp_shift
