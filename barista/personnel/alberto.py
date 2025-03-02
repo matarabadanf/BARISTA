@@ -149,7 +149,6 @@ class Alberto:
 
         This should return the total absolute energy of each of the states 
         i.e. in the test energies between -562.25 and -561.85.
-
         '''
         total_energy_list = [[] for i in range(self.number_of_states + 1)]
 

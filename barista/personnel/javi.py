@@ -10,16 +10,14 @@ import matplotlib.pyplot as plt
 
 # Parser is used to input via terminal the required arguments for Emma
 parser = argparse.ArgumentParser(
-    description="""Takes the ground state geometry of a molecule and compares it to optimized TDDFT geometries run in ORCA.\
-        \nIt compares the energy, RMSD and final root, plotting the results in an image. """,
-    epilog="""It should run appropriately with ORCA 5.0.X""",
+    description="""Takes the lower and upper state gradients in a CI with the NAC vector and characterizes the type oc CI.\
+        \nResults can be plotted interactively using plotly.""",
 )
 
 parser.add_argument(
     "-g0",
     type=str,
     required=True,
-    default='',
     help="Lower state gradient file.",
 )
 
@@ -27,7 +25,6 @@ parser.add_argument(
     "-g1",
     type=str,
     required=True,
-    default='',
     help="Higher state gradient file.",
 )
 
@@ -35,7 +32,6 @@ parser.add_argument(
     "-nac",
     type=str,
     required=True,
-    default='',
     help="NAC vector file.",
 )
 
@@ -307,7 +303,7 @@ if __name__ == "__main__":
         args.nac
     )
 
-    if args.interactive == True:
+    if args.interactive:
         j.plot_CI()
     
     # TESTING
