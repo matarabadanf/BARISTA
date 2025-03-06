@@ -82,53 +82,6 @@ class Fonsi:
         plt = self._preplot()
         plt.show()
 
-def fonsi(
-    filename: str,
-    reference_energy: float = 0,
-    output_image: str = True,
-    units: str = "eV",
-) -> np.array:
-    # get the file and content
-
-    energies = np.loadtxt(filename) - reference_energy
-
-    if units == 'eV':
-        energies *= 27.2114
-
-    x = np.arange(1, len(energies) + 1, 1)
-
-    plt.plot(x, energies[:,0])
-    plt.plot(x, energies[:,1])
-
-
-    if '/' in filename:
-        title = filename.strip().split('/')[-2]
-    else:
-        title = os.getcwd().strip().split('/')[-1]
-
-
-    if output_image is True:
-        output_image = title
-       
-        if '/' in filename:
-            output_image = '/'.join(filename.strip().split('/')[0:-1])+'/'+filename.strip().split('/')[-2]
-        else:
-            output_image = os.getcwd().strip().split('/')[-1]
-
-    plt.title(title)
-    plt.xlabel("Step")
-    plt.ylabel("Energy / %s" % units)
-    print(output_image)
-    plt.savefig(
-        output_image.replace(".dat", ".jpg"), dpi=250, bbox_inches="tight"
-    )
-    
-    plt.show()
-    
-    print(energies[:,1][-1])
-    
-    return None
-
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
