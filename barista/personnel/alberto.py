@@ -5,7 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-# Parser is used to input via terminal the required arguments
 parser = argparse.ArgumentParser(
     description="""Takes a excited state optimization in ORCA and plots the energy of each state at each step of the opitmizaiton and the actual root.""",
     epilog="""It should run appropriately with ORCA 5.0.X""",

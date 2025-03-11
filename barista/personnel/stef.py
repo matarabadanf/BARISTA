@@ -29,6 +29,21 @@ parser.add_argument(
 parser.add_argument("-u", type=str, default="eV", help="Energy units")
 
 class Stef:
+    """
+    A class for extracting and processing energies from ORCA NEB calculations.
+    
+    This class reads an ORCA NEB output file, extracts image energies along the
+    reaction path, and provides functionality to save and potentially plot these energies.
+    
+    Parameters
+    ----------
+    filename : str
+        Path to the ORCA NEB output file
+    reference_energy : float, optional
+        Reference energy to subtract from all extracted energies, default is 0.0
+    units : str, optional
+        Energy units to use, default is "eV"
+    """
     
     def __init__(
         self,
@@ -43,12 +58,21 @@ class Stef:
         self._initialize()
 
     def _initialize(self):
+        """
+        Initialize the object by reading the file content.
+        
+        This method is called automatically during object initialization.
+        
+        Returns
+        -------
+        None
+        """
         self._get_file_content()
 
     def _get_file_content(self):
         """
-        Open the file and store its content as a list
-
+        Open the file and store its content as a list.
+        
         Raises
         ------
         ValueError
@@ -58,8 +82,7 @@ class Stef:
 
         Returns
         -------
-        None.
-
+        None
         """
         if self.filename is None:
             raise ValueError("No result file was specified")
@@ -72,7 +95,17 @@ class Stef:
 
 
     def _get_image_energies(self) ->  None:
-
+        """
+        Extract image energies from the ORCA NEB output file.
+        
+        This method searches for the PATH SUMMARY section in the output file
+        and extracts the image energies from this section. The results are
+        stored in the self._image_energies attribute.
+        
+        Returns
+        -------
+        None
+        """
         start_section = 0 
         end_section = 0 
 
@@ -98,6 +131,18 @@ class Stef:
         
     @cached_property
     def image_energies(self) -> NDArray[np.float64]:
+        """
+        Get the energies of all images along the NEB path.
+        
+        This property calculates the energies relative to the reference energy
+        and converts them to the specified units if necessary. The conversion
+        factor 27.2114 is used to convert from Hartree to eV.
+        
+        Returns
+        -------
+        NDArray[np.float64]
+            Array of energy values for each image
+        """
         self._get_image_energies()
 
         if self.units == 'eV':
@@ -106,6 +151,18 @@ class Stef:
         return np.copy(self._image_energies) - self.reference_energy
 
     def save_energies(self, filename:str) -> None:
+        """
+        Save the image energies to a file.
+        
+        Parameters
+        ----------
+        filename : str
+            Path to the output file
+            
+        Returns
+        -------
+        None
+        """
         with open(filename, 'w') as f:
             for image, energy in enumerate(self.image_energies):
                 f.write(f'{image} {energy:8.5f}\n')

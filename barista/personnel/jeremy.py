@@ -10,7 +10,7 @@ from numpy.typing import ArrayLike
 class Jeremy:
 
     # =========================================================================
-    #     Magic Methods
+    #     Special Methods
     # =========================================================================
 
     def __init__(self, xyzfile, bond_thresh: float = 1.6):

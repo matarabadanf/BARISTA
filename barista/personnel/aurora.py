@@ -4,6 +4,8 @@ import argparse
 import sys
 import pandas as pd
 import numpy as np
+from numpy.typing import NDArray
+from typing import Optional, List, Tuple
 import matplotlib.pyplot as plt
 
 # Parser is used to input via terminal the required arguments for Emma
@@ -29,13 +31,39 @@ parser.add_argument("-o", type=str, default=None, help="Output image name.")
 
 @dataclass
 class AuroraConfiguration:
+    """
+    Configuration class for Aurora with default parameters.
+    
+    Parameters
+    ----------
+    fc_file : str, optional
+        Path to the Franck-Condon xyz file with energy as comment, default is None
+    last_branch_file : str, optional
+        Path to the xyz file of the last point in the branch, default is None
+    """
     fc_file: str = None
     last_branch_file: str = None
 
 
 class Aurora:
+    """
+    A class for extracting and analyzing potential energy surface (PES) paths.
+    
+    This class processes xyz files containing energy data to extract PES branch information,
+    calculate relative energies, and visualize energy paths along different electronic states.
+    
+    Parameters
+    ----------
+    fc_filename : str
+        Path to the Franck-Condon xyz file with energy as comment
+    last_branch_filename : str
+        Path to the xyz file of the last point in the branch
+    """
+    # =========================================================================
+    #     Special Methods
+    # =========================================================================
 
-    def __init__(self, fc_filename, last_branch_filename):
+    def __init__(self, fc_filename: str, last_branch_filename: str) -> None:
         self.fc_filename = fc_filename
         self.last_branch_filename = last_branch_filename
         self._pre_identifier_name = None
@@ -50,23 +78,55 @@ class Aurora:
         })
         self._initialize()
 
+    # =========================================================================
+    #     Class Methods
+    # =========================================================================
+
     @classmethod
-    def from_files(cls, fc_file, last_branch_file) -> 'Aurora':
-        """Factory method to create and initialize an Aurora instance"""
+    def from_files(cls, fc_file: str, last_branch_file: str) -> 'Aurora':
+        """
+        Factory method to create and initialize an Aurora instance.
+        
+        Parameters
+        ----------
+        fc_file : str
+            Path to the Franck-Condon xyz file
+        last_branch_file : str
+            Path to the xyz file of the last point in the branch
+            
+        Returns
+        -------
+        Aurora
+            An initialized Aurora instance
+        """
         instance = cls(fc_file, last_branch_file)
         return instance
+    
+    # =========================================================================
+    #     Public Methods
+    # =========================================================================
 
-    def _initialize(self) -> None:
-        """Initialize all required data before calculations"""
-        self._set_reference_energy()
-        self._get_name_and_identifiers()
-        self._get_filenames()
-        self._fill_dataframe()
-
-    def get_relative_energies(self, xyz_file) -> float:
+    def get_relative_energies(self, xyz_file: str) -> NDArray[np.float64]:
         """
-        Obtain energy value of an xyz file that has as comment string the energy values of each state.
-
+        Obtain energy values of an xyz file that has energy values as comment string.
+        
+        This method reads the xyz file, extracts the energy values from the comment line,
+        and calculates relative energies with respect to the reference energy in eV.
+        
+        Parameters
+        ----------
+        xyz_file : str
+            Path to the xyz file containing energy data
+            
+        Returns
+        -------
+        numpy.ndarray
+            Array of relative energies in eV
+            
+        Raises
+        ------
+        ValueError
+            If the reference energy has not been determined
         """
         if self.reference_energy is None:
             raise ValueError('Reference energy has not been determined. Call get_reference_energy first.')
@@ -82,8 +142,82 @@ class Aurora:
 
             return None
 
-    def _get_name_and_identifiers(self):
+    def pes_DataFrame(self) -> pd.DataFrame:
+        """
+        Get a copy of the PES dataframe.
+        
+        Returns
+        -------
+        pandas.DataFrame
+            A copy of the dataframe containing all PES data
+        """
+        return self._pes_dataFrame.copy()
 
+    def plot_branch(self) -> None:
+        """
+        Plot the PES branch and display the figure.
+        
+        This method calls _preplot_branch to prepare the plot and then displays it.
+        
+        Returns
+        -------
+        None
+        """
+        self._preplot_branch()
+        plt.show()
+
+    def save_branch_plot(self, name: Optional[str] = None) -> None:
+        """
+        Save the PES branch plot to a file.
+        
+        Parameters
+        ----------
+        name : str, optional
+            The output filename, if None the last branch filename with jpg extension will be used
+            
+        Returns
+        -------
+        None
+        """
+        self._preplot_branch()
+        if name is None:
+            image_filename = self.last_branch_filename.replace('xyz', 'jpg')
+        else:
+            image_filename = str(name)
+        plt.savefig(image_filename, dpi=300)
+
+    # =========================================================================
+    #     Private Methods
+    # =========================================================================
+    
+    def _initialize(self) -> None:
+        """
+        Initialize all required data before calculations.
+        
+        This method calls several private methods to set up the reference energy,
+        get name and identifiers, determine filenames, and fill the dataframe.
+        
+        Returns
+        -------
+        None
+        """
+        self._set_reference_energy()
+        self._get_name_and_identifiers()
+        self._get_filenames()
+        self._fill_dataframe()
+
+    def _get_name_and_identifiers(self) -> Tuple[str, NDArray[np.int_]]:
+        """
+        Extract the prefix name and identifiers from the last branch filename.
+        
+        This method parses the last branch filename to extract the pre-identifier name
+        and the step identifiers that define the path through the PES.
+        
+        Returns
+        -------
+        tuple
+            Tuple containing the pre-identifier name and step identifiers
+        """
         split_name = self.last_branch_filename.replace('.xyz', '')
 
         for i, item in enumerate(split_name):
@@ -105,8 +239,23 @@ class Aurora:
 
         return self._pre_identifier_name, self._step_identifiers
 
-    def _get_filenames(self):
-
+    def _get_filenames(self) -> List[str]:
+        """
+        Generate filenames for all points in the branch.
+        
+        This method creates a list of filenames for all points in the branch
+        based on the pre-identifier name and step identifiers.
+        
+        Returns
+        -------
+        list
+            List of filenames for all points in the branch
+            
+        Raises
+        ------
+        ValueError
+            If the general name or path step identifiers have not been determined
+        """
         if self._pre_identifier_name is None:
             raise ValueError('The general name was not identified. Call get_name_and_identifiers.')
 
@@ -130,8 +279,18 @@ class Aurora:
 
         return self._filenames
 
-    def _set_reference_energy(self):
-
+    def _set_reference_energy(self) -> float:
+        """
+        Set the reference energy from the Franck-Condon state.
+        
+        This method reads the FC file, extracts the energies, sets the reference energy
+        to the ground state energy, and initializes the PES dataframe with FC energies.
+        
+        Returns
+        -------
+        float
+            The reference energy
+        """
         with open(self.fc_filename, 'r') as f:
             cont = f.readlines()
 
@@ -151,8 +310,17 @@ class Aurora:
 
         return self.reference_energy
 
-    def _fill_dataframe(self):
-        """Fills the dataframe with all the energuies and steps of the branch"""
+    def _fill_dataframe(self) -> None:
+        """
+        Fill the dataframe with all the energies and steps of the branch.
+        
+        This method iterates through all filenames, extracts the energies,
+        and populates the PES dataframe with the relative energies for each state and step.
+        
+        Returns
+        -------
+        None
+        """
         for index, filename in enumerate(self._filenames):
             energies = self.get_relative_energies(filename)
             step_array = np.zeros(len(energies)) + index + 1
@@ -163,11 +331,18 @@ class Aurora:
             })
             self._pes_dataFrame = pd.concat([self._pes_dataFrame, step_dataframe])
 
-    def pes_DataFrame(self):
-
-        return self._pes_dataFrame.copy()
-
-    def _preplot_branch(self):
+    def _preplot_branch(self) -> plt.Figure:
+        """
+        Prepare the plot for the PES branch.
+        
+        This method sets up the plot with appropriate labels, plots all states,
+        and highlights the path through the PES.
+        
+        Returns
+        -------
+        matplotlib.pyplot
+            The prepared plot
+        """
         unique_states = self._pes_dataFrame['State'].unique()
 
         plt.title(self.last_branch_filename)
@@ -188,20 +363,18 @@ class Aurora:
 
         return plt
 
-    def plot_branch(self):
-        self._preplot_branch()
-        plt.show()
-
-    def save_branch_plot(self, name=None):
-        self._preplot_branch()
-        if name is None:
-            image_filename = self.last_branch_filename.replace('xyz', 'jpg')
-        else:
-            image_filename = str(name)
-        plt.savefig(image_filename, dpi=300)
-
-    def _get_path_energies(self):
-
+    def _get_path_energies(self) -> Tuple[List[int], List[np.ndarray]]:
+        """
+        Get the energies along the highlighted path.
+        
+        This method extracts the energy values for each step along the highlighted path
+        through the PES.
+        
+        Returns
+        -------
+        tuple
+            Tuple containing x-coordinates and corresponding energy values
+        """
         highlighted_values = []
         x = []
 
@@ -215,7 +388,17 @@ class Aurora:
 
         return x, highlighted_values
 
-    def _get_plot_labels(self):
+    def _get_plot_labels(self) -> Tuple[List[int], List[str]]:
+        """
+        Generate x-axis labels for the plot.
+        
+        This method creates appropriate labels for each step in the PES path.
+        
+        Returns
+        -------
+        tuple
+            Tuple containing x-coordinates and corresponding tick labels
+        """
         x_tics = ['FC']
 
         for i in self._step_identifiers:
@@ -228,7 +411,18 @@ class Aurora:
 
         return x, x_tics
 
-    def _get_highlighted_path(self):
+    def _get_highlighted_path(self) -> List[int]:
+        """
+        Get the highlighted path through the PES.
+        
+        This method determines the sequence of electronic states that form
+        the path through the PES.
+        
+        Returns
+        -------
+        list
+            List of state indices forming the highlighted path
+        """
         if self._highlighted_path is None:
             highlighted = [self._step_identifiers[0][0]]
 

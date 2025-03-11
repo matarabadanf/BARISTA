@@ -83,7 +83,6 @@ parser.add_argument(
 
 
 class Rodrigo:
-    """Class to plot and manage spectra"""
 
     def __init__(self, filename, units="eV"):
         self.filename = filename
