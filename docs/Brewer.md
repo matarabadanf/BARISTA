@@ -10,7 +10,7 @@ Currently supported calcuations are:
 
 MECI calculations can be performed with BREWER using the following algorithms: 
  - Penalty algorithm.
- - Updated branching plane (no NACME).
+ - Projection method (no NACME).
  - Updated branching plane (Estimated NACME).
 
 The first is implemented as in [J. Phys. Chem. B 2008, 112, 2, 405–413](https://pubs.acs.org/doi/10.1021/jp0761618). The second and third are implemented as in [J. Chem. Theory Comput. 2010, 6, 1538–1545](https://pubs.acs.org/doi/abs/10.1021/ct1000268).
