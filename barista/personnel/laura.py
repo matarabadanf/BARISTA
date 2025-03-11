@@ -41,14 +41,20 @@ class Laura:
 
     def _initialize(self):
         self._get_file_content()
-        if not self.converged:
+        if not self.converged and not self._is_gradient_calculation:
             print(f'{self.orca_output_filename} did not converge in geometry optimization')
+        if self._is_gradient_calculation: 
+            print('The geometry is extracted from a Gradient calculation')
         self._get_nroots()
-        self._is_gradient_calculation()
+        print('Nroots Fine')
         self._get_gs_energy()
+        print(f'GS Fine: gs_ener = {self.ground_state_energy}')
         self._get_excitation_energies()
+        print('Excitation energies Fine')
         self._get_coordinates_section()
+        print('Coords Fine')
         self._extract_coordinates_to_dataframe()
+        print('DF Fine')
 
 
     @cached_property
@@ -71,16 +77,16 @@ class Laura:
             if "Number of roots to be determined" in line:
                 self.n_roots = int(line.strip().split()[-1])
                 break
-
+    @cached_property
     def _is_gradient_calculation(self):
         for line in self._file_content:
             if 'SCF GRADIENT' in line:
-                self._gradient_calculation = True
-                break
+                return True
+        return False
 
     def _get_gs_energy(self):
 
-        if self._gradient_calculation:
+        if self._is_gradient_calculation:
             for line in self._file_content:
                 if 'Total Energy       : ' in line:
                     self.ground_state_energy = float(line.strip().split()[-4])
