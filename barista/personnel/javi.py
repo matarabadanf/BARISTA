@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from functools import cached_property
+#from functools import property
 import argparse
 import os
 from typing import Tuple
@@ -60,6 +60,7 @@ class Javi:
 
     def _init(self) -> None:
         self._load_vectors()
+        self._calculate_beta()
 
    
     @classmethod
@@ -76,50 +77,60 @@ class Javi:
         self._gb = np.loadtxt(self._gb_filename).reshape(-1)
         self._h_ab = np.loadtxt(self._hab_filename).reshape(-1)
 
-    @cached_property
+    @property
     def g_ab(self) -> np.ndarray:
         return 0.5 * np.copy(self._gb - self._ga)
 
 
-    @cached_property
+    @property
     def s_ab(self) -> np.ndarray:
         return 0.5 * np.copy(self._gb + self._ga)
     
-    @cached_property
+    @property
     def h_ab(self) -> np.ndarray:
         return np.copy(self._h_ab)
 
-    @cached_property
-    def beta(self) -> float:
+    def _calculate_beta(self) -> None:
         # tan_2_beta = 2 * (np.dot(self.g_ab, self.h_ab)) / (np.linalg.norm(self.g_ab) - np.linalg.norm(self.h_ab))
         # return np.arctan(tan_2_beta)
         tan_2_beta = 2 * (np.dot(self.g_ab, self.h_ab)) / (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab))
 
-        return 0.5 * np.arctan2(2 * np.dot(self.g_ab, self.h_ab), (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab)))
+        beta_value =  0.5 * np.arctan2(2 * np.dot(self.g_ab, self.h_ab), (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab)))
 
-    @cached_property
+        self._beta = beta_value
+
+    @property
+    def beta(self):
+        return self._beta
+
+    @beta.setter
+    def beta(self, beta):
+        self._beta = beta
+
+
+    @property
     def _g_tilde(self) -> np.ndarray:
         return self.g_ab * np.cos(self.beta) + self.h_ab * np.sin(self.beta)
 
-    @cached_property
+    @property
     def _h_tilde(self) -> np.ndarray:
         return self.h_ab * np.cos(self.beta) - self.g_ab * np.sin(self.beta)
 
-    @cached_property
+    @property
     def x(self) -> np.ndarray:
         return np.copy(self._g_tilde / np.linalg.norm(self._g_tilde))
 
-    @cached_property
+    @property
     def y(self) -> np.ndarray:
         return np.copy(self._h_tilde / np.linalg.norm(self._h_tilde))
 
-    @cached_property
+    @property
     def pitch(self) -> float:
         ''' Pitch \\delta_gh. '''
 
         return np.sqrt( 1/2 * (np.dot(self._g_tilde, self._g_tilde) + np.dot(self._h_tilde, self._h_tilde)))
 
-    @cached_property
+    @property
     def asymmetry(self) -> float:
         ''' Asymmetry \\Delta_gh. '''
 
@@ -144,7 +155,7 @@ class Javi:
         aver = self.average_energy(x,y)
         return aver + diff
 
-    @cached_property
+    @property
     def theta_s(self, n_points:int = 360, radius:float=1):
 
         angles = np.linspace(0, 2 * np.pi, n_points, endpoint=False)
@@ -158,15 +169,15 @@ class Javi:
         for pair in pairs:
             x, y = pair
             sample = [x, y, self.average_energy(x, y)]
-            print(f'\n\n\n The xyz values of tilt is: {x:5.2f}, {y:5.2f}, {self.average_energy(x,y):5.2f}')
+            #print(f'\n\n\n The xyz values of tilt is: {x:5.2f}, {y:5.2f}, {self.average_energy(x,y):5.2f}')
             samples.append(sample)
 
         x,y,z = max(samples, key=lambda item: item[2])
-        print(f'\n\n\n The xyz values of the max tilt is: {x:5.2f}, {y:5.2f}, {z:5.2f}')
+        #print(f'\n\n\n The xyz values of the max tilt is: {x:5.2f}, {y:5.2f}, {z:5.2f}')
 
         vec = np.array([x,y])
 
-        print(vec)
+        #print(vec)
         cos_theta = np.dot(vec, np.array([1,0])) / np.linalg.norm(vec)
         cos_theta = np.clip(cos_theta, -1.0, 1.0)
 
@@ -174,21 +185,21 @@ class Javi:
  
 #        theta = -theta if vec[0] < 0 else theta
 
-        print(f'The angle theta is {theta} or {(theta+np.pi/2)%np.pi}')
+        #print(f'The angle theta is {theta} or {(theta+np.pi/2)%np.pi}')
         
 
-        print(f'The angle of the maximum tilt is {theta:5.3} Radians or {theta*360/np.pi:3.5} degrees')
+        #print(f'The angle of the maximum tilt is {theta:5.3} Radians or {theta*360/np.pi:3.5} degrees')
         
         return theta
 
-    @cached_property
+    @property
     def sigma(self):
         s_x = np.dot(self.s_ab, self.x) / self.pitch
         s_y = np.dot(self.s_ab, self.y) / self.pitch
         
         return np.sqrt(s_x**2 + s_y**2)
 
-    @cached_property
+    @property
     def p(self) -> Tuple[float, str]:
 
         p = self.sigma**2 / (1 - self.asymmetry**2) * (1 - self.asymmetry * np.cos(2*self.theta_s))
@@ -197,7 +208,7 @@ class Javi:
 
         return (p, p_type)
 
-    @cached_property
+    @property
     def b(self) -> Tuple[float, str]:
 
         b = (self.sigma**2/(4*self.asymmetry**2)) **(1/3) * (((1+self.asymmetry)*np.cos(self.theta_s)**2)**(1/3) + ((1-self.asymmetry)*np.sin(self.theta_s)**2)**(1/3))
@@ -302,6 +313,9 @@ if __name__ == "__main__":
         args.g1,
         args.nac
     )
+
+    print(j.x)
+    print(j.y)
 
     if args.interactive:
         j.plot_CI()
