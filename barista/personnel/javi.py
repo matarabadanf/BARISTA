@@ -43,6 +43,65 @@ parser.add_argument(
 )
 
 class Javi:
+    """
+    A class to represent a conical intersection (CI) and perform various calculations related to it.
+    Attributes
+    ----------
+    ga_filename : str
+        Filename for the alpha component of the gradient vector.
+    gb_filename : str
+        Filename for the beta component of the gradient vector.
+    hab_filename : str
+        Filename for the Hamiltonian matrix elements.
+    ci_energy : float
+        The CI energy value.
+    Methods
+    -------
+    from_xy(cls):
+        Class method to create an instance from x and y coordinates.
+    ci_energy() -> float:
+        Returns the CI energy value.
+    g_ab() -> np.ndarray:
+        Returns the difference vector between gb and ga.
+    s_ab() -> np.ndarray:
+        Returns the sum vector of gb and ga.
+    h_ab() -> np.ndarray:
+        Returns the Hamiltonian matrix elements.
+    beta() -> float:
+        Returns the beta angle.
+    beta(beta: float):
+        Sets the beta angle.
+    _g_tilde() -> np.ndarray:
+        Returns the g tilde vector.
+    _h_tilde() -> np.ndarray:
+        Returns the h tilde vector.
+    x() -> np.ndarray:
+        Returns the normalized g tilde vector.
+    y() -> np.ndarray:
+        Returns the normalized h tilde vector.
+    pitch() -> float:
+        Returns the pitch (δ_gh).
+    asymmetry() -> float:
+        Returns the asymmetry (Δ_gh).
+    energy_difference(x: float, y: float) -> float:
+        Calculates the energy difference for given x and y coordinates.
+    average_energy(x: float, y: float) -> float:
+        Calculates the average energy for given x and y coordinates.
+    E_A(x: float, y: float) -> float:
+        Calculates the energy E_A for given x and y coordinates.
+    E_B(x: float, y: float) -> float:
+        Calculates the energy E_B for given x and y coordinates.
+    theta_s(n_points: int = 360, radius: float = 1) -> float:
+        Calculates the angle theta_s for the maximum tilt direction.
+    sigma() -> float:
+        Returns the sigma value.
+    p() -> Tuple[float, str]:
+        Returns the p value and its type.
+    b() -> Tuple[float, str]:
+        Returns the b value and its type.
+    plot_CI(max_grid: float = 1):
+        Plots the conical intersection representation.
+    """
 
     def __init__(
         self,
