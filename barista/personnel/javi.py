@@ -249,7 +249,7 @@ class Javi:
 
         #print(f'The angle of the maximum tilt is {theta:5.3} Radians or {theta*360/np.pi:3.5} degrees')
         
-        return theta
+        return theta - np.pi/4
 
     @property
     def sigma(self):
