@@ -1,16 +1,25 @@
 from barista.personnel.javi import Javi
 import numpy as np 
+import os 
+# I have to use CI derivative coupling vector from molcas. The rest follows.
 
-# I have to use CI derivative coupling vector from molcas. The rest follows:
+# the script has to be run this way with the paths for pytest 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+ethylene_path = os.path.join(script_dir, 'ethylene_a')
+grad0_path = os.path.join(ethylene_path, 'engrad0.dat')
+grad1_path = os.path.join(ethylene_path, 'engrad1.dat')
+nacme_path = os.path.join(ethylene_path, 'nacme2.dat')
 
 j =  Javi(
-    'ethylene_a/engrad0.dat',
-    'ethylene_a/engrad1.dat',
-    'ethylene_a/nacme2.dat'
+    grad0_path,
+    grad1_path,
+    nacme_path
 )
-ga = np.loadtxt( 'ethylene_a/engrad0.dat').flatten()
-gb = np.loadtxt( 'ethylene_a/engrad1.dat').flatten()
-hab = np.loadtxt('ethylene_a/nacme2.dat').flatten()
+
+ga = np.loadtxt(grad0_path).flatten()
+gb = np.loadtxt(grad1_path).flatten()
+hab = np.loadtxt(nacme_path).flatten()
 
 print(f'g_a and j.ga are equal: {np.all(np.isclose(j._ga, ga))}')
 print(f'g_b and j.gb are equal: {np.all(np.isclose(j._gb, gb))}')

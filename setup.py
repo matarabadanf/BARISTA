@@ -9,7 +9,6 @@ setup(
         'numpy',
         'pandas',  
         'matplotlib',
-        'dash',
         'plotly',
         'ase'
     ],
