@@ -71,9 +71,9 @@ class Javi:
         Returns the beta angle.
     beta(beta: float):
         Sets the beta angle.
-    _g_tilde() -> np.ndarray:
+    g_tilde() -> np.ndarray:
         Returns the g tilde vector.
-    _h_tilde() -> np.ndarray:
+    h_tilde() -> np.ndarray:
         Returns the h tilde vector.
     x() -> np.ndarray:
         Returns the normalized g tilde vector.
@@ -126,27 +126,31 @@ class Javi:
     def from_xy(cls):
         pass 
 
-
     @property
     def ci_energy(self) -> float:
         return float(self._ci_energy)
 
+    def normalize(self, vector: np.ndarray) -> np.ndarray:
+        return vector/np.linalg.norm(vector) 
+
     def _load_vectors(self) -> None:
-        self._ga = np.loadtxt(self._ga_filename).reshape(-1)
-        self._gb = np.loadtxt(self._gb_filename).reshape(-1)
-        self._h_ab = np.loadtxt(self._hab_filename).reshape(-1)
+        self._ga = np.loadtxt(self._ga_filename).flatten()
+        self._gb = np.loadtxt(self._gb_filename).flatten()
+        self._h_ab = np.loadtxt(self._hab_filename).flatten()
 
     @property
     def g_ab(self) -> np.ndarray:
+        #return self.normalize(0.5 * np.copy(self._gb - self._ga))
         return 0.5 * np.copy(self._gb - self._ga)
-
-
+    
     @property
     def s_ab(self) -> np.ndarray:
+        #return self.normalize(0.5 * np.copy(self._gb + self._ga))
         return 0.5 * np.copy(self._gb + self._ga)
     
     @property
     def h_ab(self) -> np.ndarray:
+        #return self.normalize(np.copy(self._h_ab))
         return np.copy(self._h_ab)
 
     def _calculate_beta(self) -> None:
@@ -156,7 +160,7 @@ class Javi:
 
         beta_value =  0.5 * np.arctan2(2 * np.dot(self.g_ab, self.h_ab), (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab)))
 
-        self._beta = beta_value
+        self._beta = beta_value 
 
     @property
     def beta(self):
@@ -168,32 +172,32 @@ class Javi:
 
 
     @property
-    def _g_tilde(self) -> np.ndarray:
+    def g_tilde(self) -> np.ndarray:
         return self.g_ab * np.cos(self.beta) + self.h_ab * np.sin(self.beta)
 
     @property
-    def _h_tilde(self) -> np.ndarray:
+    def h_tilde(self) -> np.ndarray:
         return self.h_ab * np.cos(self.beta) - self.g_ab * np.sin(self.beta)
 
     @property
     def x(self) -> np.ndarray:
-        return np.copy(self._g_tilde / np.linalg.norm(self._g_tilde))
+        return np.copy(self.g_tilde / np.linalg.norm(self.g_tilde))
 
     @property
     def y(self) -> np.ndarray:
-        return np.copy(self._h_tilde / np.linalg.norm(self._h_tilde))
+        return np.copy(self.h_tilde / np.linalg.norm(self.h_tilde))
 
     @property
     def pitch(self) -> float:
         ''' Pitch \\delta_gh. '''
 
-        return np.sqrt( 1/2 * (np.dot(self._g_tilde, self._g_tilde) + np.dot(self._h_tilde, self._h_tilde)))
+        return np.sqrt( 1/2 * (np.dot(self.g_tilde, self.g_tilde) + np.dot(self.h_tilde, self.h_tilde)))
 
     @property
     def asymmetry(self) -> float:
         ''' Asymmetry \\Delta_gh. '''
 
-        asym = (np.dot(self._g_tilde, self._g_tilde) - np.dot(self._h_tilde, self._h_tilde)) / (np.dot(self._g_tilde, self._g_tilde) + np.dot(self._h_tilde, self._h_tilde))
+        asym = (np.dot(self.g_tilde, self.g_tilde) - np.dot(self.h_tilde, self.h_tilde)) / (np.dot(self.g_tilde, self.g_tilde) + np.dot(self.h_tilde, self.h_tilde))
 
         return float(asym)
 
@@ -249,7 +253,7 @@ class Javi:
 
         #print(f'The angle of the maximum tilt is {theta:5.3} Radians or {theta*360/np.pi:3.5} degrees')
         
-        return theta - np.pi/4
+        return theta
 
     @property
     def sigma(self):
