@@ -8,6 +8,9 @@ setup(
     install_requires=[
         'numpy',
         'pandas',  
-        'matplotlib'
+        'matplotlib',
+        'dash',
+        'plotly',
+        'ase'
     ],
 )
