@@ -43,6 +43,65 @@ parser.add_argument(
 )
 
 class Javi:
+    """
+    A class to represent a conical intersection (CI) and perform various calculations related to it.
+    Attributes
+    ----------
+    ga_filename : str
+        Filename for the alpha component of the gradient vector.
+    gb_filename : str
+        Filename for the beta component of the gradient vector.
+    hab_filename : str
+        Filename for the Hamiltonian matrix elements.
+    ci_energy : float
+        The CI energy value.
+    Methods
+    -------
+    from_xy(cls):
+        Class method to create an instance from x and y coordinates.
+    ci_energy() -> float:
+        Returns the CI energy value.
+    g_ab() -> np.ndarray:
+        Returns the difference vector between gb and ga.
+    s_ab() -> np.ndarray:
+        Returns the sum vector of gb and ga.
+    h_ab() -> np.ndarray:
+        Returns the Hamiltonian matrix elements.
+    beta() -> float:
+        Returns the beta angle.
+    beta(beta: float):
+        Sets the beta angle.
+    g_tilde() -> np.ndarray:
+        Returns the g tilde vector.
+    h_tilde() -> np.ndarray:
+        Returns the h tilde vector.
+    x() -> np.ndarray:
+        Returns the normalized g tilde vector.
+    y() -> np.ndarray:
+        Returns the normalized h tilde vector.
+    pitch() -> float:
+        Returns the pitch (δ_gh).
+    asymmetry() -> float:
+        Returns the asymmetry (Δ_gh).
+    energy_difference(x: float, y: float) -> float:
+        Calculates the energy difference for given x and y coordinates.
+    average_energy(x: float, y: float) -> float:
+        Calculates the average energy for given x and y coordinates.
+    E_A(x: float, y: float) -> float:
+        Calculates the energy E_A for given x and y coordinates.
+    E_B(x: float, y: float) -> float:
+        Calculates the energy E_B for given x and y coordinates.
+    theta_s(n_points: int = 360, radius: float = 1) -> float:
+        Calculates the angle theta_s for the maximum tilt direction.
+    sigma() -> float:
+        Returns the sigma value.
+    p() -> Tuple[float, str]:
+        Returns the p value and its type.
+    b() -> Tuple[float, str]:
+        Returns the b value and its type.
+    plot_CI(max_grid: float = 1):
+        Plots the conical intersection representation.
+    """
 
     def __init__(
         self,
@@ -67,27 +126,31 @@ class Javi:
     def from_xy(cls):
         pass 
 
-
     @property
     def ci_energy(self) -> float:
         return float(self._ci_energy)
 
+    def normalize(self, vector: np.ndarray) -> np.ndarray:
+        return vector/np.linalg.norm(vector) 
+
     def _load_vectors(self) -> None:
-        self._ga = np.loadtxt(self._ga_filename).reshape(-1)
-        self._gb = np.loadtxt(self._gb_filename).reshape(-1)
-        self._h_ab = np.loadtxt(self._hab_filename).reshape(-1)
+        self._ga = np.loadtxt(self._ga_filename).flatten()
+        self._gb = np.loadtxt(self._gb_filename).flatten()
+        self._h_ab = np.loadtxt(self._hab_filename).flatten()
 
     @property
     def g_ab(self) -> np.ndarray:
+        #return self.normalize(0.5 * np.copy(self._gb - self._ga))
         return 0.5 * np.copy(self._gb - self._ga)
-
-
+    
     @property
     def s_ab(self) -> np.ndarray:
+        #return self.normalize(0.5 * np.copy(self._gb + self._ga))
         return 0.5 * np.copy(self._gb + self._ga)
     
     @property
     def h_ab(self) -> np.ndarray:
+        #return self.normalize(np.copy(self._h_ab))
         return np.copy(self._h_ab)
 
     def _calculate_beta(self) -> None:
@@ -97,7 +160,7 @@ class Javi:
 
         beta_value =  0.5 * np.arctan2(2 * np.dot(self.g_ab, self.h_ab), (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab)))
 
-        self._beta = beta_value
+        self._beta = beta_value 
 
     @property
     def beta(self):
@@ -109,32 +172,32 @@ class Javi:
 
 
     @property
-    def _g_tilde(self) -> np.ndarray:
+    def g_tilde(self) -> np.ndarray:
         return self.g_ab * np.cos(self.beta) + self.h_ab * np.sin(self.beta)
 
     @property
-    def _h_tilde(self) -> np.ndarray:
+    def h_tilde(self) -> np.ndarray:
         return self.h_ab * np.cos(self.beta) - self.g_ab * np.sin(self.beta)
 
     @property
     def x(self) -> np.ndarray:
-        return np.copy(self._g_tilde / np.linalg.norm(self._g_tilde))
+        return np.copy(self.g_tilde / np.linalg.norm(self.g_tilde))
 
     @property
     def y(self) -> np.ndarray:
-        return np.copy(self._h_tilde / np.linalg.norm(self._h_tilde))
+        return np.copy(self.h_tilde / np.linalg.norm(self.h_tilde))
 
     @property
     def pitch(self) -> float:
         ''' Pitch \\delta_gh. '''
 
-        return np.sqrt( 1/2 * (np.dot(self._g_tilde, self._g_tilde) + np.dot(self._h_tilde, self._h_tilde)))
+        return np.sqrt( 1/2 * (np.dot(self.g_tilde, self.g_tilde) + np.dot(self.h_tilde, self.h_tilde)))
 
     @property
     def asymmetry(self) -> float:
         ''' Asymmetry \\Delta_gh. '''
 
-        asym = (np.dot(self._g_tilde, self._g_tilde) - np.dot(self._h_tilde, self._h_tilde)) / (np.dot(self._g_tilde, self._g_tilde) + np.dot(self._h_tilde, self._h_tilde))
+        asym = (np.dot(self.g_tilde, self.g_tilde) - np.dot(self.h_tilde, self.h_tilde)) / (np.dot(self.g_tilde, self.g_tilde) + np.dot(self.h_tilde, self.h_tilde))
 
         return float(asym)
 

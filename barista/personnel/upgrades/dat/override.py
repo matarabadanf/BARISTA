@@ -8,7 +8,7 @@ j = Javi('engrad0.dat', 'engrad1.dat', 'nac.dat')
 x = np.loadtxt('x_vec.dat').reshape(-1)
 y = np.loadtxt('y_vec.dat').reshape(-1)
 
-print(f'Angle is {x @ y}')
+print(f'Angle is {x @ y}') 
 beta = j.beta
 
 print(f'Beta value is {beta}')
