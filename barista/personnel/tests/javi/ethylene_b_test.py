@@ -27,6 +27,7 @@ tan_2_beta = 2 * np.dot(g_ab, hab) / (np.dot(g_ab, g_ab) - np.dot(hab, hab))
 beta_2 = np.atan(tan_2_beta) 
 beta = beta_2 / 2 
 print(f'beta and j.beta are equal: {np.all(np.isclose(j.beta, beta))}')
+print((beta + np.pi/2 % np.pi) /np.pi*360, (j.beta % np.pi) /np.pi*360)
 
 ref_pitch = 0.1026
 ref_asymm = 0.4886

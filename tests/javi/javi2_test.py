@@ -52,7 +52,7 @@ def test_g_ab_equal(setup_data):
 
 # def test_beta_equal(setup_data):
 #     j, _, _, _, _, beta, _, _, _, _ = setup_data
-#     assert np.all(np.isclose(j.beta, beta, atol=0.001)), 'beta and j.beta are not equal within threshold.'
+#     assert np.all(np.isclose(j.beta, beta, atol=0.001)) or np.all(np.isclose((j.beta + np.pi/2)%np.pi, beta, atol=0.001)), 'beta and j.beta are not equal within threshold.'
 
 def test_pitch(setup_data):
     j, _, _, _, _, _, ref_pitch, _, _, _ = setup_data
