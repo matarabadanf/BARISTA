@@ -16,6 +16,7 @@ importlib_metadata==8.6.1
 itsdangerous==2.2.0
 Jinja2==3.1.5
 kiwisolver==1.4.8
+kaleido==0.2.1
 MarkupSafe==3.0.2
 matplotlib==3.10.1
 narwhals==1.28.0
