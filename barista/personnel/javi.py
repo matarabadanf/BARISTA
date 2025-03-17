@@ -39,7 +39,22 @@ parser.add_argument(
     "--interactive",
     action='store_true',
     required=False,
-    help="Open interactive plot.",
+    help="Open interactive plot. Default is False.",
+)
+
+parser.add_argument(
+    "--savefig",
+    type=str,
+    required=False,
+    default='Default',
+    help="Save CI figure with selected name.",
+)
+
+parser.add_argument(
+    "--full_plot",
+    action='store_true',
+    required=False,
+    help="Plot the full Figure, including vectors and directions. Default is False.",
 )
 
 class Javi:
@@ -280,7 +295,7 @@ class Javi:
 
         return (b, b_type)
 
-    def plot_CI(self, max_grid:float=1):
+    def _preplot_CI(self, max_grid:float=1, full:bool= False) -> go.Figure:
     
         x = np.linspace(-max_grid, max_grid, 501)
         y = np.linspace(-max_grid, max_grid, 501)
@@ -299,16 +314,13 @@ class Javi:
         x_intersect = X[intersection_mask]
         y_intersect = Y[intersection_mask]
         z_intersect = b_p[intersection_mask] 
-    
-        # Floor for contour 
-        z_min = min(e_a.flatten()) - (max(e_a.flatten()) - min(e_a.flatten())) * 0.05  # Slightly below the minimum
 
-        # Create a constant z-plane at the bottom to display the contour
-        z_floor = np.ones(e_a.shape) * z_min
-        
-        max_x = max_grid * np.cos(self.theta_s)
-        max_y = max_grid * np.sin(self.theta_s)
-        max_value = self.average_energy(max_x,max_y)
+        # Locate the direction of the tilt 
+
+
+        # max_x = max_grid * np.cos(self.theta_s)
+        # max_y = max_grid * np.sin(self.theta_s)
+        # max_value = self.average_energy(max_x,max_y)
     
         # rgba(100, 120, 140, 0.7)
         # Create a 3D surface plot
@@ -318,11 +330,6 @@ class Javi:
             go.Surface(z=e_mean, x=X, y=Y, showscale=False, name='Branching plane', opacity=0.5, colorscale=[[0, 'rgba(255, 0, 0, 0.7)'],[1, 'rgba(255, 0, 0, 0.7)']]),
             go.Surface(z=b_p,    x=X, y=Y, showscale=False, name='Mean energy plane', opacity=0.5, colorscale=[[0, 'rgba(0, 255, 0, 0.7)'],[1, 'rgba(0, 255, 0, 0.7)']]),
 
-            # Vectors
-            go.Scatter3d(x=x_intersect, y=y_intersect, z=z_intersect, mode='lines+text', line=dict(color='rgba(0, 0, 0, 0.5)', width=4), name='BP and ME intersection'),
-            go.Scatter3d(x=[0, max_x], y=[0, max_y], z=[0, max_value], mode='lines+text',line=dict(color='black', width=4), name = r'Max tilt direction', text=['',  'Max tilt direction'], textfont=dict(color='black')),
-            go.Scatter3d(x=[0, 1*max_grid], y=[0, 0], z=[0, 0], mode='lines+text',line=dict(color='black', width=4), name = r'$\hat{\mathbf{x}}$', text=['', 'x'], textfont=dict(color='black')),
-            go.Scatter3d(x=[0, 0], y=[0, 1*max_grid], z=[0, 0], mode='lines+text',line=dict(color='black', width=4), name = r'$\hat{\mathbf{y}}$', text=['', 'y'], textfont=dict(color='black')),
     
             # Dummy scatter traces for the legend to reflect the surface color
             go.Scatter3d(x=[None], y=[None], z=[None], mode='markers', marker=dict(color='rgba(100, 120, 140, 0.7)', size=10), name='Surface 1'),
@@ -333,6 +340,16 @@ class Javi:
     
         ])
     
+        if full:
+            fig.add_traces([
+                # Vectors
+                go.Scatter3d(x=x_intersect, y=y_intersect, z=z_intersect, mode='lines+text', line=dict(color='rgba(0, 0, 0, 0.5)', width=4), name='BP and ME intersection'),
+                # go.Scatter3d(x=[0, max_x], y=[0, max_y], z=[0, max_value], mode='lines+text',line=dict(color='black', width=4), name = r'Max tilt direction', text=['',  'Max tilt direction'], textfont=dict(color='black')),
+                # go.Scatter3d(x=[0, x_max], y=[0, y_max], z=[0, z_max], mode='lines+text',line=dict(color='black', width=4), name = r'Max tilt direction 2', text=['',  'Max tilt direction 2'], textfont=dict(color='black')),
+                go.Scatter3d(x=[0, 1*max_grid], y=[0, 0], z=[0, 0], mode='lines+text',line=dict(color='black', width=4), name = r'$\hat{\mathbf{x}}$', text=['', 'x'], textfont=dict(color='black')),
+                go.Scatter3d(x=[0, 0], y=[0, 1*max_grid], z=[0, 0], mode='lines+text',line=dict(color='black', width=4), name = r'$\hat{\mathbf{y}}$', text=['', 'y'], textfont=dict(color='black')),
+            ])
+
         fig.update_layout(
             title='Conical intersection representation',
             title_font=dict(size=28),
@@ -361,8 +378,15 @@ class Javi:
                 traceorder='normal',  # Order of legend items
             )
         )
-    
-        fig.show()    
+        return fig
+
+    def plot_CI(self, full:bool=True):
+        fig = self._preplot_CI(full=full)
+        fig.show()
+
+    def save_CI_fig(self, name:str='CI_plot.jpg', full:bool=True) -> None:
+        fig = self._preplot_CI(full=full)
+        fig.write_image(name, width=800, height=600)
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
@@ -383,6 +407,8 @@ if __name__ == "__main__":
     if args.interactive:
         j.plot_CI()
     
+    if args.savefig != 'Default':
+        j.save_CI_fig(name=args.savefig, full=args.full_plot)
     # TESTING
     # j = Javi(
     #     'engrad_0_gradient.dat', 
