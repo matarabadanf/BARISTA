@@ -7,7 +7,7 @@ from ase.calculators.calculator import FileIOCalculator
 class CICalculator(FileIOCalculator):
     # Tthe calculator needs a command that is what the program will execute. 
     # Therefore it is needed to prepare the inputs. 
-    command = " ~/bin/run_orca.sh engrad_0.in; cp engrad_0.gbw tmp.gbw;  ~/bin/run_orca.sh engrad_1.in"
+    command = " ~/bin/run_orca.sh orca_engrad.in"
     
     # ASE requires to define the implemented properties of a calculator 
     implemented_properties = ["forces", "energy"]
@@ -20,16 +20,20 @@ class CICalculator(FileIOCalculator):
         atoms=None,
         command=command,
         mode=None,
-        profile='penalty',
-        n_roots=10,
-        iroot=0,
-        jroot=1,
-        functional="CAM-B3LYP",
-        basis="cc-pvdz",
-        alpha=0.02,
-        sigma=3.5,
-        n_procs=1,
-        geom=None
+        geom=None,
+        profile:str ='penalty',
+        n_roots:int =10,
+        iroot:int=0,
+        jroot:int=1,
+        functional:str="CAM-B3LYP",
+        basis:str="cc-pvdz",
+        alpha:float=0.02,
+        sigma:float=3.5,
+        n_procs:int=1,
+        program: str= 'ORCA',
+        calc_nacme: bool = False,  # type: ignore
+        charge:int = 0, # type: ignore
+        mult:int = 1,
     ):
         # The class methods have to be inherited or they will die
         super().__init__(
@@ -45,20 +49,31 @@ class CICalculator(FileIOCalculator):
         self.jroot = jroot
         self.directory = "."
         self.prefix = label
-        self.n_roots = (n_roots,)
-        self.functional = (functional,)
+        self.n_roots = n_roots
+        self.functional = functional
         self.basis = basis
         self.atoms = atoms
         self.alpha = alpha
         self.sigma = sigma
         self.n_procs = n_procs
         self.profile = profile 
+        self.charge = charge 
+        self.mult = mult
+
+        self.program = program.capitalize()
         # this prepares a current geometry
         with open(self.label + ".xyz", "w") as fd:
             ase.io.write(fd, self.atoms, format="xyz")
         # this saves the original geometry
         with open(self.label + "_original.xyz", "w") as fd:
             ase.io.write(fd, self.atoms, format="xyz")
+        
+        self.calc_nacme = calc_nacme
+        if self.calc_nacme and [iroot,jroot] == [0,1]: 
+            print('ORCA supports NACME calculation for states 0 and 1, this will be used')
+        elif self.calc_nacme and [iroot,jroot] != [0,1]: 
+            self.calc_nacme = False 
+            print('ORCA only supports NACME calculation for states 0 and 1, nacme will not be calculated')
 
 
     def write_input(self, atoms=None, properties=None, system_changes=None):
@@ -66,36 +81,61 @@ class CICalculator(FileIOCalculator):
             self, atoms, properties, system_changes
         )  # because the docs demmand so
         # we will only update the .xyz file as the input for calculations will remain the same throughout the whole calculation
+
+        if self.program == 'ORCA':
+            self.generate_orca_input()
+        elif self.program == 'MOLCAS':
+            pass 
+
+    def generate_orca_input(self):
+
         with open(self.label + ".xyz", "w") as fd:
             ase.io.write(fd, self.atoms, format="xyz")
-        try:
-            with open('tmp.gbw', 'r') as f:
-                prev_orb = True
-        except:
-            prev_orb = False
 
-        # this prepares the orca inputs
-        for index, root in enumerate([self.iroot, self.jroot]):
-            with open("engrad_%i.in" % index, "w") as engrad_file:
-                engrad_file.write(
-                    "! engrad {} {} \n! NoAutostart\n\n\n".format(self.functional[0], self.basis)
-                )
-                if prev_orb == True: 
-                    engrad_file.write('%moinp "tmp.gbw" \n%scf guess moread end\n'
-                )
-                engrad_file.write(
-                    "%%tddft nroots %s iroot %s tda TRUE end\n"
-                    % (self.n_roots[0], root)
-                )
-                engrad_file.write("* xyz 0 1\n")
-                with open(self.label + ".xyz", "r") as xyzfile:
-                    cont = xyzfile.readlines()
-                for line in cont[2:]:
-                    engrad_file.write(line)
-                engrad_file.write("*\n\n")
-#                if self.n_procs != 1:
-#                    engrad_file.write("%%pal\n NPROCS %i\nEND\n" % self.n_procs)
+            with open(self.label + ".xyz", "r") as xyzfile:
+                cont = xyzfile.readlines()
+            
+        coordlist = cont[2:]
 
+        # include nacme in orca calculation. Default is False. 
+        nacme_str = ''
+        if self.calc_nacme:
+            nacme_str = 'NACME True'
+
+        with open('orca_engrad.in', 'w') as inp_file:
+            # this prepares the orca inputs
+
+            inp_file.write(
+                f"! engrad {self.functional} {self.basis} \n! NoAutostart\n\n\n"
+            )
+
+            # Control the TDDFT block
+            inp_file.write(
+                f"%%tddft nroots {self.n_roots} iroot {self.iroot} tda TRUE end\n"
+            )
+
+            # Coords, charge and mult of the first calculation
+            inp_file.write("* xyz {self.charge} {self.mult}\n")
+            for atom in coordlist:
+                inp_file.write(coordlist)
+            inp_file.write("*\n")
+
+            # generate second job
+            inp_file.write('$new_job')
+            inp_file.write(
+                f"! engrad {self.functional} {self.basis} \n! NoAutostart\n\n\n"
+            )
+
+            # Control the TDDFT block
+            inp_file.write(
+                f"%%tddft nroots {self.n_roots} iroot {self.jroot} tda TRUE {nacme_str} end\n"
+            )
+
+            # Coords, charge and mult of the first calculation
+            inp_file.write("* xyz {self.charge} {self.mult}\n")
+            for atom in coordlist:
+                inp_file.write(coordlist)
+            inp_file.write("*\n\n")
 
     def read_results(self):
         # read results from the ORCA calculation

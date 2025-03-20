@@ -2,11 +2,7 @@
 import pytest
 import numpy as np
 
-print()
-
 from barista.personnel.alberto import Alberto
-
-
 
 a = Alberto("tests/alberto/alberto_raw.in.out") 
 
