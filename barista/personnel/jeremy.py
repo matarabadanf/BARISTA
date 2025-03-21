@@ -104,7 +104,44 @@ class Jeremy:
         
         return np.sqrt(mean_square_difference)
 
+    def compare_internals(self, reference:'Jeremy') -> np.ndarray:
 
+        # we will enforce the overwrite of the connectivity matriux in order to 
+        # ensure that the internal coordinate types remain consistent
+
+        reference.override_connectivity_matrix(self.connectivity_matrix)
+
+        # separate coordinates in lengths and angles
+
+        n_bonds = len([1 for i in self.internal_list if len(i) == 2])
+
+        print(f'The number of bonds of these molecules are: {n_bonds}')
+
+        bond_diff = self.internal_values[:n_bonds] - reference.internal_values[:n_bonds]
+        print(bond_diff)
+
+        angle_pairs = [np.array([a, b]) for a, b in zip(self.internal_values[n_bonds:], reference.internal_values[n_bonds:])]
+
+        print(angle_pairs)
+
+        angle_diff = np.zeros(len(angle_pairs))
+
+        for index, pair in enumerate(angle_pairs):
+            if np.all(pair < 0) or np.all(pair > 0):
+
+                angle_diff[index] = abs(abs(max(pair)) - abs(min(pair))) % 360
+                print(pair, angle_diff[index])
+            else:
+                pos = max(pair)
+                neg = min(pair) + 360
+
+                print(f'Postive is {pos:5.3f}, negative is {neg:5.3f}')
+                angle_diff[index] = abs(abs(min([pos,neg])) - abs(max([pos,neg]))) % 360 if neg > 180 else 0 
+                print(f'discrepant pair: {pair}, {angle_diff[index]:5.3f}')
+
+        # for angle, value in enumerate(angle_diff):
+        #     print(f'Angle deviation of {angle+n_bonds}, {str(self.internal_list[n_bonds+angle]):>16s} is: {value:6.3f}')
+ 
     # =========================================================================
     #     Property methods
     # =========================================================================
@@ -452,6 +489,7 @@ class Jeremy:
 
         self._atom_labels = extended_labels
 
+MoleculeHandler = Jeremy
 
 if __name__ == "__main__":
     # a = Jeremy("upgrades/xanthine_opt_iroot_1.xyz")

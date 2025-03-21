@@ -1,0 +1,7 @@
+geom = water.xyz 
+
+mode = ci 
+iroot = 0 
+jroot = 1 
+program = molcas 
+calc_nacme = tru

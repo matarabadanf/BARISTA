@@ -26,7 +26,7 @@ if len(sys.argv) == 1:
 args = parser.parse_args()
 
 
-BREWER_PATH = '/home/uam/uam121718/bin/BARISTA/neo_brewer/' 
+BREWER_PATH = '_brewer/' 
 
 if not BREWER_PATH:
     print('Configure BREWER_PATH with setup_brewer.py')
