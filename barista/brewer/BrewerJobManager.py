@@ -1,7 +1,12 @@
 import ase.io
 import os
 from ase.optimize import FIRE as opti
-from barista.brewer.flavs import CICalculator
+try:
+    from barista.brewer.flavs import CICalculator
+    from barista.personnel.javi import Javi
+except:
+    from flavs import CICalculator
+    from javi import Javi
 
 class BrewerJobManager:
     def __init__(self, brewer_templatefile:str='brewer.TEMPLATE'):
@@ -10,8 +15,11 @@ class BrewerJobManager:
     def run_job(self):
         self.select_mode()
         self.run_optimization()
-        self.dump_trajectory()
+        # self.dump_trajectory()
+        self.analyze_conical()
         self.cleanup()
+        print('Auxiliary files were moved to AUX_FILES/\n\n')
+        self.goodbye()
 
     def read_inputfile(self) -> dict:
         # read the template to determine the geometry and particularities of the calculations such as basis 
@@ -45,13 +53,18 @@ class BrewerJobManager:
                 ('charge', 0),
                 ('mult', 1),
                 ('program', 'ORCA'),
-                ('label', None)
+                ('label', None), 
                 )
             )
 
         # override default parameters with the input file ones 
         for key in input_keyword_dict.keys():
             parameters[key] = input_keyword_dict[key]
+
+        if 'fmax' in  input_keyword_dict.keys():
+            self.fmax = input_keyword_dict.keys['fmax']
+        else:
+            self.fmax = 0.05
 
         if parameters['label'] is None:
             parameters['label'] = parameters['geom'].replace('.xyz', '') + '_ci'
@@ -68,7 +81,7 @@ class BrewerJobManager:
             raise TypeError('A parameter float or int could not be casted to the appropriate type')
         
         # recast boolean 
-        if parameters['calc_nacme'].lower() == 'true':
+        if str(parameters['calc_nacme']).lower() == 'true':
             parameters['calc_nacme'] = True
         else:
             parameters['calc_nacme'] = False
@@ -96,14 +109,21 @@ class BrewerJobManager:
         print(f'\nGeometry was read from {self.parameters['geom']}.\n')
         # molecule.calc = CICalculator(atoms=molecule, n_procs=1, **self.parameters)
         molecule.calc = CICalculator(atoms=molecule, n_procs=self.job_cores, **self.parameters)
-        print(f'The number of processors used is: {self.job_cores}')
+        print(f'The number of processors used is: {self.job_cores}\n')
+        print(f'\nOptimization convergence threshold is: Max effective force < {self.fmax}\n')
         return molecule
 
     def run_optimization(self):
         molecule = self.generate_molecule_and_calc()
         opt = opti(molecule, trajectory=f"{self.parameters['label']}_ci_search.traj")
-        opt.run()
-        ase.io.write(f"{self.parameters['label']}_ci_search_opt_geom.xyz", molecule)
+        opt.run(fmax=self.fmax)
+        # ase.io.write(f"{self.parameters['label']}_ci_search_opt_geom.xyz", molecule)
+        print('\n')
+        print('**************************')
+        print('\n')
+        print('OPTIMIZATION HAS CONVERGED')
+        print('\n')
+        print('**************************\n\n')
 
     def dump_trajectory(self):
         a = ase.io.trajectory.TrajectoryReader(f"{self.parameters['label']}_ci_search.traj")
@@ -113,9 +133,32 @@ class BrewerJobManager:
                 images=geom, format='xyz', 
                 append=True
             )
+    def analyze_conical(self):
+        if self.parameters['calc_nacme']:
+            conical = Javi(
+                'engrad0.dat',
+                'engrad1.dat',
+                'nacme.dat'
+            )
+        else:  
+            conical = Javi(
+                'engrad0.dat',
+                'engrad1.dat',
+                'y_minus_one.dat'
+            )
+
+        print('\n\nConical intersection characterization after convergence:')
+        print(f"P = {conical.p[0]:5.3f} -> {conical.p[1]} conical.\nB = {conical.b[0]:5.3f} -> {conical.b[1]} conical.")
 
     def cleanup(self):
         os.system('mkdir AUX_FILES')
         os.system('mv *engrad* AUX_FILES')
         os.system('mv *.ener* AUX_FILES')
         os.system('rm -rf __pycache__/')
+        os.system('rm *.traj')
+        os.system(f'rm {self.parameters["label"]}.xyz')
+
+    def goodbye(self):
+        print('*****************************')
+        print('          Meow meow          ')
+        print('*****************************')
