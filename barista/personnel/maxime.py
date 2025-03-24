@@ -550,7 +550,7 @@ class Maxime(Jeremy):
                 f.write(f'{len(preserved_df)}\n')
                 f.write(f'Extracted atoms from {point} with {r} radius\n')
                 for index, row in preserved_df.iterrows():
-                    f.write(f'{row['Atom']} {row['x']} {row['y']} {row['z']}\n')
+                    f.write(f'{row["Atom"]} {row["x"]} {row["y"]} {row["z"]}\n')
 
 if __name__ == "__main__":
     
@@ -563,8 +563,10 @@ if __name__ == "__main__":
 
     m = Maxime(args.f)
     try:
-        refp = [i for i in args.p.strip().split()]
+        refp = [float(i) for i in args.p.strip().split()]
     except:
         exit()
     
     m.extract_radius(point=refp, r=args.r, new_filename=args.o)
+
+    print(m.connectivity_matrix)
