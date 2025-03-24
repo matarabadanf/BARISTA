@@ -650,4 +650,3 @@ if __name__ == "__main__":
     # new_filename=args.o
     m.extract_radius_atoms(point=refp, r=args.r, new_filename=args.o)
 
-    print(m.connectivity_matrix)
