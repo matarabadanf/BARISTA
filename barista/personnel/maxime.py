@@ -509,14 +509,6 @@ class Jeremy:
 
         self._atom_labels = extended_labels
 
-MoleculeHandler = Jeremy
-
-if __name__ == "__main__":
-    # a = Jeremy("upgrades/xanthine_opt_iroot_1.xyz")
-    # b = Jeremy("upgrades/xanthine_FC.xyz")
-    pass
-
-
 class Maxime(Jeremy):
 
     def extract_radius_atoms(
@@ -609,29 +601,6 @@ class Maxime(Jeremy):
             not_checked = [i for i in molecule_indices if i not in already_checked]
         
         return(molecule_indices)
-
-
-
-    # @cached_property
-    # def strict_radius(self):
-    #     return self.extract_radius_atoms()
-    
-    # def build_cluster(self):
-    #     preserved_df, r, point = self.strict_radius
-
-    #     for index, row in preserved_df.iterrows():
-    #         atom_coords = np.array([row['x'], row['y'], row['z']])
-    #         print(f'Coordinates of atom{index} are {atom_coords}. Distance to selected point is: {np.linalg.norm(atom_coords - point)}. Included in sphere -> {np.linalg.norm(atom_coords - point)< r}')
-    #         if np.linalg.norm(atom_coords - point)< r:
-    #             preserved_atoms_indices.append(index)
-
-
-
-    
-    # def write_to_xyz(self, new_filename:str='None') -> None:
-
-
-        
 
 if __name__ == "__main__":
     
