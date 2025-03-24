@@ -519,11 +519,12 @@ if __name__ == "__main__":
 
 class Maxime(Jeremy):
 
-    def extract_radius(
-            self, point: list[float]= [0,0,0],
-            r:float=1, 
-            new_filename:str='None'
-        ) -> None:
+    def extract_radius_atoms(
+            self, 
+            point: list[float]= [0,0,0],
+            r:float=1,
+            new_filename='None'
+        ) -> list:
 
         if len(point) == 3:
             point == np.array(point)
@@ -534,16 +535,32 @@ class Maxime(Jeremy):
         print(f'Selected point is {point}. Sphere radius is {r}.')
 
         preserved_atoms_indices = []
+        frontier_atoms_indices = []
 
         for index, row in self.xyz_df.iterrows():
             atom_coords = np.array([row['x'], row['y'], row['z']])
-            print(f'Coordinates of atom{index} are {atom_coords}. Distance to selected point is: {np.linalg.norm(atom_coords - point)}. Included in sphere -> {np.linalg.norm(atom_coords - point)< r}')
+            # print(f'Coordinates of atom{index} are {atom_coords}. Distance to selected point is: {np.linalg.norm(atom_coords - point)}. Included in sphere -> {np.linalg.norm(atom_coords - point)< r}')
             if np.linalg.norm(atom_coords - point)< r:
                 preserved_atoms_indices.append(index)
+                # print(f'Coordinates of atom {index} are {atom_coords}. Distance to selected point is: {np.linalg.norm(atom_coords - point)}, r= {r}.')
+                
+                if np.linalg.norm(atom_coords - point) < r and np.linalg.norm(atom_coords - point) > (r - 2):
+                    frontier_atoms_indices.append(index)
+                    # print(f'Coordinates of atom {index} are {atom_coords}. Distance to selected point is: {np.linalg.norm(atom_coords - point)}.')
         
-        print(preserved_atoms_indices)
+        frontier_df = self.xyz_df.iloc[[i for i in frontier_atoms_indices]]
 
-        preserved_df = self.xyz_df.iloc[[i for i in preserved_atoms_indices]]
+        completion_indices = self.complete_molecules(frontier_df)
+
+        total_atom_indices = preserved_atoms_indices + completion_indices
+
+        print('\n\n\n\nTOTAL ATOMS IN THE CASE IS')
+        print(total_atom_indices)
+        
+
+        preserved_df = self.xyz_df.iloc[[i for i in total_atom_indices]]
+
+        print(len(preserved_df))
 
         if new_filename != 'None':
             with open(new_filename, 'w') as f:
@@ -551,6 +568,70 @@ class Maxime(Jeremy):
                 f.write(f'Extracted atoms from {point} with {r} radius\n')
                 for index, row in preserved_df.iterrows():
                     f.write(f'{row["Atom"]} {row["x"]} {row["y"]} {row["z"]}\n')
+        
+        return preserved_df, r, point, frontier_atoms_indices
+    
+    def complete_molecules(self, frontier_df: pd.DataFrame) -> pd.DataFrame:
+
+        frontier_indices = [i for i, row in frontier_df.iterrows()]
+
+        total_molecule_indices = []
+        
+        while len(frontier_indices) >= 1: 
+            print(len(frontier_indices))
+
+            total_molecule_indices += self.complete_molecule(frontier_indices[0])
+            frontier_indices_temp = [i for i in frontier_indices if i not in total_molecule_indices]
+            frontier_indices = frontier_indices_temp
+            print(len([i for i in frontier_indices if i not in total_molecule_indices]))
+        
+        print(total_molecule_indices)
+
+        return total_molecule_indices
+
+    def complete_molecule(self, index):
+
+        starting_point = index
+    
+        already_checked = []
+        already_checked.append(starting_point)
+        molecule_indices = []
+        neighbour_indices = [index for index, value in enumerate(self.connectivity_matrix[starting_point]) if value == 1]
+        molecule_indices += neighbour_indices
+
+        not_checked = [i for i in molecule_indices if i not in already_checked]
+
+        while len(not_checked) >= 1: 
+            starting_point = not_checked[0]
+            already_checked.append(starting_point)
+            neighbour_indices = [index for index, value in enumerate(self.connectivity_matrix[starting_point]) if value == 1 and index not in molecule_indices]
+            molecule_indices += neighbour_indices
+            not_checked = [i for i in molecule_indices if i not in already_checked]
+        
+        return(molecule_indices)
+
+
+
+    # @cached_property
+    # def strict_radius(self):
+    #     return self.extract_radius_atoms()
+    
+    # def build_cluster(self):
+    #     preserved_df, r, point = self.strict_radius
+
+    #     for index, row in preserved_df.iterrows():
+    #         atom_coords = np.array([row['x'], row['y'], row['z']])
+    #         print(f'Coordinates of atom{index} are {atom_coords}. Distance to selected point is: {np.linalg.norm(atom_coords - point)}. Included in sphere -> {np.linalg.norm(atom_coords - point)< r}')
+    #         if np.linalg.norm(atom_coords - point)< r:
+    #             preserved_atoms_indices.append(index)
+
+
+
+    
+    # def write_to_xyz(self, new_filename:str='None') -> None:
+
+
+        
 
 if __name__ == "__main__":
     
@@ -566,7 +647,7 @@ if __name__ == "__main__":
         refp = [float(i) for i in args.p.strip().split()]
     except:
         exit()
-    
-    m.extract_radius(point=refp, r=args.r, new_filename=args.o)
+    # new_filename=args.o
+    m.extract_radius_atoms(point=refp, r=args.r, new_filename=args.o)
 
     print(m.connectivity_matrix)

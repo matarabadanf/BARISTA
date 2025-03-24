@@ -3,12 +3,10 @@ import os
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-xyz_filename = os.path.join(script_dir, 'test.xyz')
+xyz_filename = os.path.join(script_dir, 'geom_opt.xyz')
 
 
 m = Maxime(xyz_filename)
 
-print(m.xyz_df.iloc[[1,2]])
-
-m.extract_radius(r=1.1, new_filename='result.xyz')
+m.extract_radius_atoms(r=10.1, new_filename='asdf.xyz')
 
