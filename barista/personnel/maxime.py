@@ -544,7 +544,9 @@ class Maxime(Jeremy):
 
         completion_indices = self.complete_molecules(frontier_df)
 
-        total_atom_indices = set(preserved_atoms_indices + completion_indices)
+        total_atom_indices = list(set(preserved_atoms_indices + completion_indices))
+
+        total_atom_indices.sort(key=lambda x:x)
 
         print('\n\n\n\nTOTAL ATOMS IN THE CASE IS')
         print(total_atom_indices)
