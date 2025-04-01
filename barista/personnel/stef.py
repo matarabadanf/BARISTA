@@ -163,6 +163,7 @@ class Stef:
         -------
         None
         """
+        print(self.image_energies)
         with open(filename, 'w') as f:
             for image, energy in enumerate(self.image_energies):
                 f.write(f'{image} {energy:8.5f}\n')

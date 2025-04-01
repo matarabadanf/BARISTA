@@ -189,6 +189,15 @@ class Rodrigo:
             y_array += self._gaussian(x_array, peak[1], peak[0], dispersion)
 
         plt.plot(x_array, y_array, label='Convoluted spectrum')
+    
+    def export_gaussian_eV(self, dispersion: float = 0.2):
+        x_array = np.linspace(0, 15, 1000)
+        y_array = np.zeros(len(x_array))
+
+        for peak in self.get_peaks_eV().T:
+            y_array += self._gaussian(x_array, peak[1], peak[0], dispersion)
+
+        return x_array,y_array
 
     def _plot_gaussian_eV(self, dispersion: float = 0.2):
 
