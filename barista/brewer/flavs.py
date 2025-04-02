@@ -34,6 +34,10 @@ class CICalculator(FileIOCalculator):
         calc_nacme: bool = False,  # type: ignore
         charge:int = 0, # type: ignore
         mult:int = 1,
+        convergence:str='forced',
+        caspt2_params:str='',
+        rassccf_params:str='',
+        imag:float=0.3
     ):
         # The class methods have to be inherited or they will die
         super().__init__(
@@ -58,7 +62,9 @@ class CICalculator(FileIOCalculator):
         self.n_procs = n_procs
         self.profile = profile.upper()
         self.charge = charge 
+        self.convergence = convergence
         self.mult = mult
+        self.imag = imag
 
         self.program = program.strip().upper()
         # this prepares a current geometry
@@ -67,7 +73,12 @@ class CICalculator(FileIOCalculator):
         # this saves the original geometry
         with open(self.label + "_original.xyz", "w") as fd:
             ase.io.write(fd, self.atoms, format="xyz")
+
+        # Select the command to run the different programs. 
+        if self.program == 'ORCA':
+            CICalculator.command = " ~/bin/run_orca.sh orca_engrad.in"
         
+
         self.calc_nacme = calc_nacme
         if self.calc_nacme and [iroot,jroot] == [0,1] and self.program == 'ORCA': 
             print('ORCA supports NACME calculation for states 0 and 1, this will be used')
@@ -89,7 +100,12 @@ class CICalculator(FileIOCalculator):
             pass 
 
     def generate_orca_input(self):
+        '''Generate an orca input. 
 
+        First the geometry of the current step is exported from the ase object. 
+        Then the file is read to obtain the xyz coordinates. 
+        The input file is written.
+        '''
         with open(self.label + ".xyz", "w") as fd:
             ase.io.write(fd, self.atoms, format="xyz")
 
@@ -121,11 +137,8 @@ class CICalculator(FileIOCalculator):
                 inp_file.write(atom.strip()+'\n')
             inp_file.write("*\n")
 
-            if self.n_procs > 1: 
-                inp_file.write(f'% pal nprocs {self.n_procs} end\n')
-
             # generate second job
-            inp_file.write('\n$new_job\n')
+            inp_file.write('$new_job\n')
             inp_file.write(
                 f"! engrad {self.functional} {self.basis} \n! NoAutostart\n\n\n"
             )
@@ -141,10 +154,12 @@ class CICalculator(FileIOCalculator):
                 inp_file.write(atom.strip()+'\n')
             inp_file.write("*\n\n")
 
-            if self.n_procs > 1: 
-                inp_file.write(f'% pal nprocs {self.n_procs} end\n')
-
     def parse_orca(self):
+        '''Parse the gradient of the lower and upper states and nacme if computed.
+
+        Parses and converts to a 1D arraythe arrays and returns them. 
+        Returns an empty array for nacme if the nacme was not requested. 
+        '''
         with open('orca_engrad.in.out', 'r') as output_file:
             output_list = output_file.readlines()
 
@@ -160,12 +175,14 @@ class CICalculator(FileIOCalculator):
             grad = np.array(grad_str, dtype=float)
             gradients.append(grad)
 
+        # Parse nacme if requested 
         if self.calc_nacme:
 
             nacme_start = [i+4 for i, line in enumerate(output_list) if 'CARTESIAN NON-ADIABATIC COUPLINGS' in line][0]
             nacme_end = [i-1 for i, line in enumerate(output_list) if 'Difference to translation invariance:' in line][-1] 
             nacme_str = [l.strip().split()[3:] for l in output_list[nacme_start:nacme_end]]
             nacme = np.array(nacme_str, dtype=float)
+            nacme /= np.linalg.norm(nacme)
 
         else:
             nacme = np.zeros_like(gradients[0])
@@ -173,6 +190,7 @@ class CICalculator(FileIOCalculator):
         return energies, gradients[0], gradients[1], nacme 
 
     def write_results(self):
+        '''Writes the results in .dat files, updates energies.dat and trajectory files'''
         if self.program == 'ORCA':
             energies, engrad_0, engrad_1, nacme = self.parse_orca()
 
@@ -180,6 +198,14 @@ class CICalculator(FileIOCalculator):
         np.savetxt('engrad0.dat', engrad_0)
         np.savetxt('engrad1.dat', engrad_1)
 
+        try: 
+            iteration = int(np.loadtxt('iteration.dat'))
+        except:
+            iteration = 0 
+
+        np.savetxt('iteration.dat', np.array([iteration]) + 1)
+
+        # calculates nacme if requested 
         if self.calc_nacme:
             np.savetxt('nacme.dat', nacme)
 
@@ -195,14 +221,13 @@ class CICalculator(FileIOCalculator):
 
 
     def read_results(self):
-
+        '''Writes and reads the .dat files and calculates the effective gradient for the optimizer.'''
         # parse and write the results to files
         self.write_results()
         # print('Calculation results were extracted to .dat files')
         print('\nAt this optimization step, the state is:\n')
 
-        # calculate effective gradient
-            
+        # calculate effective gradient with selected method
         if self.profile == 'PENALTY':
             self.penalty_results()
         elif self.profile == 'GP':
@@ -210,8 +235,22 @@ class CICalculator(FileIOCalculator):
         elif self.profile == 'UBP':
             self.ubp_forces()
  
+        iteration = float(np.loadtxt('iteration.dat'))
+        
+        # If the convergence forced, check last 10 energies and if variation is small, stop the calculation.
+        if iteration > 11 and self.convergence == 'forced':
+            ener = np.loadtxt('energies.dat')[-10:]
+            print(f'\nener0 deviation in the last 10 cycles =  {np.std(ener[:,0]):10.8f} hartree')
+            print(f'ener1 deviation in the last 10 cycles =  {np.std(ener[:,1]):10.8f} hartree')
+            print(f'D_E deviation in the last 10 cycles =  {np.std(ener[:,2]):10.8f} eV\n')
+            # if np.std(ener[:,0]) < 0.00001 and np.std(ener[:,1]) < 0.00001 and np.std(ener[:,1]) < 0.001:
+            if np.std(ener[:,0]) < 0.1 and np.std(ener[:,1]) < 0.1 and np.std(ener[:,1]) < 0.1:
+                print('Optimization converged due to lack of change in the last 10 iterations\n')
+                self.results["forces"] = np.zeros_like(np.copy(self.results['forces']))
+
 
     def penalty_results(self):
+        '''Calculates effective force based in the penalty algorithm'''
         # management of the energies
         en1, en2 = np.loadtxt("ener.dat")
 
@@ -239,6 +278,7 @@ class CICalculator(FileIOCalculator):
         self.results["forces"] *= -ase.units.Hartree / ase.units.Bohr
     
     def gradient_projection_forces(self):
+        '''Calculates effective force based in the gradient projection algorithm'''
         # management of the energies
         en1, en2 = np.loadtxt("ener.dat")
 
@@ -263,6 +303,7 @@ class CICalculator(FileIOCalculator):
         self.results["forces"] = - total_gradient * (ase.units.Hartree / ase.units.Bohr)
 
     def ubp_forces(self):
+        '''Calculates effective force based in the updated branching plane algorithm with or without nacme'''
         # management of the energies
         en1, en2 = np.loadtxt("ener.dat")
     
@@ -311,8 +352,8 @@ class CICalculator(FileIOCalculator):
         g_diff = 2 * (en1 - en2) * x
         mean_grad = (grad1 + grad2)/2
     
-        # Generate the projector
-        P = np.identity(len(grad1.reshape(-1))) - np.outer(x,x) - np.outer(y,y)
+        # Generate the projector here the 0.3 weight was chosen semi-arbitrarily. 
+        P = np.identity(len(grad1.reshape(-1))) - np.outer(x,x) - 0.3 * np.outer(y,y)
     
         # calculate the total effective gradient with the projector
         total_gradient = g_diff.reshape(-1) + P @ mean_grad.reshape(-1)

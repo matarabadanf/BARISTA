@@ -54,6 +54,10 @@ class BrewerJobManager:
                 ('mult', 1),
                 ('program', 'ORCA'),
                 ('label', None), 
+                ('convergence','forced'),
+                ('rassccf_params', ''),
+                ('caspt2_params', ''),
+                ('imag', 0.3)
                 )
             )
 
