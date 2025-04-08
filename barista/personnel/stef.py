@@ -167,20 +167,32 @@ class Stef:
         with open(filename, 'w') as f:
             for image, energy in enumerate(self.image_energies):
                 f.write(f'{image} {energy:8.5f}\n')
+                
+    def savefig(self, filename):
+        filename = filename.replace('.dat', '.png')
+        plt.plot([i for i in range(len(self.image_energies))], self.image_energies*27.2114)
+        plt.ylabel('$\Delta$E w.r.t. $S_0$ FC')
+        plt.savefig(filename, dpi=600)
+
+    def plot(self):
+        plt.plot([i for i in range(len(self.image_energies))], self.image_energies*27.2114)
+        plt.ylabel('$\Delta$E w.r.t. $S_0$ FC')
+        plt.show()
 
 
 if __name__ == "__main__":
-     if len(sys.argv) == 1:
-         parser.print_help(sys.stderr)
-         sys.exit(1)
- 
-     args = parser.parse_args()
- 
-     a = Stef(args.f, args.en, args.u)
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
 
-     if args.o is not None:
-         a.save_energies(args.o)
+    args = parser.parse_args()
 
+    a = Stef(args.f, args.en, args.u)
+
+    if args.o is not None:
+        a.save_energies(args.o)
+        a.savefig(args.o)
+    a.plot()
 
 #     a = Stef("tests/stef/neb.dat", 0, "eV")
 # 
