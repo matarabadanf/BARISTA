@@ -37,7 +37,10 @@ class CICalculator(FileIOCalculator):
         convergence:str='forced',
         caspt2_params:str='',
         rassccf_params:str='',
-        imag:float=0.3
+        imag:float=0.3,
+        shake:float=0.01,
+        orbitals:str='',
+        rasscf:str = ''
     ):
         # The class methods have to be inherited or they will die
         super().__init__(
@@ -65,6 +68,9 @@ class CICalculator(FileIOCalculator):
         self.convergence = convergence
         self.mult = mult
         self.imag = imag
+        self.orbitals = orbitals
+        self.shake = shake 
+        self.rasscf = rasscf
 
         self.program = program.strip().upper()
         # this prepares a current geometry
@@ -77,6 +83,9 @@ class CICalculator(FileIOCalculator):
         # Select the command to run the different programs. 
         if self.program == 'ORCA':
             CICalculator.command = " ~/bin/run_orca.sh orca_engrad.in"
+        if self.program == 'MOLCAS':
+            CICalculator.command = " ~/bin/run_openmolcas.sh molcas_engrad.in"
+
         
 
         self.calc_nacme = calc_nacme
@@ -97,7 +106,7 @@ class CICalculator(FileIOCalculator):
             # print('\nOrca input is being generated')
             self.generate_orca_input()
         elif self.program == 'MOLCAS':
-            pass 
+            self.generate_molcas_input()
 
     def generate_orca_input(self):
         '''Generate an orca input. 
@@ -189,26 +198,109 @@ class CICalculator(FileIOCalculator):
 
         return energies, gradients[0], gradients[1], nacme 
 
+
+    def generate_molcas_input(self):
+        
+        with open(self.label + ".xyz", "w") as fd:
+            ase.io.write(fd, self.atoms, format="xyz")
+    
+        # This prepares the Molcas input
+        with open('molcas_engrad.in', 'w') as inp_file:
+    
+            #GATEWAY
+            # I have created a shake parameter (the default can be 0.00)
+            inp_file.write(
+            
+            f" &GATEWAY \n Title=molecule \n coord={self.label+'.xyz'} \n basis={self.basis} \
+            \n group=Nosym \n ricd \n shake \n {self.shake}" )
+    
+        
+            # SEWARD
+            inp_file.write( 
+            
+            f"&SEWARD \n  ")
+            
+    
+            #  I created another parameter called orbitals in case a RasOrb orbital file exists, otherwise we compute SCF
+            if self.orbitals != '':
+                inp_file.write(
+                f">>COPY $CurrDir/orbitals.RasOrb $WorkDir/$Project.RasOrb \n \
+                >>COPY $WorkDir/$Project.RasOrb INPORB \n >>> ENDIF <<<  " )
+            else:
+                inp_file.write(
+                f"&SCF" )
+    
+    
+            #RASSCF specifications for i root
+            inp_file.write(    
+            f"&RASSCF \n {self.rasscf}")
+    
+            #CASPT2 specifications (create imaginary shift parameter)
+            inp_file.write(f"&CASPT2 \n imag \n {self.imag} \n XMULtistate \n all \n ipea \n 0.0 ")
+    
+            #ALASKA
+            inp_file.write(f"&ALASKA ")
+
+    def parse_molcas(self):
+        with open('molcas_engrad.in.out', 'r') as output_file:
+            output_list = output_file.readlines()
+    
+            #Parse the energies of the two states
+            energies = []
+    
+            energies_index = [i for i, line in enumerate(output_list) if 'Point #  42 of   42 done' in line]
+            energies_ends = [i+1 for i, line in enumerate(output_list) if 'Total XMS-CASPT2 energies:' in line]
+            for energies_ends, energies_index in zip(energies_ends, energies_index):
+                en_str = [l.strip().split()[6] for l in output_list[energies_ends:energies_index]]
+                en = np.array(en_str, dtype=float)
+                energies.append(en)
+    
+    
+    
+    
+            #Parse the molecular gradients
+    
+            gradient_indices = [i+4 for i, line in enumerate(output_list) if 'Numerical gradient, root     ' in line]
+    
+    
+            gradient_ends = []
+            for indice in gradient_indices:
+                gradient_ends.append(next((i for i, line in enumerate(output_list) if '---------------------------------------------' in line and i > indice), None))
+    
+    
+            gradients = []
+            for gradstart, gradend in zip(gradient_indices, gradient_ends):
+                grad_str = [l.strip().split()[1:] for l in output_list[gradstart:gradend]]
+                grad = np.array(grad_str, dtype=float)
+                gradients.append(grad)
+    
+            #no nacme in molcas 
+            nacme = np.zeros_like(gradients[0])
+    
+            return energies, gradients[0], gradients[1], nacme 
+    
     def write_results(self):
         '''Writes the results in .dat files, updates energies.dat and trajectory files'''
         if self.program == 'ORCA':
             energies, engrad_0, engrad_1, nacme = self.parse_orca()
-
+        elif self.program == 'MOLCAS':
+            energies, engrad_0, engrad_1, nacme = self.parse_molcas()
+ 
         np.savetxt('ener.dat', energies)
         np.savetxt('engrad0.dat', engrad_0)
         np.savetxt('engrad1.dat', engrad_1)
-
+ 
         try: 
             iteration = int(np.loadtxt('iteration.dat'))
         except:
             iteration = 0 
-
+ 
         np.savetxt('iteration.dat', np.array([iteration]) + 1)
-
+ 
         # calculates nacme if requested 
         if self.calc_nacme:
             np.savetxt('nacme.dat', nacme)
-
+ 
         # update logfiles
         with open('energies.dat', 'a') as f:
             f.write(f'{energies[0]:10.6f} {energies[1]:12.8f} {(energies[1] - energies[0])*27.2114:6.4f}\n')
@@ -243,8 +335,8 @@ class CICalculator(FileIOCalculator):
             print(f'\nener0 deviation in the last 10 cycles =  {np.std(ener[:,0]):10.8f} hartree')
             print(f'ener1 deviation in the last 10 cycles =  {np.std(ener[:,1]):10.8f} hartree')
             print(f'D_E deviation in the last 10 cycles =  {np.std(ener[:,2]):10.8f} eV\n')
-            # if np.std(ener[:,0]) < 0.00001 and np.std(ener[:,1]) < 0.00001 and np.std(ener[:,1]) < 0.001:
-            if np.std(ener[:,0]) < 0.1 and np.std(ener[:,1]) < 0.1 and np.std(ener[:,1]) < 0.1:
+            if np.std(ener[:,0]) < 0.00001 and np.std(ener[:,1]) < 0.00001 and np.std(ener[:,1]) < 0.01:
+                # if np.std(ener[:,0]) < 0.1 and np.std(ener[:,1]) < 0.1 and np.std(ener[:,1]) < 0.1:
                 print('Optimization converged due to lack of change in the last 10 iterations\n')
                 self.results["forces"] = np.zeros_like(np.copy(self.results['forces']))
 
