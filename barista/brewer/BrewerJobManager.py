@@ -42,6 +42,8 @@ class BrewerJobManager:
         if input_keyword_dict['mode'] == 'ci':
             parameters = dict((
                 ('profile', 'ubp'),
+                ('slow_start', 'True'),
+                ('slow_increase', 'True'),
                 ('n_roots', 10),
                 ('iroot', 0),
                 ('jroot', 1),
@@ -90,6 +92,16 @@ class BrewerJobManager:
         else:
             parameters['calc_nacme'] = False
 
+        if str(parameters['slow_start']).lower() == 'true':
+            parameters['slow_start'] = True
+        else:
+            parameters['slow_start'] = False
+
+        if str(parameters['slow_increase']).lower() == 'true':
+            parameters['slow_increase'] = True
+        else:
+            parameters['slow_increase'] = False
+
         #automatically select nroots in case it is not defined in the input 
         if 'n_roots' not in input_keyword_dict.keys():
             parameters['n_roots'] = parameters['jroot'] + 2
@@ -110,7 +122,7 @@ class BrewerJobManager:
     
     def generate_molecule_and_calc(self) -> 'molecule': 
         molecule = ase.io.read(self.parameters['geom'])
-        print(f'\nGeometry was read from {self.parameters['geom']}.\n')
+        print(f'\nGeometry was read from {self.parameters["geom"]}.\n')
         # molecule.calc = CICalculator(atoms=molecule, n_procs=1, **self.parameters)
         molecule.calc = CICalculator(atoms=molecule, n_procs=self.job_cores, **self.parameters)
         print(f'The number of processors used is: {self.job_cores}\n')
