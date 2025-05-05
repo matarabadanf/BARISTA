@@ -40,6 +40,24 @@ parser.add_argument(
     help='Output image name.',
 )
 
+parser.add_argument(
+    '--landscape', 
+    action='store_true', 
+    help='Use landscape layout'
+)
+
+parser.add_argument(
+    '--spline', 
+    action='store_true', 
+    help='Use spline'
+)
+
+parser.add_argument(
+    '--barrier', 
+    action='store_true', 
+    help='Plot absolute barrier'
+)
+
 class NebExtractor:
 
     def __init__(
@@ -87,7 +105,14 @@ class NebExtractor:
     def absolute_barrier(self) -> float:
         return abs(max(self.energy_array) - min(self.energy_array))
 
-    def _preplot(self, spline:bool=False, annotate_barrier:bool=True):
+    def _preplot(
+            self, 
+            spline:bool=False,
+            annotate_barrier:bool=True, 
+            title:str='None', 
+            landscape:bool=False
+        ):
+
         x = np.arange(0,len(self.energy_array))
         y = self.energy_array
 
@@ -97,9 +122,14 @@ class NebExtractor:
         xi_yi_min = min(zip(x, y), key=lambda pair: pair[1])
         print(f"Min energy: {xi_yi_min[1]} at index {xi_yi_min[0]}")
 
+        if landscape:
+            plt.figure(figsize=(12, 6))
+            ax = plt.gca()
+            for spine in ax.spines.values():
+                spine.set_visible(False)
 
         X_Y_Spline = make_interp_spline(x, y)
-        X_ = np.linspace(x.min(), x.max(), 50)
+        X_ = np.linspace(x.min(), x.max(), 500)
         Y_ = X_Y_Spline(X_)
         if spline == True:
             plt.plot(X_, Y_)
@@ -113,23 +143,34 @@ class NebExtractor:
             idx_ymin = xi_yi_min[0]
             idx_ymax = xi_yi_max[0]
 
-            xmid = (x[idx_ymin] + x[idx_ymax]) / 2
-
             # Draw the double arrow using annotate twice
             plt.annotate(
-                '', xy=(xmid, ymax), xytext=(xmid, ymin),
+                '', xy=(idx_ymax, ymax), xytext=(idx_ymax, ymin),
                 arrowprops=dict(arrowstyle='<->', color='red', lw=1.5)
             )
 
             # Add energy barrier label
             plt.text(
-                xmid + 0.1, (ymax + ymin) / 2,
+                idx_ymax + 0.1, (ymax + ymin) / 2,
                 f'{barrier:.2f} eV',
                 color='red', va='center', fontsize=10
             )
+            
+        if title != 'None':
+            plt.title(title)
 
-    def savefig(self, name:str='default.jpg', dpi:int= 600):
-        self._preplot()
+        plt.tick_params(
+            axis='x',          # changes apply to the x-axis
+            which='both',      # both major and minor ticks are affected
+            bottom=False,      # ticks along the bottom edge are off
+            top=False,         # ticks along the top edge are off
+            labelbottom=False
+        )
+
+    def savefig(self, name:str='default.jpg', dpi:int= 600, landscape:bool=False, spline=False, annotate_barrier:bool=False):
+        self._preplot(landscape=landscape, spline=spline, annotate_barrier=annotate_barrier)
+
+        plt.savefig(name, dpi=dpi)
 
         plt.show()
 
@@ -144,7 +185,7 @@ if __name__ == '__main__':
     s = NebExtractor(args.f, args.en, args.u)
 
     if args.o != 'default.jpg':
-        s.savefig(args.o)
+        s.savefig(args.o, landscape=args.landscape, spline=args.spline, annotate_barrier=args.barrier)
         
 
     #s = NebExtractor('asdf.xyz', reference_energy=-533.24663318)
