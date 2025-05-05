@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt 
 import numpy as np 
 import argparse
+import sys
 from functools import cached_property
 from scipy.interpolate import make_interp_spline
 
@@ -53,14 +54,14 @@ class NebExtractor:
         self.units = units 
         
     @cached_property 
-    def file_content(self):
+    def file_content(self) -> list:
         with open(self.traj_file, 'r') as f:
             file_content = f.readlines()
 
         return file_content 
 
     @cached_property
-    def energy_array(self):
+    def energy_array(self) -> np.ndarray:
         energies = []
 
         for line in self.file_content:
@@ -69,24 +70,34 @@ class NebExtractor:
 
         if self.units == 'eV': 
             converter = 27.2114 
+        else:
+            converter = 1.0
 
         return (np.array(energies) - self.reference_energy) * converter
 
     @cached_property
-    def forward_barrier(self):
+    def forward_barrier(self) -> float:
         return abs(max(self.energy_array) - self.energy_array[0])
 
     @cached_property
-    def reverse_barrier(self):
+    def reverse_barrier(self) -> float:
         return abs(max(self.energy_array) - self.energy_array[-1])
 
     @cached_property
-    def absolute_barrier(self):
+    def absolute_barrier(self) -> float:
         return abs(max(self.energy_array) - min(self.energy_array))
 
-    def _preplot(self, spline:bool=False):
+    def _preplot(self, spline:bool=False, annotate_barrier:bool=True):
         x = np.arange(0,len(self.energy_array))
         y = self.energy_array
+
+        xi_yi_max = max(zip(x, y), key=lambda pair: pair[1])
+        print(f"Max energy: {xi_yi_max[1]} at index {xi_yi_max[0]}")
+
+        xi_yi_min = min(zip(x, y), key=lambda pair: pair[1])
+        print(f"Min energy: {xi_yi_min[1]} at index {xi_yi_min[0]}")
+
+
         X_Y_Spline = make_interp_spline(x, y)
         X_ = np.linspace(x.min(), x.max(), 50)
         Y_ = X_Y_Spline(X_)
@@ -94,20 +105,55 @@ class NebExtractor:
             plt.plot(X_, Y_)
         else:
             plt.plot(x, y)
+
+        if annotate_barrier:
+            ymin = min(y)
+            ymax = max(y)
+            barrier = ymax - ymin
+            idx_ymin = xi_yi_min[0]
+            idx_ymax = xi_yi_max[0]
+
+            xmid = (x[idx_ymin] + x[idx_ymax]) / 2
+
+            # Draw the double arrow using annotate twice
+            plt.annotate(
+                '', xy=(xmid, ymax), xytext=(xmid, ymin),
+                arrowprops=dict(arrowstyle='<->', color='red', lw=1.5)
+            )
+
+            # Add energy barrier label
+            plt.text(
+                xmid + 0.1, (ymax + ymin) / 2,
+                f'{barrier:.2f} eV',
+                color='red', va='center', fontsize=10
+            )
+
+    def savefig(self, name:str='default.jpg', dpi:int= 600):
+        self._preplot()
+
         plt.show()
 
 
 if __name__ == '__main__':
-    pass 
-    
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
 
-    s = NebExtractor('asdf.xyz', reference_energy=-533.24663318)
-    print(s.energy_array)
+    args = parser.parse_args()
 
-    print(f'Forward barrier: {s.forward_barrier:6.4f}')
-    print(f'Reverse barrier: {s.reverse_barrier:6.4f}')
-    print(f'Absolute barrier: {s.absolute_barrier:6.4f}')
+    s = NebExtractor(args.f, args.en, args.u)
 
-    s._preplot()
+    if args.o != 'default.jpg':
+        s.savefig(args.o)
+        
+
+    #s = NebExtractor('asdf.xyz', reference_energy=-533.24663318)
+    #print(s.energy_array)
+
+    #print(f'Forward barrier: {s.forward_barrier:6.4f}')
+    #print(f'Reverse barrier: {s.reverse_barrier:6.4f}')
+    #print(f'Absolute barrier: {s.absolute_barrier:6.4f}')
+
+    #s._preplot()
    
 
