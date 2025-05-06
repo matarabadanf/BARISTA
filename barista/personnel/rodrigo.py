@@ -5,7 +5,7 @@ import sys
 import argparse
 import pandas as pd
 
-from misc.NXSpecReader import NXSpecReader
+from barista.personnel.misc.NXSpecReader import NXSpecReader
 
 from typing import List, Dict, Optional
 from numpy.typing import NDArray
