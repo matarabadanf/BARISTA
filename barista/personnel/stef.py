@@ -41,6 +41,13 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "-dat",
+    type=str,
+    default='default.dat',
+    help='Save data to .dat file.',
+)
+
+parser.add_argument(
     '--landscape', 
     action='store_true', 
     help='Use landscape layout'
@@ -174,6 +181,18 @@ class NebExtractor:
 
         plt.show()
 
+    def export_data(self, name:str='default.dat'):
+
+        x = np.arange(0,len(self.energy_array))
+        y = self.energy_array
+
+        X_Y_Spline = make_interp_spline(x, y)
+        X_ = np.linspace(x.min(), x.max(), 500)
+        Y_ = X_Y_Spline(X_)
+
+        np.savetxt(name, np.array([x,y]).T)
+        np.savetxt(name.replace('.dat', '_spline.dat'), np.array([X_,Y_]).T)
+
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
@@ -183,6 +202,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     s = NebExtractor(args.f, args.en, args.u)
+
+    if args.dat != 'default.dat':
+        s.export_data(args.dat)
 
     if args.o != 'default.jpg':
         s.savefig(args.o, landscape=args.landscape, spline=args.spline, annotate_barrier=args.barrier)
