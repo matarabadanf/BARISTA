@@ -101,9 +101,9 @@ class Javi:
         tan_2_beta = 2 * (np.dot(self.g_ab, self.h_ab)) / (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab))
         beta_2 = np.atan(tan_2_beta)
         beta = beta_2 / 2
-        
-        return beta 
-        # return 0.5 * np.arctan2(2 * np.dot(self.g_ab, self.h_ab), (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab)))
+        print(f'Beta = {beta}')
+        # return beta  
+        return 0.5 * np.arctan2(2 * np.dot(self.g_ab, self.h_ab), (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab)))
 
     @cached_property
     def _g_tilde(self) -> np.ndarray:
@@ -115,10 +115,12 @@ class Javi:
 
     @cached_property
     def x(self) -> np.ndarray:
+        return np.copy(self._g_tilde / np.dot(self._g_tilde, self._g_tilde)**0.5)
         return np.copy(self._g_tilde / np.linalg.norm(self._g_tilde))
 
     @cached_property
     def y(self) -> np.ndarray:
+        return np.copy(self._h_tilde / np.dot(self._h_tilde, self._h_tilde)**0.5)
         return np.copy(self._h_tilde / np.linalg.norm(self._h_tilde))
 
     @cached_property
@@ -133,7 +135,8 @@ class Javi:
 
         asym = (np.dot(self._g_tilde, self._g_tilde) - np.dot(self._h_tilde, self._h_tilde)) / (np.dot(self._g_tilde, self._g_tilde) + np.dot(self._h_tilde, self._h_tilde))
 
-        return float(asym)
+        return abs(float(asym))
+        return float(asym) # original
 
     def energy_difference(self, x:float, y:float) -> float:
         return 2 * self.pitch * np.sqrt((x**2 + y**2) + self.asymmetry * (x**2 - y**2))
@@ -363,7 +366,7 @@ if __name__ == "__main__":
     print(f'pitch = {j.pitch}')
     print(f'asymmetry = {j.asymmetry}')
     print(f'tilt = {j.sigma}')
-    print(f'theta = {j.theta_s%np.pi /np.pi}')
+    print(f'theta = {j.theta_s/2/np.pi*360}')
 
 #    print(j.x)
 #    print(j.y)
