@@ -55,6 +55,7 @@ class Javi:
         self._gb_filename = gb_filename
         self._hab_filename = hab_filename
         self._ci_energy = ci_energy
+        self.rotation_counter = 0 
 
         self._init()
 
@@ -73,13 +74,13 @@ class Javi:
 
     def _load_vectors(self) -> None:
         self._ga = np.loadtxt(self._ga_filename).reshape(-1)
-#        self._ga /= np.linalg.norm(self._ga)
+        # self._ga /= np.linalg.norm(self._ga)
 
         self._gb = np.loadtxt(self._gb_filename).reshape(-1)
-#        self._gb /= np.linalg.norm(self._gb)
+        # self._gb /= np.linalg.norm(self._gb)
 
         self._h_ab = np.loadtxt(self._hab_filename).reshape(-1)
-#        self._h_ab /= np.linalg.norm(self._h_ab)
+        # self._h_ab /= np.linalg.norm(self._h_ab)
 
     @cached_property
     def g_ab(self) -> np.ndarray:
@@ -95,15 +96,55 @@ class Javi:
         return np.copy(self._h_ab)
 
     @cached_property
-    def beta(self) -> float:
+    def _pre_beta(self) -> np.array:
         # tan_2_beta = 2 * (np.dot(self.g_ab, self.h_ab)) / (np.linalg.norm(self.g_ab) - np.linalg.norm(self.h_ab))
         # return np.arctan(tan_2_beta)
         tan_2_beta = 2 * (np.dot(self.g_ab, self.h_ab)) / (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab))
         beta_2 = np.atan(tan_2_beta)
         beta = beta_2 / 2
-        print(f'Beta = {beta}')
         # return beta  
-        return 0.5 * np.arctan2(2 * np.dot(self.g_ab, self.h_ab), (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab)))
+        beta = 0.5 * np.arctan2(2 * np.dot(self.g_ab, self.h_ab), (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab)))
+
+        # if beta < 0: 
+        #     beta += np.pi/4
+
+
+        # print(f'Beta, pi/4 = {beta} {np.pi/4}')
+
+        # print(f'Beta mod pi/4 = {beta % np.pi/4}')
+        # print(f'Beta before adjustment = {beta}')
+        # while beta > np.pi/4:
+        #     beta -= np.pi/2
+        # beta =  beta + np.pi/4
+        # print(f'Beta after adjustment = {beta}')
+
+
+        beta_2 = np.arctan2(
+            2 * np.dot(self.g_ab, self.h_ab),
+            np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab)
+        )    # returns 
+
+        beta = beta_2/2
+
+        return [beta + i*np.pi/2 for i in range(0, 4)]
+        # return 0.5 * np.arctan2(2 * np.dot(self.g_ab, self.h_ab), (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab)))
+
+    def _rotate_for_beta(self):
+        pass
+
+    @property
+    def beta(self) -> float:
+        return self._pre_beta[2] # 2 works for x and y unit vector sign in ethylene a and b  
+
+    @property
+    def is_rotation_needed(self):
+        print(f'self.asymmetry > 0     = {self.asymmetry > 0}, {self.asymmetry}')
+        zero_condition = 0 < self.theta_s and abs(0 - self.theta_s) < 10**-12
+        print(f'0 < self.theta_s       = {self.theta_s > -10**-12}, {self.theta_s}')
+        print(f'self.theta_s < np.pi/2 = {self.theta_s < np.pi/2}')
+    
+        return not (self.asymmetry > 0 and self.theta_s > -10**-12  and self.theta_s < np.pi/2)
+        
 
     @cached_property
     def _g_tilde(self) -> np.ndarray:
@@ -111,16 +152,16 @@ class Javi:
 
     @cached_property
     def _h_tilde(self) -> np.ndarray:
-        return self.h_ab * np.cos(self.beta) - self.g_ab * np.sin(self.beta)
+        return self.h_ab * np.cos(self.beta) - self.g_ab * np.sin(self.beta) # original
 
     @cached_property
     def x(self) -> np.ndarray:
-        return np.copy(self._g_tilde / np.dot(self._g_tilde, self._g_tilde)**0.5)
+        # return np.copy(self._g_tilde / np.dot(self._g_tilde, self._g_tilde)**0.5)
         return np.copy(self._g_tilde / np.linalg.norm(self._g_tilde))
 
     @cached_property
     def y(self) -> np.ndarray:
-        return np.copy(self._h_tilde / np.dot(self._h_tilde, self._h_tilde)**0.5)
+        # return np.copy(self._h_tilde / np.dot(self._h_tilde, self._h_tilde)**0.5)
         return np.copy(self._h_tilde / np.linalg.norm(self._h_tilde))
 
     @cached_property
@@ -135,7 +176,7 @@ class Javi:
 
         asym = (np.dot(self._g_tilde, self._g_tilde) - np.dot(self._h_tilde, self._h_tilde)) / (np.dot(self._g_tilde, self._g_tilde) + np.dot(self._h_tilde, self._h_tilde))
 
-        return abs(float(asym))
+        # return abs(float(asym))
         return float(asym) # original
 
     def energy_difference(self, x:float, y:float) -> float:
@@ -173,11 +214,15 @@ class Javi:
             samples.append(sample)
 
         x,y,z = max(samples, key=lambda item: item[2])
-        # print(f'\n\n\n The xyz values of the max tilt is: {x:5.2f}, {y:5.2f}, {z:5.2f}')
+        print(f'\n\n\n The xyz values of the max tilt is: {x:5.2f}, {y:5.2f}, {z:5.2f}')
 
         vec = np.array([x,y])
+     
+        theta = -np.atan2(y,x)
 
-        # print(vec)
+        return theta
+
+        print(vec)
         cos_theta = np.dot(vec, np.array([1,0])) / np.linalg.norm(vec)
         cos_theta = np.clip(cos_theta, -1.0, 1.0)
 
@@ -191,6 +236,7 @@ class Javi:
         # print(f'The angle of the maximum tilt is {theta:5.3} Radians or {theta*360/np.pi:3.5} degrees')
         
         return theta
+
 
     @cached_property
     def sigma(self):
@@ -318,7 +364,7 @@ class Javi:
         y_force = self.y.reshape([-1,3])
 
         
-        print(y_force)
+        # print(y_force)
 
         with open('vectors.xyz', 'w') as vecfile:
             vecfile.write(header[0])
@@ -348,7 +394,7 @@ class Javi:
         with open('vectors.xyz', 'a') as vecfile:
              vecfile.write(header[0])
              vecfile.write('y vector \n')
-             print(coordinates)
+             # print(coordinates)
              for index, coordinate in enumerate(coordinates):
                  symbol = symbols[index]
                  coord = coordinate
@@ -358,7 +404,8 @@ class Javi:
                  vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{-f:12.8f}" for f in forces)} \n')
                  # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord + forces)}\n')
 
-        print(np.linalg.norm(x_force).reshape(-1))
+        # print(np.linalg.norm(x_force).reshape(-1))
+
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -372,13 +419,18 @@ if __name__ == "__main__":
         args.nac
     )
 
-    print(f'pitch = {j.pitch}')
-    print(f'asymmetry = {j.asymmetry}')
-    print(f'tilt = {j.sigma}')
-    print(f'theta = {j.theta_s/2/np.pi*360}')
+    print(f'scalar    = {j.x@j.y:8.4f}')
+    print(f'beta      = {j.beta%np.pi:8.4f}')
+    print(f'pitch     = {j.pitch:8.4f}')
+    print(f'asymmetry = {j.asymmetry:8.4f}')
+    print(f'tilt      = {j.sigma:8.4f}')
+    print(f'theta     = {j.theta_s/2/np.pi*360:8.1f}')
+    print(f'is_rot_ne = {j.is_rotation_needed}')
 
-#    print(j.x)
-#    print(j.y)
+    print('\nX and Y Vectors are:\n')
+    print(j.x)
+    print(j.y)
+    print('\nP and B values are:\n')
     print(j.p)
     print(j.b)
 

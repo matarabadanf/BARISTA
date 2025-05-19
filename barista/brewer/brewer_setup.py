@@ -13,12 +13,6 @@ parser.add_argument(
     "-f", type=str, required=True, default=42, help="Geometry xyz file to start the optimization"
 )
 
-parser.add_argument("-o", type=str, default=True, help="Output file name")
-
-parser.add_argument(
-    "-g", type=str, default="True", help="Generate an xyz file"
-)
-
 if len(sys.argv) == 1:
    parser.print_help(sys.stderr)
    sys.exit(1)
@@ -26,7 +20,7 @@ if len(sys.argv) == 1:
 args = parser.parse_args()
 
 
-BREWER_PATH = '_brewer/' 
+BREWER_PATH = '/gpfs/home/uam/uam121718/bin/BARISTA/barista/brewer/' 
 
 if not BREWER_PATH:
     print('Configure BREWER_PATH with setup_brewer.py')
@@ -40,6 +34,8 @@ if isinstance(args.f, str):
     os.system('cp %sopt.py %s' % (BREWER_PATH, workdir))
     os.system('cp %srun_opt.sh %s' % (BREWER_PATH, workdir))
     os.system('cp %sflavs.py %s' % (BREWER_PATH, workdir))
+    os.system('cp %s/../personnel/javi.py %s' % (BREWER_PATH, workdir))
+    os.system('cp %sBrewerJobManager.py %s' % (BREWER_PATH, workdir))
 
     with open('%s/brewer.TEMPLATE' % workdir, 'r') as f:
         cont = f.readlines()
