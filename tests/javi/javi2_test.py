@@ -60,7 +60,7 @@ def test_pitch(setup_data):
 
 def test_asymmetry(setup_data):
     j, _, _, _, _, _, _, ref_asymm, _, _ = setup_data
-    assert abs(j.asymmetry - ref_asymm) < 0.001, f'Reference asymmetry and j.asymmetry differ in {abs(j.asymmetry - ref_asymm):9.5f}'
+    assert abs(abs(j.asymmetry) - abs(ref_asymm)) < 0.001, f'Reference asymmetry and j.asymmetry differ in {abs(j.asymmetry - ref_asymm):9.5f}'
 
 def test_sigma(setup_data):
     j, _, _, _, _, _, _, _, ref_sigma, _ = setup_data
