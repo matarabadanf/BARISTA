@@ -73,8 +73,13 @@ class Javi:
 
     def _load_vectors(self) -> None:
         self._ga = np.loadtxt(self._ga_filename).reshape(-1)
+#        self._ga /= np.linalg.norm(self._ga)
+
         self._gb = np.loadtxt(self._gb_filename).reshape(-1)
+#        self._gb /= np.linalg.norm(self._gb)
+
         self._h_ab = np.loadtxt(self._hab_filename).reshape(-1)
+#        self._h_ab /= np.linalg.norm(self._h_ab)
 
     @cached_property
     def g_ab(self) -> np.ndarray:
@@ -94,8 +99,11 @@ class Javi:
         # tan_2_beta = 2 * (np.dot(self.g_ab, self.h_ab)) / (np.linalg.norm(self.g_ab) - np.linalg.norm(self.h_ab))
         # return np.arctan(tan_2_beta)
         tan_2_beta = 2 * (np.dot(self.g_ab, self.h_ab)) / (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab))
-
-        return 0.5 * np.arctan2(2 * np.dot(self.g_ab, self.h_ab), (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab)))
+        beta_2 = np.atan(tan_2_beta)
+        beta = beta_2 / 2
+        
+        return beta 
+        # return 0.5 * np.arctan2(2 * np.dot(self.g_ab, self.h_ab), (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab)))
 
     @cached_property
     def _g_tilde(self) -> np.ndarray:
@@ -290,6 +298,55 @@ class Javi:
     
         fig.show()    
 
+    def generate_force_file(self, xyz_file:str):
+        with open(xyz_file, 'r') as f:
+            cont = f.readlines()
+
+        header = cont[0:1]
+
+        coordinates = np.array([line.strip().split()[1:] for line in cont[2:]], dtype=float)
+        symbols = np.array([line.strip().split()[0] for line in cont[2:]], dtype=str)
+
+        x_force = self.x.reshape([-1,3])
+        y_force = self.y.reshape([-1,3])
+
+        print(y_force)
+
+        with open('vectors.xyz', 'w') as vecfile:
+            vecfile.write(header[0])
+            vecfile.write('x vector \n')
+            for index, coordinate in enumerate(coordinates):
+                symbol = symbols[index]
+                coord = coordinate
+                forces = x_force[index]
+
+                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)}\n')
+                # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} 3\n')
+
+        with open('vectors.xyz', 'a') as vecfile:
+            vecfile.write(header[0])
+            vecfile.write('x vector \n')
+            for index, coordinate in enumerate(coordinates):
+                symbol = symbols[index]
+                coord = coordinate
+                forces = x_force[index]
+
+                # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord + forces)}\n')
+                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} 3\n')
+
+        with open('vectors.xyz', 'a') as vecfile:
+             vecfile.write(header[0])
+             vecfile.write('y vector \n')
+             print(coordinates)
+             for index, coordinate in enumerate(coordinates):
+                 symbol = symbols[index]
+                 coord = coordinate
+                 forces = y_force[index]
+ 
+                 vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces/np.linalg.norm(forces))} 3\n')
+                 # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord + forces)}\n')
+
+        print(np.linalg.norm(x_force).reshape(-1))
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -302,6 +359,18 @@ if __name__ == "__main__":
         args.g1,
         args.nac
     )
+
+    print(f'pitch = {j.pitch}')
+    print(f'asymmetry = {j.asymmetry}')
+    print(f'tilt = {j.sigma}')
+    print(f'theta = {j.theta_s%np.pi /np.pi}')
+
+#    print(j.x)
+#    print(j.y)
+    print(j.p)
+    print(j.b)
+
+#     j.generate_force_file('tt.xyz')
 
     if args.interactive:
         j.plot_CI()
@@ -316,5 +385,3 @@ if __name__ == "__main__":
     # print(j.beta)
     # if args.interactive == True:
     #     j.plot_CI()
-
-
