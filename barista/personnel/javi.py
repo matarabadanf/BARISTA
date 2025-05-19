@@ -313,11 +313,13 @@ class Javi:
         x_force = self.x.reshape([-1,3])
         y_force = self.y.reshape([-1,3])
 
+        displaced_in_x = coordinates + x_force
+        
         print(y_force)
 
         with open('vectors.xyz', 'w') as vecfile:
             vecfile.write(header[0])
-            vecfile.write('x vector \n')
+            vecfile.write('not altered\n')
             for index, coordinate in enumerate(coordinates):
                 symbol = symbols[index]
                 coord = coordinate
@@ -331,11 +333,14 @@ class Javi:
             vecfile.write('x vector \n')
             for index, coordinate in enumerate(coordinates):
                 symbol = symbols[index]
-                coord = coordinate
+                coord = coordinates[index]
                 forces = x_force[index]
+                # normalized_force =  x_force[index] / np.linalg.norm(x_force[index])
+                # forces = normalized_force
 
                 # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord + forces)}\n')
-                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} 3\n')
+                # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces/np.linalg.norm(forces))} 3\n')
+                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{-f:12.8f}" for f in forces)}\n')
 
         with open('vectors.xyz', 'a') as vecfile:
              vecfile.write(header[0])
@@ -346,7 +351,8 @@ class Javi:
                  coord = coordinate
                  forces = y_force[index]
  
-                 vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces/np.linalg.norm(forces))} 3\n')
+                 # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces/np.linalg.norm(forces))} 3\n')
+                 vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{-f:12.8f}" for f in forces)} \n')
                  # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord + forces)}\n')
 
         print(np.linalg.norm(x_force).reshape(-1))
@@ -373,7 +379,7 @@ if __name__ == "__main__":
     print(j.p)
     print(j.b)
 
-#     j.generate_force_file('tt.xyz')
+    j.generate_force_file('tt.xyz')
 
     if args.interactive:
         j.plot_CI()
