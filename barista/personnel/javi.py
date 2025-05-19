@@ -246,6 +246,10 @@ class Javi:
         max_x = max_grid * np.cos(self.theta_s)
         max_y = max_grid * np.sin(self.theta_s)
         max_value = self.average_energy(max_x,max_y)
+
+        tilt_direction = np.array([-max_x, -max_y, -max_value]) * self.sigma
+
+        max_x, max_y, max_value = tilt_direction
     
         # rgba(100, 120, 140, 0.7)
         # Create a 3D surface plot
@@ -256,7 +260,7 @@ class Javi:
             go.Surface(z=b_p,    x=X, y=Y, showscale=False, name='Mean energy plane', opacity=0.5, colorscale=[[0, 'rgba(0, 255, 0, 0.7)'],[1, 'rgba(0, 255, 0, 0.7)']]),
 
             # Vectors
-            go.Scatter3d(x=x_intersect, y=y_intersect, z=z_intersect, mode='lines+text', line=dict(color='rgba(0, 0, 0, 0.5)', width=4), name='BP and ME intersection'),
+            # go.Scatter3d(x=x_intersect, y=y_intersect, z=z_intersect, mode='lines+text', line=dict(color='rgba(0, 0, 0, 0.5)', width=4), name='BP and ME intersection'),
             go.Scatter3d(x=[0, max_x], y=[0, max_y], z=[0, max_value], mode='lines+text',line=dict(color='black', width=4), name = r'Max tilt direction', text=['',  'Max tilt direction'], textfont=dict(color='black')),
             go.Scatter3d(x=[0, 1*max_grid], y=[0, 0], z=[0, 0], mode='lines+text',line=dict(color='black', width=4), name = r'$\hat{\mathbf{x}}$', text=['', 'x'], textfont=dict(color='black')),
             go.Scatter3d(x=[0, 0], y=[0, 1*max_grid], z=[0, 0], mode='lines+text',line=dict(color='black', width=4), name = r'$\hat{\mathbf{y}}$', text=['', 'y'], textfont=dict(color='black')),
@@ -313,7 +317,6 @@ class Javi:
         x_force = self.x.reshape([-1,3])
         y_force = self.y.reshape([-1,3])
 
-        displaced_in_x = coordinates + x_force
         
         print(y_force)
 
