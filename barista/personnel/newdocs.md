@@ -308,8 +308,7 @@ Generates the TDDFT absorption spectre from an ORCA TDDFT calculation.         I
 
 ### Usage
 ```
-doc2.py [-h] -F F [-o O] [-u U] [--gaussian] [-gauss_disp GAUSS_DISP] [-exp EXP]
-               [-exp_units EXP_UNITS] [-exp_shift EXP_SHIFT] [-semi SEMI] [--interactive]
+doc2.py [-h] -F F [-o O] [-u U] [--gaussian] [-gauss_disp GAUSS_DISP] [-exp EXP] [-exp_units EXP_UNITS] [-exp_shift EXP_SHIFT] [-semi SEMI] [--interactive]
 ```
 
 ### Arguments
@@ -392,63 +391,130 @@ doc2.py [-h] -f F [-en EN] [-u U] [-o O] [-dat DAT] [--landscape] [--spline] [--
 <!-- Source: alberto.py -->
 ## Class: alberto.Alberto
 
-Takes a excited state optimization in ORCA and plots the energy of each state at each
-step of the opitmizaiton and the actual root.
+Takes an excited state optimization in ORCA and plots the energy of each state at each
+step of the optimization and the actual root.
+
+This class parses ORCA output files from TD-DFT/TDA calculations to track and
+visualize the energy evolution of electronic states during geometry optimization.
 
 Attributes
 ----------
 filename : str
-    Name of the orca output file.
+    Name of the ORCA output file.
 reference_energy : float
-    Value of the reference energy.
+    Value of the reference energy (typically ground state energy) in Hartree.
 units : str
-    Units for the plot. Default is eV.
-
+    Units for the energy values in plots. Default is "eV".
+content_list : List[str]
+    Content of the ORCA output file as a list of lines.
+state_indexes : List[int]
+    List of state indexes found in the file.
+number_of_states : int
+    Total number of excited states found.
+number_of_steps : int
+    Number of optimization steps.
+cis_array : np.ndarray
+    Array containing SCF energies at each step.
+energy_array : np.ndarray
+    2D array containing energy values for each state at each step.
+bulk_energy_array : np.ndarray
+    Copy of energy_array before reference shift.
+curr_energy : np.ndarray
+    Energy of the current root at each optimization step.
+_starting_root : int
+    Initial root used for the optimization.
+_final_root : int
+    Final root after optimization.
 
 Methods
 -------
-plot()
-    Plots the energies at each step of the optimization.
-
-save_image(image_name)
-    Saves the plot to an image.
+_initialize() -> None
+    Initialize all data structures and parse the output file.
+_get_file_content() -> None
+    Open and read the output file.
+_get_state_indexes() -> None
+    Extract state indexes from the output file.
+_get_cis_energies() -> None
+    Extract SCF energies from the output file.
+_get_abs_energy_array() -> None
+    Calculate absolute energies for all states.
+_get_relative_energy() -> None
+    Calculate energies relative to the reference energy.
+_get_current_energy() -> None
+    Extract the current energy surface at each step.
+set_units(units: str) -> None
+    Change the energy units used for plotting.
+_rescale_units(prev_units: str) -> None
+    Rescale energy values according to the selected units.
+set_imagename(image_name: str) -> None
+    Set the output image name.
+_prepare_plot() -> Tuple[plt.Figure, plt.Axes]
+    Prepare the energy plot.
+plot() -> None
+    Display the energy plot.
+generate_image(output_image_name: str) -> None
+    Save the energy plot to an image file.
 
 ### Properties
 
 #### `final_root`
 
-_No documentation provided_
+Get the final root after optimization.
+
+Returns
+-------
+int
+    Index of the final root.
 
 #### `starting_root`
 
-_No documentation provided_
+Get the initial root used for the optimization.
+
+Returns
+-------
+int
+    Index of the starting root.
 
 ### Methods
 
-#### `generate_image(self, output_image_name: str)`
+#### `generate_image(self, output_image_name: str) -> None`
 
-_No documentation provided_
+Save the energy plot to an image file.
 
-#### `plot(self)`
+Parameters
+----------
+output_image_name : str
+    Name of the output image file.
 
-_No documentation provided_
+#### `plot(self) -> None`
 
-#### `set_imagename(self, image_name: str)`
+Display the energy plot showing all states and the current surface.
 
-Sets the class parameter Alberto.imagename
+Creates and displays a plot showing the energy evolution of all states
+during the optimization, highlighting the current surface being followed.
+
+#### `set_imagename(self, image_name: str) -> None`
+
+Sets the output image name for saving plots.
 
 Parameters
 ----------
 image_name : str
     Image name to set.
 
-Returns
--------
-None,
+#### `set_units(self, units: str) -> None`
 
-#### `set_units(self, units)`
+Change the energy units used for plotting.
 
-_No documentation provided_
+Parameters
+----------
+units : str
+    Energy units to use ("eV" or "Hartree").
+    
+Raises
+------
+ValueError
+    If an unsupported unit is specified.
 
 ---
 
