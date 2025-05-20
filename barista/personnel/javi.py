@@ -134,7 +134,9 @@ class Javi:
 
     @property
     def beta(self) -> float:
-        return self._pre_beta[2] # 2 works for x and y unit vector sign in ethylene a and b  
+        idex = 0 
+        print(f'Rotation of {idex} pi halves')
+        return self._pre_beta[idex] # 2 works for x and y unit vector sign in ethylene a and b  
 
     @property
     def is_rotation_needed(self):
@@ -218,7 +220,7 @@ class Javi:
 
         vec = np.array([x,y])
      
-        theta = -np.atan2(y,x)
+        theta = np.atan2(y,x)
 
         return theta
 
@@ -312,10 +314,10 @@ class Javi:
             go.Scatter3d(x=[0, 0], y=[0, 1*max_grid], z=[0, 0], mode='lines+text',line=dict(color='black', width=4), name = r'$\hat{\mathbf{y}}$', text=['', 'y'], textfont=dict(color='black')),
     
             # Dummy scatter traces for the legend to reflect the surface color
-            go.Scatter3d(x=[None], y=[None], z=[None], mode='markers', marker=dict(color='rgba(100, 120, 140, 0.7)', size=10), name='Surface 1'),
-            go.Scatter3d(x=[None], y=[None], z=[None], mode='markers', marker=dict(color='rgba(173, 216, 230, 0.7)', size=10), name='Surface 2'),
-            go.Scatter3d(x=[None], y=[None], z=[None], mode='markers', marker=dict(color='rgba(255, 0, 0, 0.7)', size=10), name='Branching plane'),
-            go.Scatter3d(x=[None], y=[None], z=[None], mode='markers', marker=dict(color='rgba(0, 255, 0, 0.7)', size=10), name='Mean energy plane'),
+            # go.Scatter3d(x=[None], y=[None], z=[None], mode='markers', marker=dict(color='rgba(100, 120, 140, 0.7)', size=10), name='Surface 1'),
+            # go.Scatter3d(x=[None], y=[None], z=[None], mode='markers', marker=dict(color='rgba(173, 216, 230, 0.7)', size=10), name='Surface 2'),
+            # go.Scatter3d(x=[None], y=[None], z=[None], mode='markers', marker=dict(color='rgba(255, 0, 0, 0.7)', size=10), name='Branching plane'),
+            # go.Scatter3d(x=[None], y=[None], z=[None], mode='markers', marker=dict(color='rgba(0, 255, 0, 0.7)', size=10), name='Mean energy plane'),
     
     
         ])
