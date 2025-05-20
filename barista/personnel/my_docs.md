@@ -17,7 +17,7 @@
 - [NXSpecReader](#nxspecreader)
 - [Rodrigo](#rodrigo)
 
----
+ 
 
 ## 🧱 Class: `Alberto` <a name="alberto"></a>
 _Defined in: `alberto.py`_
@@ -29,7 +29,7 @@ This class parses ORCA output files from TD-DFT/TDA calculations to track and
 visualize the energy evolution of electronic states during geometry optimization.
 
 Attributes
- ---
+  
 filename : str
     Name of the ORCA output file.
 reference_energy : float
@@ -57,7 +57,7 @@ _starting_root : int
 _final_root : int
     Final root after optimization.
 
-Methods
+ **Methods**
  
 _initialize() -> None
     Initialize all data structures and parse the output file.
@@ -86,11 +86,11 @@ plot() -> None
 generate_image(output_image_name: str) -> None
     Save the energy plot to an image file.
 
-### Methods:
+###  **Methods**:
 - **`__init__`**: Initialize the Alberto class with the specified parameters.
 
 **Parameters**
- ---
+  
 filename : str
     Path to the ORCA output file to analyze.
 reference_energy : float, optional
@@ -98,14 +98,14 @@ reference_energy : float, optional
     Used to calculate relative energies.
 units : str, optional
     Energy units for plotting ("eV" or "Hartree"), by default "eV".
-- **`_initialize`**: Initialize all data structures and run the parsing methods in sequence.
+- **`_initialize`**: Initialize all data structures and run the parsing  **Methods** in sequence.
 
 This method coordinates the full initialization process by calling all
-the necessary parsing and processing methods in the correct order.
+the necessary parsing and processing  **Methods** in the correct order.
 - **`_get_file_content`**: Open the ORCA output file and store its content as a list of strings.
 
 Raises
-------
+  
 ValueError
     If there is no filename specified.
 FileNotFoundError
@@ -116,7 +116,7 @@ Finds all states mentioned in the TD-DFT/TDA section and stores their indices.
 Sets the number_of_states attribute based on discovered states.
 
 Raises
-------
+  
 ValueError
     If no result file was found.
 - **`_get_cis_energies`**: Extract SCF energies from the ORCA output file.
@@ -145,12 +145,12 @@ roots used in the optimization.
 - **`set_units`**: Change the energy units used for plotting.
 
 **Parameters**
- ---
+  
 units : str
     Energy units to use ("eV" or "Hartree").
     
 Raises
-------
+  
 ValueError
     If an unsupported unit is specified.
 - **`_rescale_units`**: Rescale energy values according to the selected units.
@@ -159,13 +159,13 @@ Converts energy values between eV and Hartree using the conversion
 factor 27.2114 eV/Hartree.
 
 **Parameters**
- ---
+  
 prev_units : str
     Previous units used for energy values.
 - **`set_imagename`**: Sets the output image name for saving plots.
 
 **Parameters**
- ---
+  
 image_name : str
     Image name to set.
 - **`_prepare_plot`**: Prepare the energy plot showing all states and the current surface.
@@ -184,7 +184,7 @@ during the optimization, highlighting the current surface being followed.
 - **`generate_image`**: Save the energy plot to an image file.
 
 **Parameters**
- ---
+  
 output_image_name : str
     Name of the output image file.
 - **`starting_root`**: Get the initial root used for the optimization.
@@ -200,7 +200,7 @@ int
 int
     Index of the final root.
 
----
+ 
 
 ## 🧱 Class: `Aurora` <a name="aurora"></a>
 _Defined in: `aurora.py`_
@@ -211,18 +211,18 @@ This class processes xyz files containing energy data to extract PES branch info
 calculate relative energies, and visualize energy paths along different electronic states.
 
 **Parameters**
- ---
+  
 fc_filename : str
     Path to the Franck-Condon xyz file with energy as comment
 last_branch_filename : str
     Path to the xyz file of the last point in the branch
 
-### Methods:
+###  **Methods**:
 - **`__init__`**: _No docstring_
 - **`from_files`**: Factory method to create and initialize an Aurora instance.
 
 **Parameters**
- ---
+  
 fc_file : str
     Path to the Franck-Condon xyz file
 last_branch_file : str
@@ -238,7 +238,7 @@ This method reads the xyz file, extracts the energy values from the comment line
 and calculates relative energies with respect to the reference energy in eV.
 
 **Parameters**
- ---
+  
 xyz_file : str
     Path to the xyz file containing energy data
     
@@ -248,7 +248,7 @@ numpy.ndarray
     Array of relative energies in eV
     
 Raises
-------
+  
 ValueError
     If the reference energy has not been determined
 - **`pes_DataFrame`**: Get a copy of the PES dataframe.
@@ -267,7 +267,7 @@ None
 - **`save_branch_plot`**: Save the PES branch plot to a file.
 
 **Parameters**
- ---
+  
 name : str, optional
     The output filename, if None the last branch filename with jpg extension will be used
     
@@ -276,7 +276,7 @@ name : str, optional
 None
 - **`_initialize`**: Initialize all required data before calculations.
 
-This method calls several private methods to set up the reference energy,
+This method calls several private  **Methods** to set up the reference energy,
 get name and identifiers, determine filenames, and fill the dataframe.
 
 **Returns**
@@ -302,7 +302,7 @@ list
     List of filenames for all points in the branch
     
 Raises
-------
+  
 ValueError
     If the general name or path step identifiers have not been determined
 - **`_set_reference_energy`**: Set the reference energy from the Franck-Condon state.
@@ -358,7 +358,7 @@ the path through the PES.
 list
     List of state indices forming the highlighted path
 
----
+ 
 
 ## 🧱 Class: `AuroraConfiguration` <a name="auroraconfiguration"></a>
 _Defined in: `aurora.py`_
@@ -366,15 +366,15 @@ _Defined in: `aurora.py`_
 Configuration class for Aurora with default parameters.
 
 **Parameters**
- ---
+  
 fc_file : str, optional
     Path to the Franck-Condon xyz file with energy as comment, default is None
 last_branch_file : str, optional
     Path to the xyz file of the last point in the branch, default is None
 
-_No methods found._
+_No  **Methods** found._
 
----
+ 
 
 ## 🧱 Class: `Dani` <a name="dani"></a>
 _Defined in: `dani.py`_
@@ -385,23 +385,23 @@ This class extracts final geometry coordinates and vibrational frequencies
 from Gaussian output files, and can generate XYZ format files.
 
 Attributes
- ---
+  
 gaussian_output_filename : str
     Path to the Gaussian output file
 atomic_dict : Dict[int, str]
     Dictionary mapping atomic numbers to element symbols
 
-### Methods:
+###  **Methods**:
 - **`__init__`**: Initialize the Dani class with a Gaussian output file.
 
 **Parameters**
- ---
+  
 gaussian_output_filename : str
     Path to the Gaussian output file
 - **`from_file`**: Factory method to create and initialize a Dani instance from a file.
 
 **Parameters**
- ---
+  
 gaussian_output_filename : str
     Path to the Gaussian output file
     
@@ -412,7 +412,7 @@ Dani
 - **`generate_xyzfile`**: Generate an XYZ format file from the extracted coordinates.
 
 **Parameters**
- ---
+  
 filename : str, optional
     Output filename, if None the input filename with .xyz extension will be used
     
@@ -422,7 +422,7 @@ None
 - **`extract_vibrational_modes`**: Extract vibrational frequencies and IR intensities from the Gaussian output.
 
 **Parameters**
- ---
+  
 filename : str, optional
     Output filename, if None the input filename with _frequencies.dat extension will be used
     
@@ -441,7 +441,7 @@ None
 None
 
 Raises
-------
+  
 FileNotFoundError
     If the specified file cannot be found
 - **`_get_coordinates_section`**: Extract the section containing the final coordinates from the Gaussian output file.
@@ -454,14 +454,14 @@ the coordinates section, which should contain the final optimized geometry.
 tuple
     A tuple containing the start and end indices of the coordinates section
 
----
+ 
 
 ## 🧱 Class: `Emma` <a name="emma"></a>
 _Defined in: `emma.py`_
 
 _No docstring provided._
 
-### Methods:
+###  **Methods**:
 - **`__init__`**: _No docstring_
 - **`_determine_targets`**: _No docstring_
 - **`_get_gs_energy`**: _No docstring_
@@ -471,14 +471,14 @@ _No docstring provided._
 - **`_generate_dataframe`**: _No docstring_
 - **`rmsd_report_to_md`**: _No docstring_
 
----
+ 
 
 ## 🧱 Class: `Fonsi` <a name="fonsi"></a>
 _Defined in: `fonsi.py`_
 
 _No docstring provided._
 
-### Methods:
+###  **Methods**:
 - **`__init__`**: _No docstring_
 - **`_initialize`**: _No docstring_
 - **`_load_energies`**: _No docstring_
@@ -486,14 +486,14 @@ _No docstring provided._
 - **`save_fig`**: _No docstring_
 - **`plot`**: _No docstring_
 
----
+ 
 
 ## 🧱 Class: `Javi` <a name="javi"></a>
 _Defined in: `javi.py`_
 
 _No docstring provided._
 
-### Methods:
+###  **Methods**:
 - **`__init__`**: _No docstring_
 - **`_init`**: _No docstring_
 - **`from_xy`**: _No docstring_
@@ -523,14 +523,14 @@ _No docstring provided._
 - **`plot_CI`**: _No docstring_
 - **`generate_force_file`**: _No docstring_
 
----
+ 
 
 ## 🧱 Class: `Jeremy` <a name="jeremy"></a>
 _Defined in: `jeremy.py`_
 
 _No docstring provided._
 
-### Methods:
+###  **Methods**:
 - **`__init__`**: _No docstring_
 - **`override_connectivity_matrix`**: Override connectivity matrix to generate internals from a reference.
 
@@ -539,12 +539,12 @@ Useful when comparing two structures, being able to determine their
 'likeness' by obtaining the same internals of both and their values.
 
 **Parameters**
- ---
+  
 connectivity_matrix : ArrayLike
     Connectivity matrix of the reference system.
 
 Raises
-------
+  
 ValueError
     DESCRIPTION.
 
@@ -582,7 +582,7 @@ in order to leave no atom unconnected.
 
 
 **Parameters**
- ---
+  
 bond_thresh : float, optional
     Bond threshold. The default is 1.6.
 
@@ -623,14 +623,14 @@ Done with the atan(sin_phi, cos_phi) formula.
 - **`_extract_positions`**: _No docstring_
 - **`_extend_labels`**: _No docstring_
 
----
+ 
 
 ## 🧱 Class: `Jeremy` <a name="jeremy"></a>
 _Defined in: `maxime.py`_
 
 _No docstring provided._
 
-### Methods:
+###  **Methods**:
 - **`__init__`**: _No docstring_
 - **`override_connectivity_matrix`**: Override connectivity matrix to generate internals from a reference.
 
@@ -639,12 +639,12 @@ Useful when comparing two structures, being able to determine their
 'likeness' by obtaining the same internals of both and their values.
 
 **Parameters**
- ---
+  
 connectivity_matrix : ArrayLike
     Connectivity matrix of the reference system.
 
 Raises
-------
+  
 ValueError
     DESCRIPTION.
 
@@ -682,7 +682,7 @@ in order to leave no atom unconnected.
 
 
 **Parameters**
- ---
+  
 bond_thresh : float, optional
     Bond threshold. The default is 1.6.
 
@@ -723,14 +723,14 @@ Done with the atan(sin_phi, cos_phi) formula.
 - **`_extract_positions`**: _No docstring_
 - **`_extend_labels`**: _No docstring_
 
----
+ 
 
 ## 🧱 Class: `Laura` <a name="laura"></a>
 _Defined in: `laura.py`_
 
 _No docstring provided._
 
-### Methods:
+###  **Methods**:
 - **`__init__`**: _No docstring_
 - **`from_file`**: _No docstring_
 - **`_initialize`**: _No docstring_
@@ -745,26 +745,26 @@ _No docstring provided._
 - **`get_coordinates_dataframe`**: _No docstring_
 - **`generate_xyzfile`**: _No docstring_
 
----
+ 
 
 ## 🧱 Class: `Maxime` <a name="maxime"></a>
 _Defined in: `maxime.py`_
 
 _No docstring provided._
 
-### Methods:
+###  **Methods**:
 - **`extract_radius_atoms`**: _No docstring_
 - **`complete_molecules`**: _No docstring_
 - **`complete_molecule`**: _No docstring_
 
----
+ 
 
 ## 🧱 Class: `NebExtractor` <a name="nebextractor"></a>
 _Defined in: `stef.py`_
 
 _No docstring provided._
 
-### Methods:
+###  **Methods**:
 - **`__init__`**: _No docstring_
 - **`file_content`**: _No docstring_
 - **`energy_array`**: _No docstring_
@@ -775,7 +775,7 @@ _No docstring provided._
 - **`savefig`**: _No docstring_
 - **`export_data`**: _No docstring_
 
----
+ 
 
 ## 🧱 Class: `NXSpecReader` <a name="nxspecreader"></a>
 _Defined in: `misc/NXSpecReader.py`_
@@ -783,13 +783,13 @@ _Defined in: `misc/NXSpecReader.py`_
 Reads and processes spectral data files to generate convoluted spectra.
 
 **Parameters**
- ---
+  
 filename : str
     Path to the input spectral data file
 npoints : int, optional
     Number of points for spectrum generation (default: 1000)
 
-### Methods:
+###  **Methods**:
 - **`__init__`**: _No docstring_
 - **`_initialize`**: Initialize all necessary data structures and perform initial calculations.
 - **`_read_file`**: Read the input file and store its contents.
@@ -805,7 +805,7 @@ pd.DataFrame
 - **`_gaussian`**: Generate a Gaussian function.
 
 **Parameters**
- ---
+  
 X : NDArray[np.float64]
     X values for Gaussian calculation
 height : float, optional
@@ -824,7 +824,7 @@ NDArray[np.float64]
 - **`_convolute_spectrum`**: Generate convolved spectrum for given states.
 
 **Parameters**
- ---
+  
 filtered_df : pd.DataFrame
     DataFrame containing energy and oscillator strength values
 
@@ -842,18 +842,18 @@ NDArray[np.float64]
 - **`save_to_file`**: Save generated spectrum to file.
 
 **Parameters**
- ---
+  
 filename : str
     Output file path
 
----
+ 
 
 ## 🧱 Class: `Rodrigo` <a name="rodrigo"></a>
 _Defined in: `rodrigo.py`_
 
 _No docstring provided._
 
-### Methods:
+###  **Methods**:
 - **`__init__`**: _No docstring_
 - **`_initialize`**: _No docstring_
 - **`_load_file`**: _No docstring_
@@ -865,7 +865,7 @@ _No docstring provided._
 - **`_gaussian`**: Generate a Gaussian function.
 
 **Parameters**
- ---
+  
 X : NDArray[np.float64]
     X values for Gaussian calculation
 height : float, optional
@@ -891,5 +891,5 @@ NDArray[np.float64]
 - **`plot`**: _No docstring_
 - **`save_image`**: _No docstring_
 
----
+ 
 
