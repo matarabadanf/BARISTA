@@ -55,13 +55,26 @@ class Javi:
         self._gb_filename = gb_filename
         self._hab_filename = hab_filename
         self._ci_energy = ci_energy
-        self.rotation_counter = 0 
+        self.rotation_counter = 0
 
         self._init()
 
     def _init(self) -> None:
         self._load_vectors()
+        for i in range(0,4):
+            if self.is_rotation_needed(self.asymmetry, self.theta_s):
+                self._rotate_for_beta()
+            else:
+                break
 
+        print(f'\nBeta has been rotated {self.rotation_counter} * pi/2. Beta = {self.beta:8.4f} ({self.beta/2/np.pi*360:8.4f} deg)')
+        # print(f'beta      = {self.beta%np.pi:8.4f}')
+        print(f'\npitch     = {self.pitch:8.4f}')
+        print(f'asymmetry = {self.asymmetry:8.4f}')
+        print(f'tilt      = {self.sigma:8.4f}')
+        print(f'theta     = {self.theta_s:8.4f} ({self.theta_s/2/np.pi*360:8.4f} deg)')
+
+        print(f'\nWith the rotation, the conditions 0 < theta < pi/2 and 0 < asymmetry are fulfiled: {not self.is_rotation_needed(self.asymmetry, self.theta_s)}')
    
     @classmethod
     def from_xy(cls):
@@ -130,49 +143,51 @@ class Javi:
         # return 0.5 * np.arctan2(2 * np.dot(self.g_ab, self.h_ab), (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab)))
 
     def _rotate_for_beta(self):
-        pass
+        # print(f'self.rotation_counter is {self.rotation_counter}')
+        self.rotation_counter += 1 
 
     @property
     def beta(self) -> float:
-        idex = 0 
-        print(f'Rotation of {idex} pi halves')
-        return self._pre_beta[idex] # 2 works for x and y unit vector sign in ethylene a and b  
+        # print(f'Rotation of {self.rotation_counter} pi halves')
+        return self._pre_beta[self.rotation_counter] # 2 works for x and y unit vector sign in ethylene a and b  
 
-    @property
-    def is_rotation_needed(self):
-        print(f'self.asymmetry > 0     = {self.asymmetry > 0}, {self.asymmetry}')
+    def is_rotation_needed(self, asymmetry:float, theta_s:float) -> bool:
         zero_condition = 0 < self.theta_s and abs(0 - self.theta_s) < 10**-12
-        print(f'0 < self.theta_s       = {self.theta_s > -10**-12}, {self.theta_s}')
-        print(f'self.theta_s < np.pi/2 = {self.theta_s < np.pi/2}')
-    
+        
+        # print(f'self.asymmetry > 0     = {self.asymmetry > 0}, {self.asymmetry}')
+        # print(f'0 < self.theta_s       = {self.theta_s > -10**-12}, {self.theta_s}')
+        # print(f'self.theta_s < np.pi/2 = {self.theta_s < np.pi/2}')
+
+        return not (asymmetry > 0 and theta_s > -10**-12  and theta_s < np.pi/2)
+
         return not (self.asymmetry > 0 and self.theta_s > -10**-12  and self.theta_s < np.pi/2)
         
 
-    @cached_property
+    @property
     def _g_tilde(self) -> np.ndarray:
         return self.g_ab * np.cos(self.beta) + self.h_ab * np.sin(self.beta)
 
-    @cached_property
+    @property
     def _h_tilde(self) -> np.ndarray:
         return self.h_ab * np.cos(self.beta) - self.g_ab * np.sin(self.beta) # original
 
-    @cached_property
+    @property
     def x(self) -> np.ndarray:
         # return np.copy(self._g_tilde / np.dot(self._g_tilde, self._g_tilde)**0.5)
         return np.copy(self._g_tilde / np.linalg.norm(self._g_tilde))
 
-    @cached_property
+    @property
     def y(self) -> np.ndarray:
         # return np.copy(self._h_tilde / np.dot(self._h_tilde, self._h_tilde)**0.5)
         return np.copy(self._h_tilde / np.linalg.norm(self._h_tilde))
 
-    @cached_property
+    @property
     def pitch(self) -> float:
         ''' Pitch \\delta_gh. '''
 
         return np.sqrt( 1/2 * (np.dot(self._g_tilde, self._g_tilde) + np.dot(self._h_tilde, self._h_tilde)))
 
-    @cached_property
+    @property
     def asymmetry(self) -> float:
         ''' Asymmetry \\Delta_gh. '''
 
@@ -185,10 +200,15 @@ class Javi:
         return 2 * self.pitch * np.sqrt((x**2 + y**2) + self.asymmetry * (x**2 - y**2))
  
     def average_energy(self, x:float, y:float) -> float:
-        # return x + y  
         return self.ci_energy + x * np.dot(self.s_ab, self.x) + y * np.dot(self.s_ab, self.y)
 
     def E_A(self, x:float, y:float) -> float:
+        s_x = np.dot(self.s_ab, self.x) / self.pitch 
+        s_y = np.dot(self.s_ab, self.y) / self.pitch
+        # return x + y  
+        return self.ci_energy + self.pitch * (x * s_x + y * s_y - ((x**2 + y **2) + self.asymmetry * (x**2 -y**2))**0.5)
+
+
         diff = self.energy_difference(x, y)
         aver = self.average_energy(x,y)
         return aver - diff
@@ -198,8 +218,8 @@ class Javi:
         aver = self.average_energy(x,y)
         return aver + diff
 
-    @cached_property
-    def theta_s(self, n_points:int = 360, radius:float=1):
+    @property
+    def theta_s(self, n_points:int = 1800, radius:float=1):
 
         angles = np.linspace(0, 2 * np.pi, n_points, endpoint=False)
         x_points = radius * np.cos(angles)
@@ -216,7 +236,7 @@ class Javi:
             samples.append(sample)
 
         x,y,z = max(samples, key=lambda item: item[2])
-        print(f'\n\n\n The xyz values of the max tilt is: {x:5.2f}, {y:5.2f}, {z:5.2f}')
+        # print(f'\n\n\n The xyz values of the max tilt is: {x:5.2f}, {y:5.2f}, {z:5.2f}')
 
         vec = np.array([x,y])
      
@@ -240,14 +260,14 @@ class Javi:
         return theta
 
 
-    @cached_property
+    @property
     def sigma(self):
         s_x = np.dot(self.s_ab, self.x) / self.pitch
         s_y = np.dot(self.s_ab, self.y) / self.pitch
         
         return np.sqrt(s_x**2 + s_y**2)
 
-    @cached_property
+    @property
     def p(self) -> Tuple[float, str]:
 
         p = self.sigma**2 / (1 - self.asymmetry**2) * (1 - self.asymmetry * np.cos(2*self.theta_s))
@@ -256,7 +276,7 @@ class Javi:
 
         return (p, p_type)
 
-    @cached_property
+    @property
     def b(self) -> Tuple[float, str]:
 
         b = (self.sigma**2/(4*self.asymmetry**2)) **(1/3) * (((1+self.asymmetry)*np.cos(self.theta_s)**2)**(1/3) + ((1-self.asymmetry)*np.sin(self.theta_s)**2)**(1/3))
@@ -391,7 +411,7 @@ class Javi:
 
                 # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord + forces)}\n')
                 # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces/np.linalg.norm(forces))} 3\n')
-                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{-f:12.8f}" for f in forces)}\n')
+                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)}\n')
 
         with open('vectors.xyz', 'a') as vecfile:
              vecfile.write(header[0])
@@ -403,10 +423,54 @@ class Javi:
                  forces = y_force[index]
  
                  # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces/np.linalg.norm(forces))} 3\n')
-                 vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{-f:12.8f}" for f in forces)} \n')
+                 vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} \n')
                  # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord + forces)}\n')
 
         # print(np.linalg.norm(x_force).reshape(-1))
+
+    def plot_2d(self, max_grid:float = 1):
+        x = np.linspace(-max_grid, max_grid, 501)
+        y = np.linspace(-max_grid, max_grid, 501)
+        
+        X, Y = np.meshgrid(x, y)
+        e_a = self.E_A(X, Y)
+
+        plt.figure(figsize=(6, 5))
+
+        
+        # contour lines
+        contour_levels = 15  
+        contours = plt.contour(
+            X, Y, e_a,
+            levels=contour_levels,
+            colors='black',
+            linewidths=0.7
+        )
+        
+        # label contour lines
+        plt.clabel(contours, inline=True, fontsize=8, fmt="%.2f")
+        
+        plt.imshow(
+            e_a,
+            extent=(-max_grid, max_grid, -max_grid, max_grid),
+            origin='lower',
+            cmap='viridis',
+            aspect='auto'
+        )
+        
+        dx = self.sigma * np.cos(self.theta_s + np.pi)
+        dy = self.sigma * np.sin(self.theta_s + np.pi)
+        
+        plt.arrow(0, 0, dx, dy, color='red', length_includes_head=True)
+
+        plt.colorbar(label="E_A")
+        plt.xlabel("X")
+        plt.ylabel("Y")
+        plt.title("Heatmap of E_A(X, Y)")
+        plt.tight_layout()
+        plt.show()
+        
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
@@ -421,22 +485,33 @@ if __name__ == "__main__":
         args.nac
     )
 
-    print(f'scalar    = {j.x@j.y:8.4f}')
-    print(f'beta      = {j.beta%np.pi:8.4f}')
-    print(f'pitch     = {j.pitch:8.4f}')
-    print(f'asymmetry = {j.asymmetry:8.4f}')
-    print(f'tilt      = {j.sigma:8.4f}')
-    print(f'theta     = {j.theta_s/2/np.pi*360:8.1f}')
-    print(f'is_rot_ne = {j.is_rotation_needed}')
+    # print(f'scalar    = {j.x@j.y:8.4f}')
+    # print(f'beta      = {j.beta%np.pi:8.4f}')
+    # print(f'pitch     = {j.pitch:8.4f}')
+    # print(f'asymmetry = {j.asymmetry:8.4f}')
+    # print(f'tilt      = {j.sigma:8.4f}')
+    # print(f'theta     = {j.theta_s/2/np.pi*360:8.1f}')
+    # print(f'is_rot_ne = {j.is_rotation_needed}')
 
-    print('\nX and Y Vectors are:\n')
-    print(j.x)
-    print(j.y)
+    print('\nX and Y Vectors are:')
+    print('\nx vector:')
+    for row in j.x.reshape(-1, 3):
+        print(" ".join(f"{val:12.8f}" for val in row))
+
+    print('\ny vector:')
+    for row in j.y.reshape(-1, 3):
+        print(" ".join(f"{val:12.8f}" for val in row))
+    # print(np.array2string(j.x.reshape(-1, 3), precision=6, suppress_small=True))
+    # print(np.array2string(j.y.reshape(-1, 3), precision=6, suppress_small=True))
+    # print(j.x.reshape([-1,3]))
+    # print(j.y.reshape([-1,3]))
     print('\nP and B values are:\n')
-    print(j.p)
-    print(j.b)
+    print(f'{j.p[0]:8.4f}, {j.p[1]}')
+    print(f'{j.b[0]:8.4f}, {j.b[1]}\n')
 
     j.generate_force_file('tt.xyz')
+    
+    j.plot_2d()
 
     if args.interactive:
         j.plot_CI()
