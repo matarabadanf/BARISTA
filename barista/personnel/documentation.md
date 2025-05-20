@@ -4,17 +4,75 @@ This document provides documentation for command line tools.
 
 ## Table of Contents
 
-* [dani](#dani)
-* [fonsi](#fonsi)
-* [aurora](#aurora)
-* [laura](#laura)
-* [javi](#javi)
-* [rodrigo](#rodrigo)
-* [lorena](#lorena)
 * [alberto](#alberto)
+* [aurora](#aurora)
+* [dani](#dani)
 * [emma](#emma)
-* [stef](#stef)
+* [fonsi](#fonsi)
+* [javi](#javi)
+* [laura](#laura)
+* [lorena](#lorena)
 * [maxime](#maxime)
+* [rodrigo](#rodrigo)
+* [stef](#stef)
+
+---
+
+<!-- Source: alberto.py -->
+## alberto
+
+Takes a excited state optimization in ORCA and plots the energy of each state at each step of the opitmizaiton and the actual root.
+
+### Usage
+```
+generate_docs.py [-h] -f F [-o O] [-en EN] [-u U]
+```
+
+### Arguments
+
+#### Options
+
+* `-f` (str) [required]: ORCA optimization file
+  * Default: `42`
+
+* `-o` (str): Output image filename
+  * Default: `True`
+
+* `-en` (float): Reference energy of the ground state optimized energy
+  * Default: `0`
+
+* `-u` (str): Energy units
+  * Default: `eV`
+
+
+---
+
+<!-- Source: aurora.py -->
+## aurora
+
+Exctract the potential energy surface path and energies of of a PES branch.
+    Takes as input the ground state equilibrium geometry xyz file  and the xyz file of the last point of the PES branch.
+    
+    
+
+This script determines the path, highlights, and generates a pandas dataframe that can be later plotted and saved as an image.
+
+### Usage
+```
+generate_docs.py [-h] -f F -b B [-o O]
+```
+
+### Arguments
+
+#### Options
+
+* `-f` (str) [required]: FC xyz file with energy as comment.
+  * Default: `42`
+
+* `-b` (str) [required]: Last point in the branch.
+
+* `-o` (str): Output image name.
+
 
 ---
 
@@ -38,6 +96,45 @@ generate_docs.py [-h] -f F [-o O] [--frequencies]
 * `-o` (str): Output file name. Default is Input_filename.xyz
 
 * `--frequencies`: Extract frequencies to Input_filename_freq.dat
+  * Default: `False`
+
+
+---
+
+<!-- Source: emma.py -->
+## emma
+
+Takes the ground state geometry of a molecule and compares it to optimized TDDFT geometries run in ORCA.        
+It compares the energy, RMSD and final root, plotting the results in an image. 
+
+### Usage
+```
+generate_docs.py [-h] -fc FC -ex EX [EX ...] [-O O] [-o O] [-r R] [-md MD] [-i I]
+```
+
+### Arguments
+
+#### Options
+
+* `-fc` (str) [required]: Optimized ground state .xyz file
+  * Default: `42`
+
+* `-ex` (str) [required]: Excited state optimization .out "filenames" (it is important that the name ends with *_N.in.out)
+  * Default: `42`
+
+* `-O` (str): Output file extension (default=".in.out")
+  * Default: `42`
+
+* `-o` (str): Output image filename
+  * Default: `42`
+
+* `-r` (str): Generate a report table in output file
+  * Default: `42`
+
+* `-md` (str): Generate report in MD format (default is True)
+  * Default: `True`
+
+* `-i` (bool): Interactive plot mode (default is False)
   * Default: `False`
 
 
@@ -74,31 +171,29 @@ generate_docs.py [-h] -f F [-o O] [-en EN] [-u U] [--interactive]
 
 ---
 
-<!-- Source: aurora.py -->
-## aurora
+<!-- Source: javi.py -->
+## javi
 
-Exctract the potential energy surface path and energies of of a PES branch.
-    Takes as input the ground state equilibrium geometry xyz file  and the xyz file of the last point of the PES branch.
-    
-    
-
-This script determines the path, highlights, and generates a pandas dataframe that can be later plotted and saved as an image.
+Takes the lower and upper state gradients in a CI with the NAC vector and characterizes the type oc CI.        
+Results can be plotted interactively using plotly.
 
 ### Usage
 ```
-generate_docs.py [-h] -f F -b B [-o O]
+generate_docs.py [-h] -g0 G0 -g1 G1 -nac NAC [--interactive]
 ```
 
 ### Arguments
 
 #### Options
 
-* `-f` (str) [required]: FC xyz file with energy as comment.
-  * Default: `42`
+* `-g0` (str) [required]: Lower state gradient file.
 
-* `-b` (str) [required]: Last point in the branch.
+* `-g1` (str) [required]: Higher state gradient file.
 
-* `-o` (str): Output image name.
+* `-nac` (str) [required]: NAC vector file.
+
+* `--interactive`: Open interactive plot.
+  * Default: `False`
 
 
 ---
@@ -128,29 +223,57 @@ generate_docs.py [-h] -f F [-o O] [--no_energies]
 
 ---
 
-<!-- Source: javi.py -->
-## javi
+<!-- Source: lorena.py -->
+## lorena
 
-Takes the lower and upper state gradients in a CI with the NAC vector and characterizes the type oc CI.        
-Results can be plotted interactively using plotly.
+Takes the an xyz file and shakes the geometry
 
 ### Usage
 ```
-generate_docs.py [-h] -g0 G0 -g1 G1 -nac NAC [--interactive]
+generate_docs.py [-h] [-f F] [-d D] [-o O]
 ```
 
 ### Arguments
 
 #### Options
 
-* `-g0` (str) [required]: Lower state gradient file.
+* `-f` (str): xyz file
+  * Default: `42`
 
-* `-g1` (str) [required]: Higher state gradient file.
+* `-d` (float): Maximum displacement
+  * Default: `0.1`
 
-* `-nac` (str) [required]: NAC vector file.
+* `-o` (str): Output file
+  * Default: `42`
 
-* `--interactive`: Open interactive plot.
-  * Default: `False`
+
+---
+
+<!-- Source: maxime.py -->
+## maxime
+
+Extract atoms from an xyz file with a center point and a radius.
+
+### Usage
+```
+generate_docs.py [-h] -f F [-o O] [-r R] [-p P]
+```
+
+### Arguments
+
+#### Options
+
+* `-f` (str) [required]: Original XYZ file.
+  * Default: `42`
+
+* `-o` (str): Output xyz filename.
+  * Default: `None`
+
+* `-r` (float): Sphere radius.
+  * Default: `1.0`
+
+* `-p` (str): Central sphere point.
+  * Default: `0 0 0`
 
 
 ---
@@ -200,100 +323,6 @@ generate_docs.py [-h] -F F [-o O] [-u U] [--gaussian] [-gauss_disp GAUSS_DISP] [
 
 ---
 
-<!-- Source: lorena.py -->
-## lorena
-
-Takes the an xyz file and shakes the geometry
-
-### Usage
-```
-generate_docs.py [-h] [-f F] [-d D] [-o O]
-```
-
-### Arguments
-
-#### Options
-
-* `-f` (str): xyz file
-  * Default: `42`
-
-* `-d` (float): Maximum displacement
-  * Default: `0.1`
-
-* `-o` (str): Output file
-  * Default: `42`
-
-
----
-
-<!-- Source: alberto.py -->
-## alberto
-
-Takes a excited state optimization in ORCA and plots the energy of each state at each step of the opitmizaiton and the actual root.
-
-### Usage
-```
-generate_docs.py [-h] -f F [-o O] [-en EN] [-u U]
-```
-
-### Arguments
-
-#### Options
-
-* `-f` (str) [required]: ORCA optimization file
-  * Default: `42`
-
-* `-o` (str): Output image filename
-  * Default: `True`
-
-* `-en` (float): Reference energy of the ground state optimized energy
-  * Default: `0`
-
-* `-u` (str): Energy units
-  * Default: `eV`
-
-
----
-
-<!-- Source: emma.py -->
-## emma
-
-Takes the ground state geometry of a molecule and compares it to optimized TDDFT geometries run in ORCA.        
-It compares the energy, RMSD and final root, plotting the results in an image. 
-
-### Usage
-```
-generate_docs.py [-h] -fc FC -ex EX [EX ...] [-O O] [-o O] [-r R] [-md MD] [-i I]
-```
-
-### Arguments
-
-#### Options
-
-* `-fc` (str) [required]: Optimized ground state .xyz file
-  * Default: `42`
-
-* `-ex` (str) [required]: Excited state optimization .out "filenames" (it is important that the name ends with *_N.in.out)
-  * Default: `42`
-
-* `-O` (str): Output file extension (default=".in.out")
-  * Default: `42`
-
-* `-o` (str): Output image filename
-  * Default: `42`
-
-* `-r` (str): Generate a report table in output file
-  * Default: `42`
-
-* `-md` (str): Generate report in MD format (default is True)
-  * Default: `True`
-
-* `-i` (bool): Interactive plot mode (default is False)
-  * Default: `False`
-
-
----
-
 <!-- Source: stef.py -->
 ## stef
 
@@ -333,35 +362,6 @@ generate_docs.py [-h] -f F [-en EN] [-u U] [-o O] [-dat DAT] [--landscape] [--sp
 
 * `--barrier`: Plot absolute barrier
   * Default: `False`
-
-
----
-
-<!-- Source: maxime.py -->
-## maxime
-
-Extract atoms from an xyz file with a center point and a radius.
-
-### Usage
-```
-generate_docs.py [-h] -f F [-o O] [-r R] [-p P]
-```
-
-### Arguments
-
-#### Options
-
-* `-f` (str) [required]: Original XYZ file.
-  * Default: `42`
-
-* `-o` (str): Output xyz filename.
-  * Default: `None`
-
-* `-r` (float): Sphere radius.
-  * Default: `1.0`
-
-* `-p` (str): Central sphere point.
-  * Default: `0 0 0`
 
 
 ---
