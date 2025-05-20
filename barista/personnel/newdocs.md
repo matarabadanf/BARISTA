@@ -47,7 +47,7 @@ Takes a excited state optimization in ORCA and plots the energy of each state at
 
 ### Usage
 ```
-doc2.py [-h] -f F [-o O] [-en EN] [-u U]
+docs3.py [-h] -f F [-o O] [-en EN] [-u U]
 ```
 
 ### Arguments
@@ -81,7 +81,7 @@ This script determines the path, highlights, and generates a pandas dataframe th
 
 ### Usage
 ```
-doc2.py [-h] -f F -b B [-o O]
+docs3.py [-h] -f F -b B [-o O]
 ```
 
 ### Arguments
@@ -105,7 +105,7 @@ Extract the final geometry of an optimization run in Gaussian. Extract vibration
 
 ### Usage
 ```
-doc2.py [-h] -f F [-o O] [--frequencies]
+docs3.py [-h] -f F [-o O] [--frequencies]
 ```
 
 ### Arguments
@@ -131,7 +131,7 @@ It compares the energy, RMSD and final root, plotting the results in an image.
 
 ### Usage
 ```
-doc2.py [-h] -fc FC -ex EX [EX ...] [-O O] [-o O] [-r R] [-md MD] [-i I]
+docs3.py [-h] -fc FC -ex EX [EX ...] [-O O] [-o O] [-r R] [-md MD] [-i I]
 ```
 
 ### Arguments
@@ -169,7 +169,7 @@ Takes a brewer optimizaiton energies.dat and plots the energy at each step.
 
 ### Usage
 ```
-doc2.py [-h] -f F [-o O] [-en EN] [-u U] [--interactive]
+docs3.py [-h] -f F [-o O] [-en EN] [-u U] [--interactive]
 ```
 
 ### Arguments
@@ -201,7 +201,7 @@ Results can be plotted interactively using plotly.
 
 ### Usage
 ```
-doc2.py [-h] -g0 G0 -g1 G1 -nac NAC [--interactive]
+docs3.py [-h] -g0 G0 -g1 G1 -nac NAC [--interactive]
 ```
 
 ### Arguments
@@ -227,7 +227,7 @@ Exctract the final geometry of an optimization run in ORCA.
 
 ### Usage
 ```
-doc2.py [-h] -f F [-o O] [--no_energies]
+docs3.py [-h] -f F [-o O] [--no_energies]
 ```
 
 ### Arguments
@@ -252,7 +252,7 @@ Takes the an xyz file and shakes the geometry
 
 ### Usage
 ```
-doc2.py [-h] [-f F] [-d D] [-o O]
+docs3.py [-h] [-f F] [-d D] [-o O]
 ```
 
 ### Arguments
@@ -278,7 +278,7 @@ Extract atoms from an xyz file with a center point and a radius.
 
 ### Usage
 ```
-doc2.py [-h] -f F [-o O] [-r R] [-p P]
+docs3.py [-h] -f F [-o O] [-r R] [-p P]
 ```
 
 ### Arguments
@@ -308,7 +308,7 @@ Generates the TDDFT absorption spectre from an ORCA TDDFT calculation.         I
 
 ### Usage
 ```
-doc2.py [-h] -F F [-o O] [-u U] [--gaussian] [-gauss_disp GAUSS_DISP] [-exp EXP] [-exp_units EXP_UNITS] [-exp_shift EXP_SHIFT] [-semi SEMI] [--interactive]
+docs3.py [-h] -F F [-o O] [-u U] [--gaussian] [-gauss_disp GAUSS_DISP] [-exp EXP] [-exp_units EXP_UNITS] [-exp_shift EXP_SHIFT] [-semi SEMI] [--interactive]
 ```
 
 ### Arguments
@@ -352,7 +352,7 @@ It compares the energy, RMSD and final root, plotting the results in an image.
 
 ### Usage
 ```
-doc2.py [-h] -f F [-en EN] [-u U] [-o O] [-dat DAT] [--landscape] [--spline] [--barrier]
+docs3.py [-h] -f F [-en EN] [-u U] [-o O] [-dat DAT] [--landscape] [--spline] [--barrier]
 ```
 
 ### Arguments
@@ -389,7 +389,9 @@ doc2.py [-h] -f F [-en EN] [-u U] [-o O] [-dat DAT] [--landscape] [--spline] [--
 # Classes
 
 <!-- Source: alberto.py -->
-## Class: alberto.Alberto
+### Alberto
+
+*Full path: `alberto.Alberto`*
 
 Takes an excited state optimization in ORCA and plots the energy of each state at each
 step of the optimization and the actual root.
@@ -477,7 +479,11 @@ int
 
 ### Methods
 
-#### `generate_image(self, output_image_name: str) -> None`
+#### generate_image
+
+```python
+def generate_image(self, output_image_name: str) -> None:
+```
 
 Save the energy plot to an image file.
 
@@ -486,14 +492,22 @@ Parameters
 output_image_name : str
     Name of the output image file.
 
-#### `plot(self) -> None`
+#### plot
+
+```python
+def plot(self) -> None:
+```
 
 Display the energy plot showing all states and the current surface.
 
 Creates and displays a plot showing the energy evolution of all states
 during the optimization, highlighting the current surface being followed.
 
-#### `set_imagename(self, image_name: str) -> None`
+#### set_imagename
+
+```python
+def set_imagename(self, image_name: str) -> None:
+```
 
 Sets the output image name for saving plots.
 
@@ -502,7 +516,11 @@ Parameters
 image_name : str
     Image name to set.
 
-#### `set_units(self, units: str) -> None`
+#### set_units
+
+```python
+def set_units(self, units: str) -> None:
+```
 
 Change the energy units used for plotting.
 
@@ -519,7 +537,9 @@ ValueError
 ---
 
 <!-- Source: aurora.py -->
-## Class: aurora.Aurora
+### Aurora
+
+*Full path: `aurora.Aurora`*
 
 A class for extracting and analyzing potential energy surface (PES) paths.
 
@@ -535,7 +555,11 @@ last_branch_filename : str
 
 ### Methods
 
-#### `get_relative_energies(self, xyz_file: str) -> numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]`
+#### get_relative_energies
+
+```python
+def get_relative_energies(self, xyz_file: str) -> numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]:
+```
 
 Obtain energy values of an xyz file that has energy values as comment string.
 
@@ -557,7 +581,11 @@ Raises
 ValueError
     If the reference energy has not been determined
 
-#### `pes_DataFrame(self) -> pandas.core.frame.DataFrame`
+#### pes_DataFrame
+
+```python
+def pes_DataFrame(self) -> pandas.core.frame.DataFrame:
+```
 
 Get a copy of the PES dataframe.
 
@@ -566,7 +594,11 @@ Returns
 pandas.DataFrame
     A copy of the dataframe containing all PES data
 
-#### `plot_branch(self) -> None`
+#### plot_branch
+
+```python
+def plot_branch(self) -> None:
+```
 
 Plot the PES branch and display the figure.
 
@@ -576,7 +608,11 @@ Returns
 -------
 None
 
-#### `save_branch_plot(self, name: Optional[str] = None) -> None`
+#### save_branch_plot
+
+```python
+def save_branch_plot(self, name: Optional[str] = None) -> None:
+```
 
 Save the PES branch plot to a file.
 
@@ -592,7 +628,9 @@ None
 ---
 
 <!-- Source: aurora.py -->
-## Class: aurora.AuroraConfiguration
+### AuroraConfiguration
+
+*Full path: `aurora.AuroraConfiguration`*
 
 Configuration class for Aurora with default parameters.
 
@@ -606,7 +644,9 @@ last_branch_file : str, optional
 ---
 
 <!-- Source: dani.py -->
-## Class: dani.Dani
+### Dani
+
+*Full path: `dani.Dani`*
 
 A class for extracting and processing data from Gaussian output files.
 
@@ -622,7 +662,11 @@ atomic_dict : Dict[int, str]
 
 ### Methods
 
-#### `extract_vibrational_modes(self, filename: Optional[str] = None) -> None`
+#### extract_vibrational_modes
+
+```python
+def extract_vibrational_modes(self, filename: Optional[str] = None) -> None:
+```
 
 Extract vibrational frequencies and IR intensities from the Gaussian output.
 
@@ -635,7 +679,11 @@ Returns
 -------
 None
 
-#### `generate_xyzfile(self, filename: Optional[str] = None) -> None`
+#### generate_xyzfile
+
+```python
+def generate_xyzfile(self, filename: Optional[str] = None) -> None:
+```
 
 Generate an XYZ format file from the extracted coordinates.
 
@@ -651,41 +699,63 @@ None
 ---
 
 <!-- Source: emma.py -->
-## Class: emma.Emma
+### Emma
+
+*Full path: `emma.Emma`*
 
 _No class documentation provided_
 
 ### Methods
 
-#### `internal_deviation(self)`
+#### internal_deviation
+
+```python
+def internal_deviation(self):
+```
 
 _No documentation provided_
 
-#### `rmsd_report_to_md(self, md_file: str = '')`
+#### rmsd_report_to_md
+
+```python
+def rmsd_report_to_md(self, md_file: str = ''):
+```
 
 _No documentation provided_
 
 ---
 
 <!-- Source: fonsi.py -->
-## Class: fonsi.Fonsi
+### Fonsi
+
+*Full path: `fonsi.Fonsi`*
 
 _No class documentation provided_
 
 ### Methods
 
-#### `plot(self)`
+#### plot
+
+```python
+def plot(self):
+```
 
 _No documentation provided_
 
-#### `save_fig(self, name: str = '')`
+#### save_fig
+
+```python
+def save_fig(self, name: str = ''):
+```
 
 _No documentation provided_
 
 ---
 
 <!-- Source: javi.py -->
-## Class: javi.Javi
+### Javi
+
+*Full path: `javi.Javi`*
 
 _No class documentation provided_
 
@@ -705,34 +775,60 @@ _No documentation provided_
 
 ### Methods
 
-#### `E_A(self, x: float, y: float) -> float`
+#### E_A
+
+```python
+def E_A(self, x: float, y: float) -> float:
+```
 
 _No documentation provided_
 
-#### `E_B(self, x: float, y: float) -> float`
+#### E_B
+
+```python
+def E_B(self, x: float, y: float) -> float:
+```
 
 _No documentation provided_
 
-#### `average_energy(self, x: float, y: float) -> float`
+#### average_energy
+
+```python
+def average_energy(self, x: float, y: float) -> float:
+```
 
 _No documentation provided_
 
-#### `energy_difference(self, x: float, y: float) -> float`
+#### energy_difference
+
+```python
+def energy_difference(self, x: float, y: float) -> float:
+```
 
 _No documentation provided_
 
-#### `generate_force_file(self, xyz_file: str)`
+#### generate_force_file
+
+```python
+def generate_force_file(self, xyz_file: str):
+```
 
 _No documentation provided_
 
-#### `plot_CI(self, max_grid: float = 1)`
+#### plot_CI
+
+```python
+def plot_CI(self, max_grid: float = 1):
+```
 
 _No documentation provided_
 
 ---
 
 <!-- Source: jeremy.py -->
-## Class: jeremy.Jeremy
+### Jeremy
+
+*Full path: `jeremy.Jeremy`*
 
 _No class documentation provided_
 
@@ -768,7 +864,11 @@ ArrayLike
 
 ### Methods
 
-#### `clear_cache(self) -> None`
+#### clear_cache
+
+```python
+def clear_cache(self) -> None:
+```
 
 Clear cached properties.
 
@@ -776,11 +876,19 @@ Returns
 -------
 None
 
-#### `compare_internals(self, reference: 'Jeremy') -> numpy.ndarray`
+#### compare_internals
+
+```python
+def compare_internals(self, reference: 'Jeremy') -> numpy.ndarray:
+```
 
 _No documentation provided_
 
-#### `override_connectivity_matrix(self, cm: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[bool | int | float | complex | str | bytes]]) -> None`
+#### override_connectivity_matrix
+
+```python
+def override_connectivity_matrix(self, cm: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[bool | int | float | complex | str | bytes]]) -> None:
+```
 
 Override connectivity matrix to generate internals from a reference.
 
@@ -802,14 +910,20 @@ Returns
 -------
 None.
 
-#### `rmsdiff(self, reference)`
+#### rmsdiff
+
+```python
+def rmsdiff(self, reference):
+```
 
 _No documentation provided_
 
 ---
 
 <!-- Source: jeremy.py -->
-## Class: jeremy.MoleculeHandler
+### MoleculeHandler
+
+*Full path: `jeremy.MoleculeHandler`*
 
 _No class documentation provided_
 
@@ -845,7 +959,11 @@ ArrayLike
 
 ### Methods
 
-#### `clear_cache(self) -> None`
+#### clear_cache
+
+```python
+def clear_cache(self) -> None:
+```
 
 Clear cached properties.
 
@@ -853,11 +971,19 @@ Returns
 -------
 None
 
-#### `compare_internals(self, reference: 'Jeremy') -> numpy.ndarray`
+#### compare_internals
+
+```python
+def compare_internals(self, reference: 'Jeremy') -> numpy.ndarray:
+```
 
 _No documentation provided_
 
-#### `override_connectivity_matrix(self, cm: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[bool | int | float | complex | str | bytes]]) -> None`
+#### override_connectivity_matrix
+
+```python
+def override_connectivity_matrix(self, cm: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[bool | int | float | complex | str | bytes]]) -> None:
+```
 
 Override connectivity matrix to generate internals from a reference.
 
@@ -879,31 +1005,47 @@ Returns
 -------
 None.
 
-#### `rmsdiff(self, reference)`
+#### rmsdiff
+
+```python
+def rmsdiff(self, reference):
+```
 
 _No documentation provided_
 
 ---
 
 <!-- Source: laura.py -->
-## Class: laura.Laura
+### Laura
+
+*Full path: `laura.Laura`*
 
 _No class documentation provided_
 
 ### Methods
 
-#### `generate_xyzfile(self, filename=None, print_energies=True)`
+#### generate_xyzfile
+
+```python
+def generate_xyzfile(self, filename=None, print_energies=True):
+```
 
 _No documentation provided_
 
-#### `get_coordinates_dataframe(self)`
+#### get_coordinates_dataframe
+
+```python
+def get_coordinates_dataframe(self):
+```
 
 _No documentation provided_
 
 ---
 
 <!-- Source: maxime.py -->
-## Class: maxime.Jeremy
+### Jeremy
+
+*Full path: `maxime.Jeremy`*
 
 _No class documentation provided_
 
@@ -939,7 +1081,11 @@ ArrayLike
 
 ### Methods
 
-#### `clear_cache(self) -> None`
+#### clear_cache
+
+```python
+def clear_cache(self) -> None:
+```
 
 Clear cached properties.
 
@@ -947,11 +1093,19 @@ Returns
 -------
 None
 
-#### `compare_internals(self, reference: 'Jeremy') -> numpy.ndarray`
+#### compare_internals
+
+```python
+def compare_internals(self, reference: 'Jeremy') -> numpy.ndarray:
+```
 
 _No documentation provided_
 
-#### `override_connectivity_matrix(self, cm: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[bool | int | float | complex | str | bytes]]) -> None`
+#### override_connectivity_matrix
+
+```python
+def override_connectivity_matrix(self, cm: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[bool | int | float | complex | str | bytes]]) -> None:
+```
 
 Override connectivity matrix to generate internals from a reference.
 
@@ -973,14 +1127,20 @@ Returns
 -------
 None.
 
-#### `rmsdiff(self, reference)`
+#### rmsdiff
+
+```python
+def rmsdiff(self, reference):
+```
 
 _No documentation provided_
 
 ---
 
 <!-- Source: maxime.py -->
-## Class: maxime.Maxime
+### Maxime
+
+*Full path: `maxime.Maxime`*
 
 _No class documentation provided_
 
@@ -1018,7 +1178,11 @@ ArrayLike
 
 ### Methods
 
-#### `clear_cache(self) -> None`
+#### clear_cache
+
+```python
+def clear_cache(self) -> None:
+```
 
 Clear cached properties.
 
@@ -1026,23 +1190,43 @@ Returns
 -------
 None
 
-#### `compare_internals(self, reference: 'Jeremy') -> numpy.ndarray`
+#### compare_internals
+
+```python
+def compare_internals(self, reference: 'Jeremy') -> numpy.ndarray:
+```
 
 _No documentation provided_
 
-#### `complete_molecule(self, index)`
+#### complete_molecule
+
+```python
+def complete_molecule(self, index):
+```
 
 _No documentation provided_
 
-#### `complete_molecules(self, frontier_df: pandas.core.frame.DataFrame) -> pandas.core.frame.DataFrame`
+#### complete_molecules
+
+```python
+def complete_molecules(self, frontier_df: pandas.core.frame.DataFrame) -> pandas.core.frame.DataFrame:
+```
 
 _No documentation provided_
 
-#### `extract_radius_atoms(self, point: list[float] = [0, 0, 0], r: float = 1, new_filename='None') -> list`
+#### extract_radius_atoms
+
+```python
+def extract_radius_atoms(self, point: list[float] = [0, 0, 0], r: float = 1, new_filename='None') -> list:
+```
 
 _No documentation provided_
 
-#### `override_connectivity_matrix(self, cm: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[bool | int | float | complex | str | bytes]]) -> None`
+#### override_connectivity_matrix
+
+```python
+def override_connectivity_matrix(self, cm: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[bool | int | float | complex | str | bytes]]) -> None:
+```
 
 Override connectivity matrix to generate internals from a reference.
 
@@ -1064,14 +1248,20 @@ Returns
 -------
 None.
 
-#### `rmsdiff(self, reference)`
+#### rmsdiff
+
+```python
+def rmsdiff(self, reference):
+```
 
 _No documentation provided_
 
 ---
 
 <!-- Source: misc/NXSpecReader.py -->
-## Class: NXSpecReader.NXSpecReader
+### NXSpecReader
+
+*Full path: `NXSpecReader.NXSpecReader`*
 
 Reads and processes spectral data files to generate convoluted spectra.
 
@@ -1084,7 +1274,11 @@ npoints : int, optional
 
 ### Methods
 
-#### `generate_spectrum(self) -> numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]`
+#### generate_spectrum
+
+```python
+def generate_spectrum(self) -> numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]:
+```
 
 Generate full spectrum across all states.
 
@@ -1093,11 +1287,19 @@ Returns
 NDArray[np.float64]
     Complete convolved spectrum
 
-#### `return_semiclassical_spectrum(self)`
+#### return_semiclassical_spectrum
+
+```python
+def return_semiclassical_spectrum(self):
+```
 
 _No documentation provided_
 
-#### `save_to_file(self, filename: str) -> None`
+#### save_to_file
+
+```python
+def save_to_file(self, filename: str) -> None:
+```
 
 Save generated spectrum to file.
 
@@ -1109,62 +1311,110 @@ filename : str
 ---
 
 <!-- Source: rodrigo.py -->
-## Class: rodrigo.Rodrigo
+### Rodrigo
+
+*Full path: `rodrigo.Rodrigo`*
 
 _No class documentation provided_
 
 ### Methods
 
-#### `export_gaussian_eV(self, dispersion: float = 0.2)`
+#### export_gaussian_eV
+
+```python
+def export_gaussian_eV(self, dispersion: float = 0.2):
+```
 
 _No documentation provided_
 
-#### `get_peaks_eV(self)`
+#### get_peaks_eV
+
+```python
+def get_peaks_eV(self):
+```
 
 _No documentation provided_
 
-#### `get_peaks_nm(self)`
+#### get_peaks_nm
+
+```python
+def get_peaks_nm(self):
+```
 
 _No documentation provided_
 
-#### `load_experimental(self, experimental_filename, units='eV')`
+#### load_experimental
+
+```python
+def load_experimental(self, experimental_filename, units='eV'):
+```
 
 _No documentation provided_
 
-#### `plot(self)`
+#### plot
+
+```python
+def plot(self):
+```
 
 _No documentation provided_
 
-#### `plot_additional_spectra(self, data, units='eV', label='Imported Spectrum', shift=0.0)`
+#### plot_additional_spectra
+
+```python
+def plot_additional_spectra(self, data, units='eV', label='Imported Spectrum', shift=0.0):
+```
 
 _No documentation provided_
 
-#### `plot_gaussian(self, dispersion=None)`
+#### plot_gaussian
+
+```python
+def plot_gaussian(self, dispersion=None):
+```
 
 _No documentation provided_
 
-#### `plot_vertical(self)`
+#### plot_vertical
+
+```python
+def plot_vertical(self):
+```
 
 _No documentation provided_
 
-#### `save_image(self, imagename)`
+#### save_image
+
+```python
+def save_image(self, imagename):
+```
 
 _No documentation provided_
 
 ---
 
 <!-- Source: stef.py -->
-## Class: stef.NebExtractor
+### NebExtractor
+
+*Full path: `stef.NebExtractor`*
 
 _No class documentation provided_
 
 ### Methods
 
-#### `export_data(self, name: str = 'default.dat')`
+#### export_data
+
+```python
+def export_data(self, name: str = 'default.dat'):
+```
 
 _No documentation provided_
 
-#### `savefig(self, name: str = 'default.jpg', dpi: int = 600, landscape: bool = False, spline=False, annotate_barrier: bool = False)`
+#### savefig
+
+```python
+def savefig(self, name: str = 'default.jpg', dpi: int = 600, landscape: bool = False, spline=False, annotate_barrier: bool = False):
+```
 
 _No documentation provided_
 
