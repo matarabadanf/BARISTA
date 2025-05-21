@@ -113,7 +113,7 @@ class Javi:
         # tan_2_beta = 2 * (np.dot(self.g_ab, self.h_ab)) / (np.linalg.norm(self.g_ab) - np.linalg.norm(self.h_ab))
         # return np.arctan(tan_2_beta)
         tan_2_beta = 2 * (np.dot(self.g_ab, self.h_ab)) / (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab))
-        beta_2 = np.atan(tan_2_beta)
+        beta_2 = np.arctan(tan_2_beta)
         beta = beta_2 / 2
         # return beta  
         beta = 0.5 * np.arctan2(2 * np.dot(self.g_ab, self.h_ab), (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab)))
@@ -240,7 +240,7 @@ class Javi:
 
         vec = np.array([x,y])
      
-        theta = np.atan2(y,x)
+        theta = np.arctan2(y,x)
 
         return theta
 
