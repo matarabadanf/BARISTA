@@ -7,7 +7,7 @@ from barista.personnel.javi import Javi
 def setup_data():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
-    ethylene_path = os.path.join(script_dir, 'ethylene_b')
+    ethylene_path = os.path.join(script_dir, 'new_ethylene_a')
     grad0_path = os.path.join(ethylene_path, 'engrad0.dat')
     grad1_path = os.path.join(ethylene_path, 'engrad1.dat')
     nacme_path = os.path.join(ethylene_path, 'nacme2.dat')
@@ -23,14 +23,15 @@ def setup_data():
     hab = np.loadtxt(nacme_path).flatten()
 
     g_ab = (gb - ga) / 2
-    tan_2_beta = 2 * np.dot(g_ab, hab) / (np.dot(g_ab, g_ab) - np.dot(hab, hab))
-    beta_2 = np.atan(tan_2_beta)
-    beta = beta_2 / 2
-    
-    ref_pitch = 0.1026
-    ref_asymm = 0.4886
-    ref_sigma = 0.5668
-    ref_theta = 0 
+    # tan_2_beta = 2 * np.dot(g_ab, hab) / (np.dot(g_ab, g_ab) - np.dot(hab, hab))
+    # beta_2 = np.atan(tan_2_beta)
+    # beta = beta_2 / 2
+    beta = 0 
+
+    ref_pitch = 9.84495E-02
+    ref_asymm = 5.05203E-01
+    ref_sigma = 9.24890E-01
+    ref_theta = 1.24987E-03
     
     return j, ga, gb, hab, g_ab, beta, ref_pitch, ref_asymm, ref_sigma, ref_theta
 
@@ -52,7 +53,7 @@ def test_g_ab_equal(setup_data):
 
 # def test_beta_equal(setup_data):
 #     j, _, _, _, _, beta, _, _, _, _ = setup_data
-#     assert np.all(np.isclose(j.beta, beta, atol=0.001)) or np.all(np.isclose((j.beta + np.pi/2)%np.pi, beta, atol=0.001)), 'beta and j.beta are not equal within threshold.'
+#     assert np.all(np.isclose(j.beta, beta, atol=0.001)) or np.all(np.isclose(j.beta + np.pi/2, beta, atol=0.001)), 'beta and j.beta are not equal within threshold.'
 
 def test_pitch(setup_data):
     j, _, _, _, _, _, ref_pitch, _, _, _ = setup_data
@@ -60,7 +61,7 @@ def test_pitch(setup_data):
 
 def test_asymmetry(setup_data):
     j, _, _, _, _, _, _, ref_asymm, _, _ = setup_data
-    assert abs(abs(j.asymmetry) - abs(ref_asymm)) < 0.001, f'Reference asymmetry and j.asymmetry differ in {abs(j.asymmetry - ref_asymm):9.5f}'
+    assert abs(j.asymmetry - ref_asymm) < 0.001, f'Reference asymmetry and j.asymmetry differ in {abs(j.asymmetry - ref_asymm):9.5f}'
 
 def test_sigma(setup_data):
     j, _, _, _, _, _, _, _, ref_sigma, _ = setup_data
@@ -68,5 +69,6 @@ def test_sigma(setup_data):
 
 def test_conical_characterization(setup_data):
     j, _, _, _, _, _, _, _, _, _ = setup_data
-    assert abs(j.p[0] - 0.25) < 0.01, f'Conical calculated characterization (a) p[0] differs: {j.p[0]}'
-    assert abs(j.b[0] - 1.02) < 0.01, f'Conical calculated characterization (a) b[0] differs: {j.b[0]}'
+    assert abs(j.p[0] - 5.68311E-01) < 0.01, f'Conical calculated characterization (a) p[0] differs: {j.p[0]}'
+    assert abs(j.b[0] - 1.08908E+00) < 0.01, f'Conical calculated characterization (a) b[0] differs: {j.b[0]}'
+
