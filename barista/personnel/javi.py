@@ -392,7 +392,13 @@ class Javi:
         x_force = self.x.reshape([-1,3])
         y_force = self.y.reshape([-1,3])
 
+        dx = self.sigma * np.cos(self.theta_s + np.pi)
+        dy = self.sigma * np.sin(self.theta_s + np.pi)
         
+        min_tilt_force = dx * x_force + dy * y_force
+
+        min_tilt_force /= np.linalg.norm(min_tilt_force)
+
         # print(y_force)
 
         with open('vectors.xyz', 'w') as vecfile:
@@ -428,6 +434,19 @@ class Javi:
                  symbol = symbols[index]
                  coord = coordinate
                  forces = y_force[index]
+ 
+                 # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces/np.linalg.norm(forces))} 3\n')
+                 vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} \n')
+                 # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord + forces)}\n')
+
+        with open('vectors.xyz', 'a') as vecfile:
+             vecfile.write(header[0])
+             vecfile.write('min tilt force vector (normalized) \n')
+             # print(coordinates)
+             for index, coordinate in enumerate(coordinates):
+                 symbol = symbols[index]
+                 coord = coordinate
+                 forces = min_tilt_force[index]
  
                  # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces/np.linalg.norm(forces))} 3\n')
                  vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} \n')
