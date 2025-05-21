@@ -61,13 +61,16 @@ class Javi:
 
     def _init(self) -> None:
         self._load_vectors()
+
         for i in range(0,4):
             if self.is_rotation_needed(self.asymmetry, self.theta_s):
                 self._rotate_for_beta()
             else:
                 break
+        if self.rotation_counter == 4:
+            print('\nWARNING: THERE IS NO ROTATION OF THE ANGLES SUCH AS PROPERTIES ARE FULFILLED')
 
-        print(f'\nBeta has been rotated {self.rotation_counter} * pi/2. Beta = {self.beta:8.4f} ({self.beta/2/np.pi*360:8.4f} deg)')
+        print(f'\nBeta has been rotated {self.rotation_counter % 4} * pi/2. Beta = {self.beta:8.4f} ({self.beta/2/np.pi*360:8.4f} deg)')
         # print(f'beta      = {self.beta%np.pi:8.4f}')
         print(f'\npitch     = {self.pitch:8.4f}')
         print(f'asymmetry = {self.asymmetry:8.4f}')
@@ -75,6 +78,10 @@ class Javi:
         print(f'theta     = {self.theta_s:8.4f} ({self.theta_s/2/np.pi*360:8.4f} deg)')
 
         print(f'\nWith the rotation, the conditions 0 < theta < pi/2 and 0 < asymmetry are fulfiled: {not self.is_rotation_needed(self.asymmetry, self.theta_s)}')
+
+        print('\nP and B values are:\n')
+        print(f'{self.p[0]:8.4f}, {self.p[1]}')
+        print(f'{self.b[0]:8.4f}, {self.b[1]}\n')
    
     @classmethod
     def from_xy(cls):
@@ -149,7 +156,7 @@ class Javi:
     @property
     def beta(self) -> float:
         # print(f'Rotation of {self.rotation_counter} pi halves')
-        return self._pre_beta[self.rotation_counter] # 2 works for x and y unit vector sign in ethylene a and b  
+        return self._pre_beta[self.rotation_counter % 4] # 2 works for x and y unit vector sign in ethylene a and b  
 
     def is_rotation_needed(self, asymmetry:float, theta_s:float) -> bool:
         zero_condition = 0 < self.theta_s and abs(0 - self.theta_s) < 10**-12
@@ -428,16 +435,15 @@ class Javi:
 
         # print(np.linalg.norm(x_force).reshape(-1))
 
-    def plot_2d(self, max_grid:float = 1):
+    def _pre_plot_2d(self, max_grid:float = 1):
         x = np.linspace(-max_grid, max_grid, 501)
         y = np.linspace(-max_grid, max_grid, 501)
         
         X, Y = np.meshgrid(x, y)
         e_a = self.E_A(X, Y)
 
-        plt.figure(figsize=(6, 5))
+        # plt.figure(figsize=(6, 5))
 
-        
         # contour lines
         contour_levels = 15  
         contours = plt.contour(
@@ -461,15 +467,24 @@ class Javi:
         dx = self.sigma * np.cos(self.theta_s + np.pi)
         dy = self.sigma * np.sin(self.theta_s + np.pi)
         
-        plt.arrow(0, 0, dx, dy, color='red', length_includes_head=True)
+        plt.arrow(0, 0, dx, dy, color='red', head_width=0.05, head_length=0.1, length_includes_head=False)
+        plt.arrow(0, 0, 1, 0, color='black', head_width=0.05, head_length=0.1, length_includes_head=True)
+        plt.arrow(0, 0, 0, 1, color='black', head_width=0.05, head_length=0.1, length_includes_head=True)
 
-        plt.colorbar(label="E_A")
+        plt.colorbar(label="$\Delta E_{lower}$")
         plt.xlabel("X")
         plt.ylabel("Y")
-        plt.title("Heatmap of E_A(X, Y)")
+        plt.xticks([-1, 0, 1])
+        plt.yticks([-1, 0, 1])
         plt.tight_layout()
+    
+    def plot_2d(self):
+        self._pre_plot_2d()
         plt.show()
-        
+    
+    def saveplot_2d(self, filename, dpi:int=800):
+        self._pre_plot_2d()
+        plt.savefig(filename, dpi=dpi)
 
 
 if __name__ == "__main__":
