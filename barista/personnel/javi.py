@@ -292,7 +292,7 @@ class Javi:
 
         return (b, b_type)
 
-    def plot_CI(self, max_grid:float=1):
+    def plot_CI(self, max_grid:float=1, filename:str = 'NONE.html'):
     
         x = np.linspace(-max_grid, max_grid, 501)
         y = np.linspace(-max_grid, max_grid, 501)
@@ -329,16 +329,38 @@ class Javi:
         # rgba(100, 120, 140, 0.7)
         # Create a 3D surface plot
         fig = go.Figure(data=[
-            go.Surface(z=e_a,    x=X, y=Y, showscale=False, name='Surface 1', opacity=0.8, colorscale=[[0, 'rgba(100, 120, 140, 0.7)'],[1, 'rgba(100, 120, 140, 0.7)']]),
-            go.Surface(z=e_b,    x=X, y=Y, showscale=False, name='Surface 2', opacity=0.8, colorscale=[[0, 'rgba(173, 216, 230, 0.7)'],[1, 'rgba(173, 216, 230, 0.7)']]),
-            go.Surface(z=e_mean, x=X, y=Y, showscale=False, name='Branching plane', opacity=0.5, colorscale=[[0, 'rgba(255, 0, 0, 0.7)'],[1, 'rgba(255, 0, 0, 0.7)']]),
-            go.Surface(z=b_p,    x=X, y=Y, showscale=False, name='Mean energy plane', opacity=0.5, colorscale=[[0, 'rgba(0, 255, 0, 0.7)'],[1, 'rgba(0, 255, 0, 0.7)']]),
+            go.Surface(z=e_a, x=X, y=Y, showscale=False, name='Surface 1', opacity=0.8, colorscale=[[0, 'rgba(100, 120, 140, 0.7)'], [1, 'rgba(100, 120, 140, 0.7)']],
+                 contours = {
+                     "z": {
+                     "show": True,
+                     "start": np.min(e_a),
+                     "end": np.max(e_a),
+                     "size": (np.max(e_a) - np.min(e_a)) / 10,
+                     "color":"black",
+                     "width": 2,
+                     "usecolormap": False,
+                     }
+                 }),
+            go.Surface(z=e_b, x=X, y=Y, showscale=False, name='Surface 2', opacity=0.8, colorscale=[[0, 'rgba(173, 216, 230, 0.7)'], [1, 'rgba(173, 216, 230, 0.7)']],
+                 contours = {
+                     "z": {
+                     "show": True,
+                     "start": np.min(e_b),
+                     "end": np.max(e_b),
+                     "size": (np.max(e_b) - np.min(e_b)) / 10,
+                     "color":"black",
+                     "width": 2,
+                     "usecolormap": False,
+                     }
+                 }),
+            #go.Surface(z=e_mean, x=X, y=Y, showscale=False, name='Branching plane', opacity=0.5, colorscale=[[0, 'rgba(255, 0, 0, 0.7)'],[1, 'rgba(255, 0, 0, 0.7)']]),
+            #go.Surface(z=b_p,    x=X, y=Y, showscale=False, name='Mean energy plane', opacity=0.5, colorscale=[[0, 'rgba(0, 255, 0, 0.7)'],[1, 'rgba(0, 255, 0, 0.7)']]),
 
             # Vectors
             # go.Scatter3d(x=x_intersect, y=y_intersect, z=z_intersect, mode='lines+text', line=dict(color='rgba(0, 0, 0, 0.5)', width=4), name='BP and ME intersection'),
-            go.Scatter3d(x=[0, max_x], y=[0, max_y], z=[0, max_value], mode='lines+text',line=dict(color='black', width=4), name = r'Max tilt direction', text=['',  'Max tilt direction'], textfont=dict(color='black')),
-            go.Scatter3d(x=[0, 1*max_grid], y=[0, 0], z=[0, 0], mode='lines+text',line=dict(color='black', width=4), name = r'$\hat{\mathbf{x}}$', text=['', 'x'], textfont=dict(color='black')),
-            go.Scatter3d(x=[0, 0], y=[0, 1*max_grid], z=[0, 0], mode='lines+text',line=dict(color='black', width=4), name = r'$\hat{\mathbf{y}}$', text=['', 'y'], textfont=dict(color='black')),
+            #go.Scatter3d(x=[0, max_x], y=[0, max_y], z=[0, max_value], mode='lines+text',line=dict(color='black', width=4), name = r'Max tilt direction', text=['',  'Max tilt direction'], textfont=dict(color='black')),
+            #go.Scatter3d(x=[0, 1*max_grid], y=[0, 0], z=[0, 0], mode='lines+text',line=dict(color='black', width=4), name = r'$\hat{\mathbf{x}}$', text=['', 'x'], textfont=dict(color='black')),
+            #go.Scatter3d(x=[0, 0], y=[0, 1*max_grid], z=[0, 0], mode='lines+text',line=dict(color='black', width=4), name = r'$\hat{\mathbf{y}}$', text=['', 'y'], textfont=dict(color='black')),
     
             # Dummy scatter traces for the legend to reflect the surface color
             # go.Scatter3d(x=[None], y=[None], z=[None], mode='markers', marker=dict(color='rgba(100, 120, 140, 0.7)', size=10), name='Surface 1'),
@@ -350,34 +372,47 @@ class Javi:
         ])
     
         fig.update_layout(
-            title='Conical intersection representation',
-            title_font=dict(size=28),
-            annotations=[
-                dict(
-                    x=1.05,  # X position of the text box (relative to the plot)
-                    y=0.5,  # Y position of the text box (relative to the plot)
-                    xref='paper',  # Use 'paper' for positioning relative to the whole figure
-                    yref='paper',  # Use 'paper' for positioning relative to the whole figure
-                    text=f"P = {self.p[0]:5.3f} -> {self.p[1]} conical.<br>B = {self.b[0]:5.3f} -> {self.b[1]} conical.",  # Text to display in the box
-                    showarrow=False,  # Don't show an arrow
-                    font=dict(size=16, color="black"),  # Font size and color
-                    bordercolor="black",  # Border color of the box
-                    borderwidth=2  # Border width
-                )
-            ],
+            # title='Conical intersection representation',
+            # title_font=dict(size=28),
+            width=1200,  # Make figure larger
+            height=900,  # Make figure larger
             scene=dict(
-                xaxis_title='X',
-                yaxis_title='Y',
-                zaxis_title='Energy / Hartree',
-                aspectratio=dict(x=1, y=1, z=2)
+            xaxis_title=None,
+            yaxis_title=None,
+            zaxis_title=None,
+            aspectmode='cube',
+            xaxis=dict(
+                showbackground=False,
+                showgrid=False,
+                showticklabels=False,
+                zeroline=False,
+                title=None
+            ),
+            yaxis=dict(
+                showbackground=False,
+                showgrid=False,
+                showticklabels=False,
+                zeroline=False,
+                title=None
+            ),
+            zaxis=dict(
+                showbackground=False,
+                showgrid=False,
+                showticklabels=False,
+                zeroline=False,
+                title=None
+            ),
+            aspectratio=dict(x=1, y=1, z=1)
             ),
             showlegend=True,
             legend=dict(
-                font=dict(size=22),  # Item font size
-                traceorder='normal',  # Order of legend items
+            font=dict(size=22),
+            traceorder='normal',
             )
         )
-    
+        
+        fig.write_html(filename)
+
         fig.show()    
 
     def generate_force_file(self, xyz_file:str):
