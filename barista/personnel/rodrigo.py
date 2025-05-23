@@ -4,6 +4,7 @@ import numpy as np
 import sys
 import argparse
 import pandas as pd
+from functools import cached_property
 
 from barista.personnel.misc.NXSpecReader import NXSpecReader
 
@@ -92,17 +93,14 @@ class Rodrigo:
 
     def _initialize(self):
         self._load_file(self.filename)
-        self._locate_peaks_in_file()
-        self._extract_peaks()
         self._normalize_peaks()
 
     def _load_file(self, filename):
-
         with open(filename, "r") as fi:
             self.orca_output_content = fi.readlines()
 
-    def _locate_peaks_in_file(self):
-
+    @cached_property
+    def spectra_peaks(self):
         for index, line in enumerate(self.orca_output_content):
             if (
                 "ABSORPTION SPECTRUM VIA TRANSITION ELECTRIC DIPOLE MOMENTS"
@@ -114,10 +112,7 @@ class Rodrigo:
                 in line
             ):
                 self.end_index = index
-
-    def _extract_peaks(self):
-
-        self.spectra_peaks = np.array(
+        s_p = np.array(
             [
                 np.array(
                     [
@@ -131,17 +126,24 @@ class Rodrigo:
             ]
         )
 
+        return np.copy(s_p)
+        
+
+
     def _normalize_peaks(self):
         self.spectra_peaks[:, 1] = self.spectra_peaks[:, 1] / max(
             self.spectra_peaks[:, 1]
         )
 
+    @cached_property
     def get_peaks_nm(self):
         return np.copy(self.spectra_peaks).T
 
+    @cached_property
     def get_peaks_eV(self):
 
         spectra_ev = np.copy(self.spectra_peaks).T
+
         spectra_ev[0] = 1239.8 / spectra_ev[0]
 
         return spectra_ev
@@ -177,15 +179,15 @@ class Rodrigo:
     def _plot_gaussian_nm(self, dispersion: float = 7.5):
 
         x_array = np.linspace(
-            min(self.get_peaks_nm()[0]) - 20,
-            max(self.get_peaks_nm()[0]) + 20,
+            min(self.get_peaks_nm[0]) - 20,
+            max(self.get_peaks_nm[0]) + 20,
             1000,
         )
 
 
         y_array = np.zeros(len(x_array))
 
-        for peak in self.get_peaks_nm().T:
+        for peak in self.get_peaks_nm.T:
             y_array += self._gaussian(x_array, peak[1], peak[0], dispersion)
 
         plt.plot(x_array, y_array, label='Convoluted spectrum')
@@ -194,22 +196,23 @@ class Rodrigo:
         x_array = np.linspace(0, 15, 1000)
         y_array = np.zeros(len(x_array))
 
-        for peak in self.get_peaks_eV().T:
+        for peak in self.get_peaks_eV.T:
             y_array += self._gaussian(x_array, peak[1], peak[0], dispersion)
 
-        return x_array,y_array
+        array = np.array([x_array,y_array])
+        return array
 
     def _plot_gaussian_eV(self, dispersion: float = 0.2):
 
         x_array = np.linspace(
-            min(self.get_peaks_eV()[0]) - 1,
-            max(self.get_peaks_eV()[0]) + 1,
+            min(self.get_peaks_eV[0]) - 1,
+            max(self.get_peaks_eV[0]) + 1,
             1000,
         )
 
         y_array = np.zeros(len(x_array))
 
-        for peak in self.get_peaks_eV().T:
+        for peak in self.get_peaks_eV.T:
             y_array += self._gaussian(x_array, peak[1], peak[0], dispersion)
 
         plt.plot(x_array, y_array/max(y_array), label='Convoluted spectrum')
@@ -238,14 +241,14 @@ class Rodrigo:
 
     def _plot_vertical_nm(self):
 
-        x, ymax = self.get_peaks_nm()
+        x, ymax = self.get_peaks_nm
         ymin = np.zeros_like(x)
 
         plt.vlines(x, ymin, ymax, colors="black", label="Vertical spectrum")
 
     def _plot_vertical_eV(self):
 
-        x, ymax = self.get_peaks_eV()
+        x, ymax = self.get_peaks_eV
         ymin = np.zeros_like(x)
 
         plt.vlines(x, ymin, ymax, colors="black", label="Vertical spectrum")
@@ -277,6 +280,15 @@ class Rodrigo:
         plt.legend()
         plt.savefig(imagename, dpi=300)
 
+    
+    def save_data(self, name:str='None', dispersion: float = 0.2):
+        np.savetxt(name.replace('.in.out', '_peaks.dat'), self.get_peaks_eV.T)
+
+        np.savetxt(
+            name.replace('.in.out', '_convolved.dat'), 
+            self.export_gaussian_eV(dispersion = 0.2).T
+        )
+
 
 if __name__ == "__main__":
     
@@ -289,6 +301,9 @@ if __name__ == "__main__":
 
     a = Rodrigo(args.F, args.u)
     # a = Rodrigo("tests/xanthine_spectra_tda.in.out", "nm")
+
+    a.save_data(name=args.F)
+    print(a.get_peaks_eV)
 
     a.plot_vertical()
     
@@ -319,4 +334,6 @@ if __name__ == "__main__":
         a.save_image(args.o)
     else:
         a.save_image(args.F.replace(".in.out", ".jpg"))
+
+
 
