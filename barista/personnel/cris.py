@@ -41,13 +41,25 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--interactive",
+    "-forces_file",
+    default='None',
+    type=str,
+    help="XYZ file of the converged geometry to generate xyz with forces.",
+)
+
+parser.add_argument(
+    "--plot_lower",
     action='store_true',
     required=False,
     help="Open interactive plot.",
 )
 
-
+parser.add_argument(
+    "--interactive",
+    action='store_true',
+    required=False,
+    help="Open interactive plot.",
+)
 
 class Javi:
 
@@ -581,6 +593,24 @@ class Javi:
                  vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} \n')
                  # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord + forces)}\n')
 
+        other_quadrant = - dx * x_force + dy * y_force
+        
+
+        other_quadrant /= np.linalg.norm(other_quadrant)
+
+        with open('vectors.xyz', 'a') as vecfile:
+             vecfile.write(header[0])
+             vecfile.write('Other quadrant for bifurcating purposes force vector (normalized) \n')
+             # print(coordinates)
+             for index, coordinate in enumerate(coordinates):
+                 symbol = symbols[index]
+                 coord = coordinate
+                 forces = other_quadrant[index]
+ 
+                 # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces/np.linalg.norm(forces))} 3\n')
+                 vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} \n')
+                 # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord + forces)}\n')
+
         # print(np.linalg.norm(x_force).reshape(-1))
 
     def _pre_plot_2d(self, max_grid:float = 1):
@@ -682,9 +712,11 @@ if __name__ == "__main__":
     print(f'{j.p[0]:8.4f}, {j.p[1]}')
     print(f'{j.b[0]:8.4f}, {j.b[1]}\n')
 
-    j.generate_force_file('tt.xyz')
+    if args.forces_file != 'None':
+        j.generate_force_file(args.forces_file)
     
-    j.plot_2d()
+    if args.plot_lower:
+        j.plot_2d()
 
     if args.interactive:
         j.plot_CI()
