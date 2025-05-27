@@ -91,6 +91,13 @@ visualization_args.add_argument(
 )
 
 visualization_args.add_argument(
+    "--plot_upper",
+    action='store_true',
+    required=False,
+    help="Plot upper state pes in 2D.",
+)
+
+visualization_args.add_argument(
     "--interactive",
     action='store_true',
     required=False,
@@ -664,19 +671,22 @@ class Javi:
 
         # print(np.linalg.norm(x_force).reshape(-1))
 
-    def _pre_plot_2d(self, max_grid:float = 1):
+    def _pre_plot_2d(self, max_grid:float = 1, surf:str='a'):
         x = np.linspace(-max_grid, max_grid, 501)
         y = np.linspace(-max_grid, max_grid, 501)
         
         X, Y = np.meshgrid(x, y)
-        e_a = self.E_A(X, Y)
+        if surf == 'a':
+            ener = self.E_A(X, Y)
+        else:
+            ener = self.E_B(X, Y)
 
         # plt.figure(figsize=(6, 5))
 
         # contour lines
         contour_levels = 15  
         contours = plt.contour(
-            X, Y, e_a,
+            X, Y, ener,
             levels=contour_levels,
             colors='black',
             linewidths=0.7
@@ -686,15 +696,19 @@ class Javi:
         plt.clabel(contours, inline=True, fontsize=8, fmt="%.2f")
         
         plt.imshow(
-            e_a,
+            ener,
             extent=(-max_grid, max_grid, -max_grid, max_grid),
             origin='lower',
             cmap='viridis',
             aspect='auto'
         )
-        
-        dx = self.sigma * np.cos(self.theta_s + np.pi)
-        dy = self.sigma * np.sin(self.theta_s + np.pi)
+        if surf =='a':
+            dx = self.sigma * np.cos(self.theta_s + np.pi)
+            dy = self.sigma * np.sin(self.theta_s + np.pi)
+        else:
+            dx = self.sigma * np.cos(self.theta_s)
+            dy = self.sigma * np.sin(self.theta_s)
+
         
         plt.arrow(0, 0, dx, dy, color='red', head_width=0.05, head_length=0.1, length_includes_head=False)
         plt.arrow(0, 0, 1, 0, color='black', head_width=0.05, head_length=0.1, length_includes_head=True)
@@ -707,12 +721,12 @@ class Javi:
         plt.yticks([-1, 0, 1])
         plt.tight_layout()
     
-    def plot_2d(self):
-        self._pre_plot_2d()
+    def plot_2d(self,surf:str='a'):
+        self._pre_plot_2d(surf=surf)
         plt.show()
     
-    def saveplot_2d(self, filename, dpi:int=800):
-        self._pre_plot_2d()
+    def saveplot_2d(self, filename, dpi:int=800, surf='a'):
+        self._pre_plot_2d(surf=surf)
         plt.savefig(filename, dpi=dpi)
 
     def displace_geoms(self, directory:str='', xyz_file:str='', rescaling:float=0.1):
@@ -858,7 +872,10 @@ if __name__ == "__main__":
                 )
     
     if args.plot_lower:
-        j.plot_2d()
+        j.plot_2d(surf='a')
+
+    if args.plot_upper:
+        j.plot_2d(surf='b')
 
     if args.interactive:
         j.plot_CI()
