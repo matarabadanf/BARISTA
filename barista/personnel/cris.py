@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 # Parser is used to input via terminal the required arguments for Emma
 parser = argparse.ArgumentParser(
-    description="""Takes the lower and upper state gradients in a CI with the NAC vector and characterizes the type oc CI.\
+    description="""Takes the lower and upper state gradients in a CI with the CDV vector and characterizes the type oc CI.\
         \nResults can be plotted interactively using plotly.""",
     epilog='It requires g0, g1 and cdv OR molcas output file',
 )
@@ -61,8 +61,8 @@ forces_args.add_argument(
 
 forces_args.add_argument(
     "--generate_forces",
-    default='None',
-    type=str,
+    action='store_true',
+    required=False,
     help="Generate xyz file with  x, y, and -s_ab vectors for visualization."
 )
 
@@ -70,7 +70,7 @@ forces_args.add_argument(
     "--generate_displacements",
     action='store_true',
     required=False,
-    help="Generate displaced geometries in x, -x, y, -y -s_ab and mirrored s_a. A folder will be generated with these geometries.",
+    help="Generate displaced geometries in x, -x, y, -y -s_ab and mirrored -s_ab. A folder will be generated with these geometries.",
 )
 
 forces_args.add_argument(
@@ -109,7 +109,7 @@ visualization_args.add_argument(
 
 class Javi:
     """
-    Class for analyzing conical intersections (CIs) using gradients and NAC vectors.
+    Class for analyzing conical intersections (CIs) using gradients and CDV vectors.
     Provides methods for parsing Molcas output, calculating CI properties, and visualization.
     """
 
@@ -121,11 +121,11 @@ class Javi:
         ci_energy:float = 0.0
     ) -> None:
         """
-        Initialize Javi object with filenames for gradients and NAC vector.
+        Initialize Javi object with filenames for gradients and CDV vector.
         Args:
             ga_filename: Path to lower state gradient file.
             gb_filename: Path to higher state gradient file.
-            hab_filename: Path to NAC vector file.
+            hab_filename: Path to CDV vector file.
             ci_energy: CI energy (default 0.0).
         """
         self._ga_filename = ga_filename
@@ -180,7 +180,7 @@ class Javi:
     @classmethod
     def from_molcas(cls, output_filename: str):
         """
-        Parse a Molcas output file to extract gradients and NAC vector, then create a Javi instance.
+        Parse a Molcas output file to extract gradients and CDV vector, then create a Javi instance.
         Args:
             output_filename: Path to Molcas .out file.
         Returns:
@@ -243,7 +243,7 @@ class Javi:
 
     def _load_vectors(self) -> None:
         """
-        Load gradient and NAC vectors from files.
+        Load gradient and CDV vectors from files.
         """
         self._ga = np.loadtxt(self._ga_filename).reshape(-1)
         self._gb = np.loadtxt(self._gb_filename).reshape(-1)
@@ -270,7 +270,7 @@ class Javi:
     @cached_property
     def h_ab(self) -> np.ndarray:
         """
-        NAC vector h_ab.
+        CDV vector h_ab.
         Returns:
             np.ndarray: h_ab vector.
         """
