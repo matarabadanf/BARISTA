@@ -15,46 +15,82 @@ parser = argparse.ArgumentParser(
     epilog='It requires g0, g1 and cdv OR molcas output file',
 )
 
-parser.add_argument(
+
+core_args = parser.add_argument_group('\nCore data')
+
+core_args.add_argument(
     "-molcas_file",
     type=str,
     default='0.0',
     help="Molcas .out file with gradients and cdv.",
 )
 
-parser.add_argument(
+core_args.add_argument(
     "-g0",
     type=str,
     help="Lower state gradient file.",
 )
 
-parser.add_argument(
+core_args.add_argument(
     "-g1",
     type=str,
     help="Higher state gradient file.",
 )
 
-parser.add_argument(
+core_args.add_argument(
     "-cdv",
     type=str,
     help="cdv vector file.",
 )
 
-parser.add_argument(
-    "-forces_file",
+#############################################
+#          Geometries and forces            #
+#############################################
+
+forces_args = parser.add_argument_group('\nVector visualization and geometry displacement')
+
+forces_args.add_argument(
+    "-ref_xyz",
     default='None',
     type=str,
-    help="XYZ file of the converged geometry to generate xyz with forces.",
+    help="Reference xyz file for forces and displacement.",
 )
 
-parser.add_argument(
+forces_args.add_argument(
+    "--generate_forces",
+    default='None',
+    type=str,
+    help="Generate xyz file with  x, y, and -s_ab vectors for visualization."
+)
+
+forces_args.add_argument(
+    "--generate_displacements",
+    action='store_true',
+    required=False,
+    help="Generate displaced geometries in x, -x, y, -y -s_ab and mirrored s_a. A folder will be generated with these geometries.",
+)
+
+forces_args.add_argument(
+    "-disp_mod",
+    default=0.1,
+    type=float,
+    help="Displacement module of the vectors to generate displaced geometries. Default is 0.1.",
+)
+
+#############################################
+#                Visualization              #
+#############################################
+
+visualization_args = parser.add_argument_group('\nPES visualization')
+
+visualization_args.add_argument(
     "--plot_lower",
     action='store_true',
     required=False,
-    help="Open interactive plot.",
+    help="Plot lower state pes in 2D.",
 )
 
-parser.add_argument(
+visualization_args.add_argument(
     "--interactive",
     action='store_true',
     required=False,
@@ -87,7 +123,13 @@ class Javi:
             else:
                 break
         if self.rotation_counter == 4:
-            print('\nWARNING: THERE IS NO ROTATION OF THE ANGLES SUCH AS PROPERTIES ARE FULFILLED')
+            print('#############################################')
+            print('#   WARNING: THERE IS NO ROTATION OF Beta   #')
+            print('#     SUCH AS PROPERTIES ARE FULFILLED      #')
+            print('#            HANDLE WITH CARE               #')
+            print('#                                           #')
+            print('#     THIS CONICAL MIGHT NOT BE A MECI      #')
+            print('#############################################')
 
         print(f'\nBeta has been rotated {self.rotation_counter % 4} * pi/2. Beta = {self.beta:8.4f} ({self.beta/2/np.pi*360:8.4f} deg)')
         # print(f'beta      = {self.beta%np.pi:8.4f}')
@@ -101,6 +143,15 @@ class Javi:
         print('\nP and B values are:\n')
         print(f'{self.p[0]:8.4f}, {self.p[1]}')
         print(f'{self.b[0]:8.4f}, {self.b[1]}\n')
+
+        print('\nX and Y Vectors are:')
+        print('\nx vector:')
+        for row in self.x.reshape(-1, 3):
+            print(" ".join(f"{val:12.8f}" for val in row))
+
+        print('\ny vector:')
+        for row in self.y.reshape(-1, 3):
+            print(" ".join(f"{val:12.8f}" for val in row))
    
     @classmethod
     def from_molcas(cls, output_filename: str):
@@ -664,6 +715,100 @@ class Javi:
         self._pre_plot_2d()
         plt.savefig(filename, dpi=dpi)
 
+    def displace_geoms(self, directory:str='', xyz_file:str='', rescaling:float=0.1):
+        with open(xyz_file, 'r') as f:
+            cont = f.readlines()
+
+        header = cont[0:1]
+
+        ref_coordinates = np.array([line.strip().split()[1:] for line in cont[2:]], dtype=float)
+        symbols = np.array([line.strip().split()[0] for line in cont[2:]], dtype=str)
+
+        x_force = self.x.reshape([-1,3])
+        y_force = self.y.reshape([-1,3])
+
+        dx = self.sigma * np.cos(self.theta_s + np.pi)
+        dy = self.sigma * np.sin(self.theta_s + np.pi)
+        
+        min_tilt_force = dx * x_force + dy * y_force
+        min_tilt_force /= np.linalg.norm(min_tilt_force)
+
+        mirrored_force = -dx * x_force + dy * y_force
+        mirrored_force /= np.linalg.norm(mirrored_force)
+
+        # print(y_force)
+
+        with open(f'{directory}/{xyz_file.replace(".xyz", "_x.xyz")}', 'w') as vecfile:
+
+            vecfile.write(header[0])
+            vecfile.write(f'displaced in x rescaled by {rescaling}\n')
+            coordinates = x_force * rescaling + np.copy(ref_coordinates)
+            
+            for index, coordinate in enumerate(coordinates):
+                symbol = symbols[index]
+                coord = coordinate
+
+                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)}\n')
+
+        with open(f'{directory}/{xyz_file.replace(".xyz", "_minus_x.xyz")}', 'w') as vecfile:
+
+            vecfile.write(header[0])
+            vecfile.write(f'displaced in -x rescaled by {rescaling}\n')
+            coordinates = -x_force * rescaling + np.copy(ref_coordinates)
+            
+            for index, coordinate in enumerate(coordinates):
+                symbol = symbols[index]
+                coord = coordinate
+
+                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)}\n')
+
+        with open(f'{directory}/{xyz_file.replace(".xyz", "_y.xyz")}', 'w') as vecfile:
+
+            vecfile.write(header[0])
+            vecfile.write(f'displaced in y rescaled by {rescaling}\n')
+            coordinates = y_force * rescaling + np.copy(ref_coordinates)
+            
+            for index, coordinate in enumerate(coordinates):
+                symbol = symbols[index]
+                coord = coordinate
+
+                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)}\n')
+
+        with open(f'{directory}/{xyz_file.replace(".xyz", "_minus_y.xyz")}', 'w') as vecfile:
+
+            vecfile.write(header[0])
+            vecfile.write(f'displaced in -y rescaled by {rescaling}\n')
+            coordinates = -y_force * rescaling + np.copy(ref_coordinates)
+            
+            for index, coordinate in enumerate(coordinates):
+                symbol = symbols[index]
+                coord = coordinate
+
+                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)}\n')
+
+        with open(f'{directory}/{xyz_file.replace(".xyz", "_s_ab.xyz")}', 'w') as vecfile:
+
+            vecfile.write(header[0])
+            vecfile.write(f'displaced in -s_ab rescaled by {rescaling}\n')
+            coordinates = min_tilt_force * rescaling + np.copy(ref_coordinates)
+            
+            for index, coordinate in enumerate(coordinates):
+                symbol = symbols[index]
+                coord = coordinate
+
+                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)}\n')
+
+        with open(f'{directory}/{xyz_file.replace(".xyz", "_mirror_s_ab.xyz")}', 'w') as vecfile:
+
+            vecfile.write(header[0])
+            vecfile.write(f'displaced in mirrored (in x) s_ab rescaled by {rescaling}\n')
+            coordinates = mirrored_force * rescaling + np.copy(ref_coordinates)
+            
+            for index, coordinate in enumerate(coordinates):
+                symbol = symbols[index]
+                coord = coordinate
+
+                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)}\n')
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
@@ -674,19 +819,20 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    try:
-        if args.molcas_file != '0.0':
-            j = Javi.from_molcas(args.molcas_file)
-        else:
-            j = Javi(
-                args.g0,
-                args.g1,
-                args.nac
-            )
-    except:
-        parser.print_help(sys.stderr)
-        print('\n\n\nIt requires g0, g1 and cdv OR molcas output file')
-        exit()
+    # try:
+    if args.molcas_file != '0.0':
+        j = Javi.from_molcas(args.molcas_file)
+    else:
+        print('Manually selected files')
+        j = Javi(
+            args.g0,
+            args.g1,
+            args.cdv
+        )
+    # except:
+    #     parser.print_help(sys.stderr)
+    #     print('\n\n\nIt requires g0, g1 and cdv OR molcas output file')
+    #     exit()
 
     # print(f'scalar    = {j.x@j.y:8.4f}')
     # print(f'beta      = {j.beta%np.pi:8.4f}')
@@ -696,24 +842,20 @@ if __name__ == "__main__":
     # print(f'theta     = {j.theta_s/2/np.pi*360:8.1f}')
     # print(f'is_rot_ne = {j.is_rotation_needed}')
 
-    print('\nX and Y Vectors are:')
-    print('\nx vector:')
-    for row in j.x.reshape(-1, 3):
-        print(" ".join(f"{val:12.8f}" for val in row))
-
-    print('\ny vector:')
-    for row in j.y.reshape(-1, 3):
-        print(" ".join(f"{val:12.8f}" for val in row))
     # print(np.array2string(j.x.reshape(-1, 3), precision=6, suppress_small=True))
     # print(np.array2string(j.y.reshape(-1, 3), precision=6, suppress_small=True))
     # print(j.x.reshape([-1,3]))
     # print(j.y.reshape([-1,3]))
-    print('\nP and B values are:\n')
-    print(f'{j.p[0]:8.4f}, {j.p[1]}')
-    print(f'{j.b[0]:8.4f}, {j.b[1]}\n')
-
-    if args.forces_file != 'None':
-        j.generate_force_file(args.forces_file)
+    if args.ref_xyz != 'None':
+        if args.generate_forces:
+            j.generate_force_file(args.ref_xyz)
+        if args.generate_displacements:
+            os.makedirs('displaced_geoms', exist_ok=True)
+            j.displace_geoms(
+                    directory='displaced_geoms',
+                    xyz_file=args.ref_xyz,
+                    rescaling=args.disp_mod
+                )
     
     if args.plot_lower:
         j.plot_2d()
