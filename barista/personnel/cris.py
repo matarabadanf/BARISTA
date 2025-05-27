@@ -896,9 +896,20 @@ if __name__ == "__main__":
                 args.g1,
                 args.cdv
             )
-    except:
+    except FileNotFoundError as e:
         parser.print_help(sys.stderr)
-        print('\n\n\nIt requires g0, g1 and cdv OR molcas output file')
+        print( '\n###################################')
+        print(f'# File {e.filename} was not found #')
+        print( '###################################\n')
+        exit()
+    
+    except IndexError:
+        parser.print_help(sys.stderr)
+        print('\n###############################################')
+        print('# Something went wrong. Check that g0, g1 and #')
+        print('# h_ab are provided in the out file or in the #')
+        print('# data files.                                 #')
+        print('###############################################\n')
         exit()
 
     if args.ref_xyz != 'None':
