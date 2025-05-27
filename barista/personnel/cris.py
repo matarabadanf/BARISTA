@@ -15,6 +15,9 @@ parser = argparse.ArgumentParser(
     epilog='It requires g0, g1 and cdv OR molcas output file',
 )
 
+#############################################
+#       Core data for characterization      #
+#############################################
 
 core_args = parser.add_argument_group('\nCore data')
 
@@ -105,6 +108,10 @@ visualization_args.add_argument(
 )
 
 class Javi:
+    """
+    Class for analyzing conical intersections (CIs) using gradients and NAC vectors.
+    Provides methods for parsing Molcas output, calculating CI properties, and visualization.
+    """
 
     def __init__(
         self,
@@ -113,6 +120,14 @@ class Javi:
         hab_filename: str,
         ci_energy:float = 0.0
     ) -> None:
+        """
+        Initialize Javi object with filenames for gradients and NAC vector.
+        Args:
+            ga_filename: Path to lower state gradient file.
+            gb_filename: Path to higher state gradient file.
+            hab_filename: Path to NAC vector file.
+            ci_energy: CI energy (default 0.0).
+        """
         self._ga_filename = ga_filename
         self._gb_filename = gb_filename
         self._hab_filename = hab_filename
@@ -122,6 +137,9 @@ class Javi:
         self._init()
 
     def _init(self) -> None:
+        """
+        Load vectors and perform initial rotation checks.
+        """
         self._load_vectors()
 
         for i in range(0,4):
@@ -139,7 +157,6 @@ class Javi:
             print('#############################################')
 
         print(f'\nBeta has been rotated {self.rotation_counter % 4} * pi/2. Beta = {self.beta:8.4f} ({self.beta/2/np.pi*360:8.4f} deg)')
-        # print(f'beta      = {self.beta%np.pi:8.4f}')
         print(f'\npitch     = {self.pitch:8.4f}')
         print(f'asymmetry = {self.asymmetry:8.4f}')
         print(f'tilt      = {self.sigma:8.4f}')
@@ -162,63 +179,43 @@ class Javi:
    
     @classmethod
     def from_molcas(cls, output_filename: str):
-            with open(f'{output_filename}', 'r') as output_file:
-                output_list = output_file.readlines()
-    
-            #Parse the molecular gradients
+        """
+        Parse a Molcas output file to extract gradients and NAC vector, then create a Javi instance.
+        Args:
+            output_filename: Path to Molcas .out file.
+        Returns:
+            Javi instance initialized with parsed data.
+        """
+        with open(f'{output_filename}', 'r') as output_file:
+            output_list = output_file.readlines()
     
             output_list =[line.strip() for line in output_list]
             
             gradient_pre_indices = [i for i, line in enumerate(output_list) if 'Molecular gradients' in line]
             pt_gradient_pre_indices = [i for i, line in enumerate(output_list) if 'Numerical gradient     ' in line]
     
-#            print(f'Molecular gradient indices: {gradient_pre_indices}')
             if len(gradient_pre_indices) > 2:
                 print('More than 2 gradients were calculated, assuming the last two are the highest theory level ones.')
-#            print(f'Perturbative gradient indices: {pt_gradient_pre_indices}')
 
             gradient_indices = []
             gradient_ends = []
 
             for index in gradient_pre_indices[-2:]:
-                # print(f'Molecular gradient found in line {index}\n')
                 lines = []
                 for linenumber, line in enumerate(output_list[index:index +20]):
-                    # print(line)
                     if '-----' in line:
-                        # print(f'Line was detected in line {linenumber + index}')
                         lines.append(int(linenumber + index))
-                        # print(f'lines was appended {int(linenumber + index)}')
-                        # print(f'\nlines = {lines}')
-                # print(f'Lines are {lines}')
+                
                 gradient_indices.append(lines[-2]+1)
                 gradient_ends.append(lines[-1])
 
             cdv_pre_index = [i for i, line in enumerate(output_list) if 'CI derivative coupling' in line][-1]
             lines = []
             for linenumber, line in enumerate(output_list[cdv_pre_index:cdv_pre_index + 20]):
-                # print(line)
                 if '-----' in line:
-                    # print(f'Line was detected in line {linenumber + cdv_pre_index}')
                     lines.append(int(linenumber + cdv_pre_index))
-                    # print(f'lines was appended {int(linenumber + cdv_pre_index)}')
-                    # print(f'\nlines = {lines}')
-            # print(f'Lines are {lines}')
-            cdv_start, cdv_end = lines[-2]+1 , lines[-1]
-
-            # print(gradient_indices) 
-            # print(gradient_ends) 
-
-
-            # print('Here stuff must be ok')
-
-            # for i in range(0,2):
-            #     print(f'start, end = {gradient_indices[i]}, {gradient_ends[i]}')
-            #     print(output_list[gradient_indices[i]:gradient_ends[i]])
-
-            # print(output_list[cdv_start:cdv_end])
-
             
+            cdv_start, cdv_end = lines[-2]+1 , lines[-1]
 
             grad_0 = np.array([
                 line.strip().split()[1:] for line in output_list[gradient_indices[0]:gradient_ends[0]]
@@ -231,18 +228,6 @@ class Javi:
             cdv = np.array([
                 line.strip().split()[1:] for line in output_list[cdv_start:cdv_end]
                 ], dtype=float)
-
-
-            # gradients = []
-            # for gradstart, gradend in zip(gradient_indices, gradient_ends):
-            #     grad_str = [l.strip().split()[1:] for l in output_list[gradstart:gradend]]
-            #     grad = np.array(grad_str, dtype=float)
-            #     gradients.append(grad)
-    
-            # #no nacme in molcas 
-            # nacme = np.zeros_like(gradients[0])
-
-            # print(gradients)
 
             np.savetxt('engrad_0.dat', grad_0)
             np.savetxt('engrad_1.dat', grad_1)
@@ -257,126 +242,178 @@ class Javi:
         return float(self._ci_energy)
 
     def _load_vectors(self) -> None:
+        """
+        Load gradient and NAC vectors from files.
+        """
         self._ga = np.loadtxt(self._ga_filename).reshape(-1)
-        # self._ga /= np.linalg.norm(self._ga)
-
         self._gb = np.loadtxt(self._gb_filename).reshape(-1)
-        # self._gb /= np.linalg.norm(self._gb)
-
         self._h_ab = np.loadtxt(self._hab_filename).reshape(-1)
-        # self._h_ab /= np.linalg.norm(self._h_ab)
 
     @cached_property
     def g_ab(self) -> np.ndarray:
+        """
+        Branching space vector g_ab.
+        Returns:
+            np.ndarray: g_ab vector.
+        """
         return 0.5 * np.copy(self._gb - self._ga)
-
 
     @cached_property
     def s_ab(self) -> np.ndarray:
+        """
+        Average gradient vector s_ab.
+        Returns:
+            np.ndarray: s_ab vector.
+        """
         return 0.5 * np.copy(self._gb + self._ga)
     
     @cached_property
     def h_ab(self) -> np.ndarray:
+        """
+        NAC vector h_ab.
+        Returns:
+            np.ndarray: h_ab vector.
+        """
         return np.copy(self._h_ab)
 
     @cached_property
     def _pre_beta(self) -> np.array:
-        # tan_2_beta = 2 * (np.dot(self.g_ab, self.h_ab)) / (np.linalg.norm(self.g_ab) - np.linalg.norm(self.h_ab))
-        # return np.arctan(tan_2_beta)
-        tan_2_beta = 2 * (np.dot(self.g_ab, self.h_ab)) / (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab))
-        beta_2 = np.arctan(tan_2_beta)
-        beta = beta_2 / 2
-        # return beta  
+        """
+        Calculate possible beta angles for rotation.
+        Returns:
+            list: Four possible beta values.
+        """
         beta = 0.5 * np.arctan2(2 * np.dot(self.g_ab, self.h_ab), (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab)))
-
-        # if beta < 0: 
-        #     beta += np.pi/4
-
-
-        # print(f'Beta, pi/4 = {beta} {np.pi/4}')
-
-        # print(f'Beta mod pi/4 = {beta % np.pi/4}')
-        # print(f'Beta before adjustment = {beta}')
-        # while beta > np.pi/4:
-        #     beta -= np.pi/2
-        # beta =  beta + np.pi/4
-        # print(f'Beta after adjustment = {beta}')
 
 
         beta_2 = np.arctan2(
             2 * np.dot(self.g_ab, self.h_ab),
             np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab)
-        )    # returns 
-
+        )
         beta = beta_2/2
 
         return [beta + i*np.pi/2 for i in range(0, 4)]
         # return 0.5 * np.arctan2(2 * np.dot(self.g_ab, self.h_ab), (np.dot(self.g_ab, self.g_ab) - np.dot(self.h_ab, self.h_ab)))
 
     def _rotate_for_beta(self):
-        # print(f'self.rotation_counter is {self.rotation_counter}')
+        """
+        Increment rotation counter for beta angle.
+        """
         self.rotation_counter += 1 
 
     @property
     def beta(self) -> float:
-        # print(f'Rotation of {self.rotation_counter} pi halves')
+        """
+        Get current beta angle after rotation.
+        Returns:
+            float: Beta angle.
+        """
         return self._pre_beta[self.rotation_counter % 4] # 2 works for x and y unit vector sign in ethylene a and b  
 
     def is_rotation_needed(self, asymmetry:float, theta_s:float) -> bool:
-        zero_condition = 0 < self.theta_s and abs(0 - self.theta_s) < 10**-12
-        
-        # print(f'self.asymmetry > 0     = {self.asymmetry > 0}, {self.asymmetry}')
-        # print(f'0 < self.theta_s       = {self.theta_s > -10**-12}, {self.theta_s}')
-        # print(f'self.theta_s < np.pi/2 = {self.theta_s < np.pi/2}')
-
+        """
+        Check if rotation is needed based on asymmetry and theta_s.
+        Args:
+            asymmetry: Asymmetry value.
+            theta_s: Theta_s value.
+        Returns:
+            bool: True if rotation is needed, False otherwise.
+        """
         return not (asymmetry > 0 and theta_s > -10**-12  and theta_s < np.pi/2)
 
-        return not (self.asymmetry > 0 and self.theta_s > -10**-12  and self.theta_s < np.pi/2)
+        # return not (self.asymmetry > 0 and self.theta_s > -10**-12  and self.theta_s < np.pi/2)
         
 
     @property
     def _g_tilde(self) -> np.ndarray:
+        """
+        Rotated g_ab vector.
+        Returns:
+            np.ndarray: Rotated g_ab.
+        """
         return self.g_ab * np.cos(self.beta) + self.h_ab * np.sin(self.beta)
 
     @property
     def _h_tilde(self) -> np.ndarray:
+        """
+        Rotated h_ab vector.
+        Returns:
+            np.ndarray: Rotated h_ab.
+        """
         return self.h_ab * np.cos(self.beta) - self.g_ab * np.sin(self.beta) # original
 
     @property
     def x(self) -> np.ndarray:
-        # return np.copy(self._g_tilde / np.dot(self._g_tilde, self._g_tilde)**0.5)
+        """
+        Normalized x vector in branching plane.
+        Returns:
+            np.ndarray: x vector.
+        """
         return np.copy(self._g_tilde / np.linalg.norm(self._g_tilde))
 
     @property
     def y(self) -> np.ndarray:
-        # return np.copy(self._h_tilde / np.dot(self._h_tilde, self._h_tilde)**0.5)
+        """
+        Normalized y vector in branching plane.
+        Returns:
+            np.ndarray: y vector.
+        """
         return np.copy(self._h_tilde / np.linalg.norm(self._h_tilde))
 
     @property
     def pitch(self) -> float:
-        ''' Pitch \\delta_gh. '''
-
+        """
+        Pitch (delta_gh) of the CI.
+        Returns:
+            float: Pitch value.
+        """
         return np.sqrt( 1/2 * (np.dot(self._g_tilde, self._g_tilde) + np.dot(self._h_tilde, self._h_tilde)))
 
     @property
     def asymmetry(self) -> float:
-        ''' Asymmetry \\Delta_gh. '''
-
+        """
+        Asymmetry (Delta_gh) of the CI.
+        Returns:
+            float: Asymmetry value.
+        """
         asym = (np.dot(self._g_tilde, self._g_tilde) - np.dot(self._h_tilde, self._h_tilde)) / (np.dot(self._g_tilde, self._g_tilde) + np.dot(self._h_tilde, self._h_tilde))
 
         # return abs(float(asym))
         return float(asym) # original
 
     def energy_difference(self, x:float, y:float) -> float:
+        """
+        Calculate energy difference between CI surfaces at (x, y).
+        Args:
+            x: X coordinate.
+            y: Y coordinate.
+        Returns:
+            float: Energy difference.
+        """
         return 2 * self.pitch * np.sqrt((x**2 + y**2) + self.asymmetry * (x**2 - y**2))
  
     def average_energy(self, x:float, y:float) -> float:
+        """
+        Calculate average energy at (x, y).
+        Args:
+            x: X coordinate.
+            y: Y coordinate.
+        Returns:
+            float: Average energy.
+        """
         return self.ci_energy + x * np.dot(self.s_ab, self.x) + y * np.dot(self.s_ab, self.y)
 
     def E_A(self, x:float, y:float) -> float:
+        """
+        Calculate lower state energy at (x, y).
+        Args:
+            x: X coordinate.
+            y: Y coordinate.
+        Returns:
+            float: Lower state energy.
+        """
         s_x = np.dot(self.s_ab, self.x) / self.pitch 
         s_y = np.dot(self.s_ab, self.y) / self.pitch
-        # return x + y  
         return self.ci_energy + self.pitch * (x * s_x + y * s_y - ((x**2 + y **2) + self.asymmetry * (x**2 -y**2))**0.5)
 
 
@@ -385,13 +422,28 @@ class Javi:
         return aver - diff
 
     def E_B(self, x:float, y:float) -> float:
+        """
+        Calculate upper state energy at (x, y).
+        Args:
+            x: X coordinate.
+            y: Y coordinate.
+        Returns:
+            float: Upper state energy.
+        """
         diff = self.energy_difference(x, y)
         aver = self.average_energy(x,y)
         return aver + diff
 
     @property
     def theta_s(self, n_points:int = 1800, radius:float=1):
-
+        """
+        Calculate the angle of maximum tilt in the branching plane.
+        Args:
+            n_points: Number of points to sample (default 1800).
+            radius: Radius for sampling (default 1).
+        Returns:
+            float: Angle theta_s in radians.
+        """
         angles = np.linspace(0, 2 * np.pi, n_points, endpoint=False)
         x_points = radius * np.cos(angles)
         y_points = radius * np.sin(angles)
@@ -415,24 +467,13 @@ class Javi:
 
         return theta
 
-        print(vec)
-        cos_theta = np.dot(vec, np.array([1,0])) / np.linalg.norm(vec)
-        cos_theta = np.clip(cos_theta, -1.0, 1.0)
-
-        theta = np.arccos(cos_theta)
- 
-        # theta = -theta if vec[0] < 0 else theta
-
-        # print(f'The angle theta is {theta} or {(theta+np.pi/2)%np.pi}')
-        
-
-        # print(f'The angle of the maximum tilt is {theta:5.3} Radians or {theta*360/np.pi:3.5} degrees')
-        
-        return theta
-
-
     @property
     def sigma(self):
+        """
+        Calculate the tilt (sigma) of the CI.
+        Returns:
+            float: Sigma value.
+        """
         s_x = np.dot(self.s_ab, self.x) / self.pitch
         s_y = np.dot(self.s_ab, self.y) / self.pitch
         
@@ -441,6 +482,11 @@ class Javi:
     @property
     def p(self) -> Tuple[float, str]:
 
+        """
+        Calculate the P parameter and its type (Peaked/Sloped).
+        Returns:
+            Tuple[float, str]: (P value, type string)
+        """
         p = self.sigma**2 / (1 - self.asymmetry**2) * (1 - self.asymmetry * np.cos(2*self.theta_s))
 
         p_type = 'Peaked' if p < 1 else 'Sloped'
@@ -450,6 +496,11 @@ class Javi:
     @property
     def b(self) -> Tuple[float, str]:
 
+        """
+        Calculate the B parameter and its type (Bifurcating/Single Path).
+        Returns:
+            Tuple[float, str]: (B value, type string)
+        """
         b = (self.sigma**2/(4*self.asymmetry**2)) **(1/3) * (((1+self.asymmetry)*np.cos(self.theta_s)**2)**(1/3) + ((1-self.asymmetry)*np.sin(self.theta_s)**2)**(1/3))
 
         b_type = 'Bifurcating' if b < 1 else 'Single Path'
@@ -457,7 +508,12 @@ class Javi:
         return (b, b_type)
 
     def plot_CI(self, max_grid:float=1, filename:str = 'NONE.html'):
-    
+        """
+        Plot the conical intersection surfaces interactively using Plotly.
+        Args:
+            max_grid: Range for x and y axes.
+            filename: Output HTML file for the plot.
+        """
         x = np.linspace(-max_grid, max_grid, 501)
         y = np.linspace(-max_grid, max_grid, 501)
         
@@ -516,23 +572,7 @@ class Javi:
                      "width": 2,
                      "usecolormap": False,
                      }
-                 }),
-            #go.Surface(z=e_mean, x=X, y=Y, showscale=False, name='Branching plane', opacity=0.5, colorscale=[[0, 'rgba(255, 0, 0, 0.7)'],[1, 'rgba(255, 0, 0, 0.7)']]),
-            #go.Surface(z=b_p,    x=X, y=Y, showscale=False, name='Mean energy plane', opacity=0.5, colorscale=[[0, 'rgba(0, 255, 0, 0.7)'],[1, 'rgba(0, 255, 0, 0.7)']]),
-
-            # Vectors
-            # go.Scatter3d(x=x_intersect, y=y_intersect, z=z_intersect, mode='lines+text', line=dict(color='rgba(0, 0, 0, 0.5)', width=4), name='BP and ME intersection'),
-            #go.Scatter3d(x=[0, max_x], y=[0, max_y], z=[0, max_value], mode='lines+text',line=dict(color='black', width=4), name = r'Max tilt direction', text=['',  'Max tilt direction'], textfont=dict(color='black')),
-            #go.Scatter3d(x=[0, 1*max_grid], y=[0, 0], z=[0, 0], mode='lines+text',line=dict(color='black', width=4), name = r'$\hat{\mathbf{x}}$', text=['', 'x'], textfont=dict(color='black')),
-            #go.Scatter3d(x=[0, 0], y=[0, 1*max_grid], z=[0, 0], mode='lines+text',line=dict(color='black', width=4), name = r'$\hat{\mathbf{y}}$', text=['', 'y'], textfont=dict(color='black')),
-    
-            # Dummy scatter traces for the legend to reflect the surface color
-            # go.Scatter3d(x=[None], y=[None], z=[None], mode='markers', marker=dict(color='rgba(100, 120, 140, 0.7)', size=10), name='Surface 1'),
-            # go.Scatter3d(x=[None], y=[None], z=[None], mode='markers', marker=dict(color='rgba(173, 216, 230, 0.7)', size=10), name='Surface 2'),
-            # go.Scatter3d(x=[None], y=[None], z=[None], mode='markers', marker=dict(color='rgba(255, 0, 0, 0.7)', size=10), name='Branching plane'),
-            # go.Scatter3d(x=[None], y=[None], z=[None], mode='markers', marker=dict(color='rgba(0, 255, 0, 0.7)', size=10), name='Mean energy plane'),
-    
-    
+                 }),    
         ])
     
         fig.update_layout(
@@ -580,6 +620,11 @@ class Javi:
         fig.show()    
 
     def generate_force_file(self, xyz_file:str):
+        """
+        Generate an XYZ file with force vectors for visualization.
+        Args:
+            xyz_file: Path to reference XYZ file.
+        """
         with open(xyz_file, 'r') as f:
             cont = f.readlines()
 
@@ -618,60 +663,49 @@ class Javi:
                 symbol = symbols[index]
                 coord = coordinates[index]
                 forces = x_force[index]
-                # normalized_force =  x_force[index] / np.linalg.norm(x_force[index])
-                # forces = normalized_force
 
-                # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord + forces)}\n')
-                # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces/np.linalg.norm(forces))} 3\n')
                 vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)}\n')
 
         with open('vectors.xyz', 'a') as vecfile:
-             vecfile.write(header[0])
-             vecfile.write('y vector \n')
-             # print(coordinates)
-             for index, coordinate in enumerate(coordinates):
-                 symbol = symbols[index]
-                 coord = coordinate
-                 forces = y_force[index]
+            vecfile.write(header[0])
+            vecfile.write('y vector \n')
+            for index, coordinate in enumerate(coordinates):
+                symbol = symbols[index]
+                coord = coordinate
+                forces = y_force[index]
  
-                 # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces/np.linalg.norm(forces))} 3\n')
-                 vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} \n')
-                 # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord + forces)}\n')
+                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} \n')
 
         with open('vectors.xyz', 'a') as vecfile:
-             vecfile.write(header[0])
-             vecfile.write('min tilt force vector (normalized) \n')
-             # print(coordinates)
-             for index, coordinate in enumerate(coordinates):
-                 symbol = symbols[index]
-                 coord = coordinate
-                 forces = min_tilt_force[index]
+            vecfile.write(header[0])
+            vecfile.write('min tilt force vector (normalized) \n')
+            for index, coordinate in enumerate(coordinates):
+                symbol = symbols[index]
+                coord = coordinate
+                forces = min_tilt_force[index]
  
-                 # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces/np.linalg.norm(forces))} 3\n')
-                 vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} \n')
-                 # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord + forces)}\n')
+                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} \n')
 
         other_quadrant = - dx * x_force + dy * y_force
-        
-
         other_quadrant /= np.linalg.norm(other_quadrant)
 
         with open('vectors.xyz', 'a') as vecfile:
-             vecfile.write(header[0])
-             vecfile.write('Other quadrant for bifurcating purposes force vector (normalized) \n')
-             # print(coordinates)
-             for index, coordinate in enumerate(coordinates):
-                 symbol = symbols[index]
-                 coord = coordinate
-                 forces = other_quadrant[index]
+            vecfile.write(header[0])
+            vecfile.write('Other quadrant for bifurcating purposes force vector (normalized) \n')
+            for index, coordinate in enumerate(coordinates):
+                symbol = symbols[index]
+                coord = coordinate
+                forces = other_quadrant[index]
  
-                 # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces/np.linalg.norm(forces))} 3\n')
-                 vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} \n')
-                 # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord + forces)}\n')
-
-        # print(np.linalg.norm(x_force).reshape(-1))
+                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} \n')
 
     def _pre_plot_2d(self, max_grid:float = 1, surf:str='a'):
+        """
+        Prepare a 2D contour plot of the CI surface.
+        Args:
+            max_grid: Range for x and y axes.
+            surf: Surface to plot ('a' for lower, 'b' for upper).
+        """
         x = np.linspace(-max_grid, max_grid, 501)
         y = np.linspace(-max_grid, max_grid, 501)
         
@@ -722,14 +756,33 @@ class Javi:
         plt.tight_layout()
     
     def plot_2d(self,surf:str='a'):
+        """
+        Show a 2D contour plot of the CI surface.
+        Args:
+            surf: Surface to plot ('a' for lower, 'b' for upper).
+        """
         self._pre_plot_2d(surf=surf)
         plt.show()
     
     def saveplot_2d(self, filename, dpi:int=800, surf='a'):
+        """
+        Save a 2D contour plot of the CI surface to a file.
+        Args:
+            filename: Output file name.
+            dpi: Dots per inch for the saved figure.
+            surf: Surface to plot ('a' for lower, 'b' for upper).
+        """
         self._pre_plot_2d(surf=surf)
         plt.savefig(filename, dpi=dpi)
 
     def displace_geoms(self, directory:str='', xyz_file:str='', rescaling:float=0.1):
+        """
+        Generate displaced geometries along branching plane vectors and save as XYZ files.
+        Args:
+            directory: Output directory for displaced geometries.
+            xyz_file: Reference XYZ file.
+            rescaling: Displacement magnitude.
+        """
         with open(xyz_file, 'r') as f:
             cont = f.readlines()
 
@@ -833,33 +886,21 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # try:
-    if args.molcas_file != '0.0':
-        j = Javi.from_molcas(args.molcas_file)
-    else:
-        print('Manually selected files')
-        j = Javi(
-            args.g0,
-            args.g1,
-            args.cdv
-        )
-    # except:
-    #     parser.print_help(sys.stderr)
-    #     print('\n\n\nIt requires g0, g1 and cdv OR molcas output file')
-    #     exit()
+    try:
+        if args.molcas_file != '0.0':
+            j = Javi.from_molcas(args.molcas_file)
+        else:
+            print('Manually selected files')
+            j = Javi(
+                args.g0,
+                args.g1,
+                args.cdv
+            )
+    except:
+        parser.print_help(sys.stderr)
+        print('\n\n\nIt requires g0, g1 and cdv OR molcas output file')
+        exit()
 
-    # print(f'scalar    = {j.x@j.y:8.4f}')
-    # print(f'beta      = {j.beta%np.pi:8.4f}')
-    # print(f'pitch     = {j.pitch:8.4f}')
-    # print(f'asymmetry = {j.asymmetry:8.4f}')
-    # print(f'tilt      = {j.sigma:8.4f}')
-    # print(f'theta     = {j.theta_s/2/np.pi*360:8.1f}')
-    # print(f'is_rot_ne = {j.is_rotation_needed}')
-
-    # print(np.array2string(j.x.reshape(-1, 3), precision=6, suppress_small=True))
-    # print(np.array2string(j.y.reshape(-1, 3), precision=6, suppress_small=True))
-    # print(j.x.reshape([-1,3]))
-    # print(j.y.reshape([-1,3]))
     if args.ref_xyz != 'None':
         if args.generate_forces:
             j.generate_force_file(args.ref_xyz)
@@ -879,15 +920,4 @@ if __name__ == "__main__":
 
     if args.interactive:
         j.plot_CI()
-    
-    # TESTING
-    # j = Javi(
-    #     'engrad_0_gradient.dat', 
-    #     'engrad_1_gradient.dat', 
-    #     'y_minus_one.dat',
-    # )
-    # print(j.g_ab)
-    # print(j.beta)
-    # if args.interactive == True:
-    #     j.plot_CI()
-
+   
