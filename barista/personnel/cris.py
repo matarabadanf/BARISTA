@@ -88,6 +88,13 @@ forces_args.add_argument(
 visualization_args = parser.add_argument_group('\nPES visualization')
 
 visualization_args.add_argument(
+    "--plot_polar",
+    action='store_true',
+    required=False,
+    help="Plot surfaces in polar coordinates in 2D.",
+)
+
+visualization_args.add_argument(
     "--plot_lower",
     action='store_true',
     required=False,
@@ -791,6 +798,28 @@ class Javi:
         self._pre_plot_2d(surf=surf)
         plt.savefig(filename, dpi=dpi)
 
+    def _write_displaced(self, xyz_file:str, target_file:str , displacement_vector:np.ndarray, rescaling:float=0.1, message:str = ''):
+        with open(xyz_file, 'r') as f:
+            cont = f.readlines()
+
+        header = cont[0:1]
+
+        ref_coordinates = np.array([line.strip().split()[1:] for line in cont[2:]], dtype=float)
+        symbols = np.array([line.strip().split()[0] for line in cont[2:]], dtype=str)
+
+        with open(f'{target_file}', 'w') as vecfile:
+
+            vecfile.write(header[0])
+            vecfile.write(f'{message} rescaled by {rescaling}\n')
+            coordinates = displacement_vector * rescaling + np.copy(ref_coordinates)
+            
+            for index, coordinate in enumerate(coordinates):
+                symbol = symbols[index]
+                coord = coordinate
+
+                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)}\n')
+
+
     def displace_geoms(self, directory:str='', xyz_file:str='', rescaling:float=0.1):
         """
         Generate displaced geometries along branching plane vectors and save as XYZ files.
@@ -821,82 +850,77 @@ class Javi:
 
         # print(y_force)
 
-        with open(f'{directory}/{xyz_file.replace(".xyz", "_x.xyz")}', 'w') as vecfile:
+        self._write_displaced(
+                xyz_file=xyz_file,
+                displacement_vector=x_force,
+                target_file=f'{directory}/{xyz_file.replace(".xyz", "_x.xyz")}',
+                message='x direction displacement'
+        )
 
-            vecfile.write(header[0])
-            vecfile.write(f'displaced in x rescaled by {rescaling}\n')
-            coordinates = x_force * rescaling + np.copy(ref_coordinates)
+        self._write_displaced(
+                xyz_file=xyz_file,
+                displacement_vector=-x_force,
+                target_file=f'{directory}/{xyz_file.replace(".xyz", "_minus_x.xyz")}',
+                message='-x direction displacement'
+        )
+
+        self._write_displaced(
+                xyz_file=xyz_file,
+                displacement_vector=y_force,
+                target_file=f'{directory}/{xyz_file.replace(".xyz", "_y.xyz")}',
+                message='y direction displacement'
+        )
+
+        self._write_displaced(
+                xyz_file=xyz_file,
+                displacement_vector=-y_force,
+                target_file=f'{directory}/{xyz_file.replace(".xyz", "_minus_y.xyz")}',
+                message='-y direction displacement'
+        )
+
+        self._write_displaced(
+                xyz_file=xyz_file,
+                displacement_vector=min_tilt_force,
+                target_file=f'{directory}/{xyz_file.replace(".xyz", "_s_ab.xyz")}',
+                message='displaced in -s_ab direction displacement'
+        )
+
+        n_points = 360
+
+        theta = np.linspace(0, 2*np.pi, n_points)
+        x = np.array([np.cos(t) for t in theta])
+        y = np.array([np.sin(t) for t in theta])
+        coordinate_pairs = np.zeros([n_points,2])
+
+        for i in range(n_points):
+            coordinate_pairs[i] = x[i]*0.5, y[i]*0.5 
+
+        a_energy = [self.E_A(x,y) for x,y in coordinate_pairs]
+
+        minima_indices = []
+        for i in range(n_points):
+            if a_energy[(i-1)%n_points] > a_energy[i] and a_energy[(i+1)%n_points] > a_energy[i]:
+                minima_indices.append(i)
+
+        # adding directions to the forces file 
+        for i in range(0,2):
+            dx = np.cos(theta[minima_indices[1]])
+            dy = np.sin(theta[minima_indices[1]])
+            force = self.x * dx + self.y *dy
+            force /= np.linalg.norm(force)
+            force = force.reshape([-1,3])
             
-            for index, coordinate in enumerate(coordinates):
-                symbol = symbols[index]
-                coord = coordinate
+            new_name = xyz_file.replace(".xyz", f"_mindir_{i}.xyz")
 
-                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)}\n')
-
-        with open(f'{directory}/{xyz_file.replace(".xyz", "_minus_x.xyz")}', 'w') as vecfile:
-
-            vecfile.write(header[0])
-            vecfile.write(f'displaced in -x rescaled by {rescaling}\n')
-            coordinates = -x_force * rescaling + np.copy(ref_coordinates)
-            
-            for index, coordinate in enumerate(coordinates):
-                symbol = symbols[index]
-                coord = coordinate
-
-                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)}\n')
-
-        with open(f'{directory}/{xyz_file.replace(".xyz", "_y.xyz")}', 'w') as vecfile:
-
-            vecfile.write(header[0])
-            vecfile.write(f'displaced in y rescaled by {rescaling}\n')
-            coordinates = y_force * rescaling + np.copy(ref_coordinates)
-            
-            for index, coordinate in enumerate(coordinates):
-                symbol = symbols[index]
-                coord = coordinate
-
-                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)}\n')
-
-        with open(f'{directory}/{xyz_file.replace(".xyz", "_minus_y.xyz")}', 'w') as vecfile:
-
-            vecfile.write(header[0])
-            vecfile.write(f'displaced in -y rescaled by {rescaling}\n')
-            coordinates = -y_force * rescaling + np.copy(ref_coordinates)
-            
-            for index, coordinate in enumerate(coordinates):
-                symbol = symbols[index]
-                coord = coordinate
-
-                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)}\n')
-
-        with open(f'{directory}/{xyz_file.replace(".xyz", "_s_ab.xyz")}', 'w') as vecfile:
-
-            vecfile.write(header[0])
-            vecfile.write(f'displaced in -s_ab rescaled by {rescaling}\n')
-            coordinates = min_tilt_force * rescaling + np.copy(ref_coordinates)
-            
-            for index, coordinate in enumerate(coordinates):
-                symbol = symbols[index]
-                coord = coordinate
-
-                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)}\n')
-
-        with open(f'{directory}/{xyz_file.replace(".xyz", "_mirror_s_ab.xyz")}', 'w') as vecfile:
-
-            vecfile.write(header[0])
-            vecfile.write(f'displaced in mirrored (in x) s_ab rescaled by {rescaling}\n')
-            coordinates = mirrored_force * rescaling + np.copy(ref_coordinates)
-            
-            for index, coordinate in enumerate(coordinates):
-                symbol = symbols[index]
-                coord = coordinate
-
-                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)}\n')
+            self._write_displaced(
+                    xyz_file=xyz_file,
+                    displacement_vector=force,
+                    target_file=f'{directory}/{new_name}',
+                    message='displaced in minimum {i} direction displacement'
+            )
 
     def plot_polar(self, n_points:int=360):
         
-        n_points = n_points
-
         theta = np.linspace(0, 2*np.pi, n_points)
         x = np.array([np.cos(t) for t in theta])
         y = np.array([np.sin(t) for t in theta])
@@ -988,7 +1012,8 @@ if __name__ == "__main__":
     if args.plot_upper:
         j.plot_2d(surf='b')
 
+    if args.plot_polar:
+        j.plot_polar()
+
     if args.interactive:
         j.plot_CI()
-   
-    j.plot_polar(n_points=360)
