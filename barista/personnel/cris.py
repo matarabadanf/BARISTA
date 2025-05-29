@@ -877,6 +877,42 @@ class Javi:
 
                 vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)}\n')
 
+    def plot_polar(self, n_points:int=360):
+        
+        n_points = n_points
+
+        theta = np.linspace(0, 2*np.pi, n_points)
+        x = np.array([np.cos(t) for t in theta])
+        y = np.array([np.sin(t) for t in theta])
+
+        coordinate_pairs = np.zeros([n_points,2])
+        print(coordinate_pairs)
+        for i in range(n_points):
+            coordinate_pairs[i] = x[i],y[i] 
+
+        print(coordinate_pairs)
+
+        polar_energy = [self.average_energy(x,y) for x,y in coordinate_pairs]
+        a_energy = [self.E_A(x,y) for x,y in coordinate_pairs]
+        b_energy = [self.E_B(x,y) for x,y in coordinate_pairs]
+
+        print(polar_energy)
+
+        plt.plot(theta, polar_energy)
+        plt.plot(theta, a_energy)
+        plt.plot(theta, b_energy)
+        plt.plot(theta, np.zeros_like(theta))
+        xticks = [0, np.pi/2, np.pi, 3*np.pi/2, 2*np.pi]
+
+        xtick_labels = ['x', 'y', '-x', '-y', 'x']
+        plt.xticks(xticks, xtick_labels)
+
+
+        plt.axvline(x=self.theta_s +np.pi, color='red', linestyle='--', label=r'$\theta = \frac{\pi}{2}$')
+        plt.axvline(x=self.theta_s, color='red', linestyle='--', label=r'$\theta = \frac{\pi}{2}$')
+
+        plt.show()
+
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -932,3 +968,4 @@ if __name__ == "__main__":
     if args.interactive:
         j.plot_CI()
    
+    j.plot_polar(n_points=360)
