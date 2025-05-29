@@ -3,6 +3,7 @@ from functools import cached_property
 import argparse
 import os
 from typing import Tuple
+from matplotlib.lines import lineStyles
 import numpy as np
 import plotly.graph_objects as go
 import sys
@@ -886,30 +887,37 @@ class Javi:
         y = np.array([np.sin(t) for t in theta])
 
         coordinate_pairs = np.zeros([n_points,2])
-        print(coordinate_pairs)
+        # print(coordinate_pairs)
         for i in range(n_points):
-            coordinate_pairs[i] = x[i],y[i] 
+            coordinate_pairs[i] = x[i]*0.5, y[i]*0.5 
 
-        print(coordinate_pairs)
+        # print(coordinate_pairs)
 
         polar_energy = [self.average_energy(x,y) for x,y in coordinate_pairs]
+
+        print()
         a_energy = [self.E_A(x,y) for x,y in coordinate_pairs]
         b_energy = [self.E_B(x,y) for x,y in coordinate_pairs]
 
-        print(polar_energy)
+        # print(polar_energy)
 
         plt.plot(theta, polar_energy)
-        plt.plot(theta, a_energy)
+        plt.plot(theta, a_energy, c='rebeccapurple')
         plt.plot(theta, b_energy)
-        plt.plot(theta, np.zeros_like(theta))
+        plt.plot(theta, np.zeros_like(theta), linestyle='--', c='black')
+
         xticks = [0, np.pi/2, np.pi, 3*np.pi/2, 2*np.pi]
 
         xtick_labels = ['x', 'y', '-x', '-y', 'x']
         plt.xticks(xticks, xtick_labels)
 
+        plt.xlim([0,2*np.pi])
 
-        plt.axvline(x=self.theta_s +np.pi, color='red', linestyle='--', label=r'$\theta = \frac{\pi}{2}$')
-        plt.axvline(x=self.theta_s, color='red', linestyle='--', label=r'$\theta = \frac{\pi}{2}$')
+        plt.xlabel('$\\theta$ angle direction')
+        plt.ylabel('$\Delta E$ / arb. units')
+
+        # plt.axvline(x=self.theta_s +np.pi, color='red', linestyle='--', label=r'$\theta = \frac{\pi}{2}$')
+        # plt.axvline(x=self.theta_s, color='red', linestyle='--', label=r'$\theta = \frac{\pi}{2}$')
 
         plt.show()
 
