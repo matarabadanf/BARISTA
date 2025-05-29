@@ -620,20 +620,40 @@ class Javi:
 
         fig.show()    
 
-    def generate_force_file(self, xyz_file:str):
+    def _append_forces(self, xyz_file:str, target_file:str, title:str, force:np.ndarray):
+        
+        with open(xyz_file, 'r') as f:
+            cont = f.readlines()
+
+        header = cont[0:1]
+        coordinates = np.array([line.strip().split()[1:] for line in cont[2:]], dtype=float)
+        symbols = np.array([line.strip().split()[0] for line in cont[2:]], dtype=str)
+
+        force = np.copy(force).reshape([-1,3])
+
+        with open(f'{target_file}', 'a') as vecfile:
+            vecfile.write(header[0])
+            vecfile.write(f'{title} \n')
+            for index, coordinate in enumerate(coordinates):
+                symbol = symbols[index]
+                coord = coordinate
+                force_components = force[index]
+
+                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in force_components)}\n')
+
+    def generate_force_file(self, xyz_file:str, n_points:int=360, target_file:str='vectors.xyz'):
         """
         Generate an XYZ file with force vectors for visualization.
         Args:
             xyz_file: Path to reference XYZ file.
         """
+
         with open(xyz_file, 'r') as f:
             cont = f.readlines()
 
         header = cont[0:1]
-
         coordinates = np.array([line.strip().split()[1:] for line in cont[2:]], dtype=float)
         symbols = np.array([line.strip().split()[0] for line in cont[2:]], dtype=str)
-
         x_force = self.x.reshape([-1,3])
         y_force = self.y.reshape([-1,3])
 
@@ -641,12 +661,11 @@ class Javi:
         dy = self.sigma * np.sin(self.theta_s + np.pi)
         
         min_tilt_force = dx * x_force + dy * y_force
-
         min_tilt_force /= np.linalg.norm(min_tilt_force)
 
         # print(y_force)
 
-        with open('vectors.xyz', 'w') as vecfile:
+        with open(f'{target_file}', 'w') as vecfile:
             vecfile.write(header[0])
             vecfile.write('not altered\n')
             for index, coordinate in enumerate(coordinates):
@@ -657,48 +676,44 @@ class Javi:
                 vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)}\n')
                 # vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} 3\n')
 
-        with open('vectors.xyz', 'a') as vecfile:
-            vecfile.write(header[0])
-            vecfile.write('x vector \n')
-            for index, coordinate in enumerate(coordinates):
-                symbol = symbols[index]
-                coord = coordinates[index]
-                forces = x_force[index]
+        self._append_forces(xyz_file=xyz_file, target_file=target_file, force=x_force, title='x vector')
+        self._append_forces(xyz_file=xyz_file, target_file=target_file, force=-x_force, title='-x vector')
+        self._append_forces(xyz_file=xyz_file, target_file=target_file, force=y_force, title='y vector')
+        self._append_forces(xyz_file=xyz_file, target_file=target_file, force=-y_force, title='-y vector')
 
-                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)}\n')
+        # determining directions of minima 
+        theta = np.linspace(0, 2*np.pi, n_points)
+        x = np.array([np.cos(t) for t in theta])
+        y = np.array([np.sin(t) for t in theta])
+        coordinate_pairs = np.zeros([n_points,2])
 
-        with open('vectors.xyz', 'a') as vecfile:
-            vecfile.write(header[0])
-            vecfile.write('y vector \n')
-            for index, coordinate in enumerate(coordinates):
-                symbol = symbols[index]
-                coord = coordinate
-                forces = y_force[index]
- 
-                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} \n')
+        for i in range(n_points):
+            coordinate_pairs[i] = x[i]*0.5, y[i]*0.5 
 
-        with open('vectors.xyz', 'a') as vecfile:
-            vecfile.write(header[0])
-            vecfile.write('min tilt force vector (normalized) \n')
-            for index, coordinate in enumerate(coordinates):
-                symbol = symbols[index]
-                coord = coordinate
-                forces = min_tilt_force[index]
- 
-                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} \n')
+        a_energy = [self.E_A(x,y) for x,y in coordinate_pairs]
 
-        other_quadrant = - dx * x_force + dy * y_force
-        other_quadrant /= np.linalg.norm(other_quadrant)
+        minima_indices = []
+        for i in range(n_points):
+            if a_energy[(i-1)%n_points] > a_energy[i] and a_energy[(i+1)%n_points] > a_energy[i]:
+                minima_indices.append(i)
 
-        with open('vectors.xyz', 'a') as vecfile:
-            vecfile.write(header[0])
-            vecfile.write('Other quadrant for bifurcating purposes force vector (normalized) \n')
-            for index, coordinate in enumerate(coordinates):
-                symbol = symbols[index]
-                coord = coordinate
-                forces = other_quadrant[index]
- 
-                vecfile.write(f'{symbol} {" ".join(f"{x:12.8f}" for x in coord)} {" ".join(f"{f:12.8f}" for f in forces)} \n')
+        # adding directions to the forces file 
+        for i in range(0,2):
+            dx = np.cos(theta[minima_indices[1]])
+            dy = np.sin(theta[minima_indices[1]])
+            force = self.x * dx + self.y *dy
+            force /= np.linalg.norm(force)
+            force = force.reshape([-1,3])
+
+            self._append_forces(
+                    xyz_file=xyz_file,
+                    target_file=target_file,
+                    force=force,
+                    title=f'Minimum at {a_energy[i]:8.4f}, components = {dx:8.4} {dy:8.4}'
+            )
+
+
+        self._append_forces(xyz_file=xyz_file, target_file=target_file, force=min_tilt_force, title=f'min tilt force vector (normalized)')
 
     def _pre_plot_2d(self, max_grid:float = 1, surf:str='a'):
         """
