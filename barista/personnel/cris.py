@@ -722,6 +722,20 @@ class Javi:
 
         self._append_forces(xyz_file=xyz_file, target_file=target_file, force=min_tilt_force, title=f'min tilt force vector (normalized)')
 
+        # add the projection of the gradient on the branching plane
+
+        x_comp = np.dot(self.g_ab, self.x)
+        y_comp = np.dot(self.g_ab, self.y)
+
+        force = self.x * x_comp + self.y * y_comp
+
+        self._append_forces(
+                xyz_file=xyz_file,
+                target_file=target_file,
+                force=self._ga,
+                title=f'Lower state gradient, components = {x_comp:8.4} {y_comp:8.4}'
+        )
+
     def _pre_plot_2d(self, max_grid:float = 1, surf:str='a'):
         """
         Prepare a 2D contour plot of the CI surface.
