@@ -703,11 +703,12 @@ class Javi:
         for i in range(n_points):
             if a_energy[(i-1)%n_points] > a_energy[i] and a_energy[(i+1)%n_points] > a_energy[i]:
                 minima_indices.append(i)
+        print(minima_indices)
 
         # adding directions to the forces file 
         for i in range(0,2):
-            dx = np.cos(theta[minima_indices[1]])
-            dy = np.sin(theta[minima_indices[1]])
+            dx = np.cos(theta[minima_indices[i]])
+            dy = np.sin(theta[minima_indices[i]])
             force = self.x * dx + self.y *dy
             force /= np.linalg.norm(force)
             force = force.reshape([-1,3])
@@ -812,7 +813,7 @@ class Javi:
         self._pre_plot_2d(surf=surf)
         plt.savefig(filename, dpi=dpi)
 
-    def _write_displaced(self, xyz_file:str, target_file:str , displacement_vector:np.ndarray, rescaling:float=0.1, message:str = ''):
+    def _write_displaced(self, xyz_file:str, target_file:str , displacement_vector:np.ndarray, rescaling:float=0.2, message:str = ''):
         with open(xyz_file, 'r') as f:
             cont = f.readlines()
 
@@ -842,6 +843,8 @@ class Javi:
             xyz_file: Reference XYZ file.
             rescaling: Displacement magnitude.
         """
+
+        print(f'\n\n\n Rescaling selected. Rescalation of direction is: {rescaling}')
         with open(xyz_file, 'r') as f:
             cont = f.readlines()
 
@@ -918,8 +921,8 @@ class Javi:
 
         # adding directions to the forces file 
         for i in range(0,2):
-            dx = np.cos(theta[minima_indices[1]])
-            dy = np.sin(theta[minima_indices[1]])
+            dx = np.cos(theta[minima_indices[i]])
+            dy = np.sin(theta[minima_indices[i]])
             force = self.x * dx + self.y *dy
             force /= np.linalg.norm(force)
             force = force.reshape([-1,3])
