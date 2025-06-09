@@ -4,7 +4,7 @@ A collection of scripts and small programs to assist in PES exploration in excit
 - **BREWER** is a connical intersection optimizer based in the gradient projection and updated branching plane methods that is modular and can be interfaced with electronic structure programs:
   - Optimizes Conical intersections with: Penalty algorithm, Projection method (no CDV) or Updated branching plane (Estimated CDV).
   - Characterizes the resulting conical intersections.
- - Plots and has some tools to visualize branching plane directions, minimum directions... Can modify geometries for further optimizations. 
+  - Plots and has some tools to visualize branching plane directions, minimum directions... Can modify geometries for further optimizations. 
 - **Personnel** contains a collection of modules that can be executed as command-line scripts or imported for python scripting with various functionalities.  
 
 ## Installation
