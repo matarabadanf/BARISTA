@@ -198,14 +198,14 @@ This is a collection of scripts to make short tasks. These modules serve as an i
 ## Command Line Interfaces
 
 * [alberto](docs/Personnel.md#alberto): Takes a excited state optimization in ORCA and plots the energy of each state at each step of the opitmizaiton and the actual root.
-* [aurora](#aurora): Exctract the potential energy surface path and energies of of a PES branch.
-* [cris](#cris): Performs conical intersectioni characterization and includes extra functionality. Generates plots, force files to visualize the x and y vectors. Generated displaced geometries to optimize after the conical intersection. 
-* [dani](#dani): Extracts frequencies from gaussian calculation.
-* [emma](#emma): Takes the ground state geometry of a molecule and compares it to optimized TDDFT geometries run in ORCA. It compares the energy, RMSD and final root, plotting the results in an image. 
-* [fonsi](#fonsi): Plots energy of states of interest in BREWER optimization. 
-* [javi](#javi): Performs MECI characterization in a minimal way to work in all systems with less requirements than Cris. 
-* [laura](#laura): Extractes geometry and energies of a single point or final point in an optimization and adds energies as comment line to xyz file. This was useful when working with multiple geometries to use dataframes.
-* [lorena](#lorena): Randommly shakes a molecule. 
-* [maxime](#maxime): Extracts a spehere in a molecular crystal with the complete involved molecules.
-* [rodrigo](#rodrigo): Spectra ploting, modification and various utilites (works better as a module)
-* [stef](#stef): Extracts energies from ORCA NEB calculation. 
+* [aurora](docs/Personnel.md#aurora): Exctract the potential energy surface path and energies of of a PES branch.
+* [cris](docs/Personnel.md#cris): Performs conical intersectioni characterization and includes extra functionality. Generates plots, force files to visualize the x and y vectors. Generated displaced geometries to optimize after the conical intersection. 
+* [dani](docs/Personnel.md#dani): Extracts frequencies from gaussian calculation.
+* [emma](docs/Personnel.md#emma): Takes the ground state geometry of a molecule and compares it to optimized TDDFT geometries run in ORCA. It compares the energy, RMSD and final root, plotting the results in an image. 
+* [fonsi](docs/Personnel.md#fonsi): Plots energy of states of interest in BREWER optimization. 
+* [javi](docs/Personnel.md#javi): Performs MECI characterization in a minimal way to work in all systems with less requirements than Cris. 
+* [laura](docs/Personnel.md#laura): Extractes geometry and energies of a single point or final point in an optimization and adds energies as comment line to xyz file. This was useful when working with multiple geometries to use dataframes.
+* [lorena](docs/Personnel.md#lorena): Randommly shakes a molecule. 
+* [maxime](docs/Personnel.md#maxime): Extracts a spehere in a molecular crystal with the complete involved molecules.
+* [rodrigo](docs/Personnel.md#rodrigo): Spectra ploting, modification and various utilites (works better as a module)
+* [stef](docs/Personnel.md#stef): Extracts energies from ORCA NEB calculation. 
