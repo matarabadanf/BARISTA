@@ -1,7 +1,19 @@
-geom= water.xyz
+geom= H2O.xyz
 
-mode = ci 
-profile = ubp 
+mode = ci
+profile = ubp
+calc_nacme = False
 
+functional = CAM-B3LYP
+basis = cc-pvdz
 iroot = 0
-jroot = 1 
+jroot = 1
+nroots = 10
+
+charge = 0
+mult = 1
+program = 'ORCA'
+label = None
+convergence = 'natural'
+
+slow_start = True
