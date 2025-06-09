@@ -197,7 +197,7 @@ This is a collection of scripts to make short tasks. These modules serve as an i
 
 ## Command Line Interfaces
 
-* [alberto](#alberto): Takes a excited state optimization in ORCA and plots the energy of each state at each step of the opitmizaiton and the actual root.
+* [alberto](docs/Personnel.md#alberto): Takes a excited state optimization in ORCA and plots the energy of each state at each step of the opitmizaiton and the actual root.
 * [aurora](#aurora): Exctract the potential energy surface path and energies of of a PES branch.
 * [cris](#cris): Performs conical intersectioni characterization and includes extra functionality. Generates plots, force files to visualize the x and y vectors. Generated displaced geometries to optimize after the conical intersection. 
 * [dani](#dani): Extracts frequencies from gaussian calculation.
