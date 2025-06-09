@@ -167,7 +167,25 @@ Once a MECI calculation has finished, The resulting files are:
 The energy profile of the states of interest can be plotted with `barista/personnel/fonsi.py -f energies.dat`. 
 
 # Conical intersectioni characterization 
+Conical intersections can be characterized with the scripts `javi.py` and `cris.py`. The difference lies in the extended functionality of Cris. After a MECI optimization, these modules are called and a characterization takes place using Fdez. Galvan et. al. algorithm. Results are displayed as: 
 
+```
+Beta has been rotated 2 * pi/2. Beta =   3.2719 (187.4639 deg)
+
+pitch     =   0.0949
+asymmetry =   0.5321
+tilt      =   0.9552
+theta     =   0.0000 (  0.0000 deg)
+
+With the rotation, the conditions 0 < theta < pi/2 and 0 < asymmetry are fulfiled: True
+
+P and B values are:
+
+  0.5955, Peaked
+  1.0727, Single Path
+```
+
+Cris.py can be used indipendently to work in CLI using a molcas output file (even though characterization is performed by molcas) for plotting reasons, displacement of geometries or visualization of directions. 
 
 ## Personnel
 This is a collection of scripts to make short tasks. These modules serve as an interface between this program and electronic structure codes. 
