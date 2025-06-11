@@ -55,7 +55,7 @@ Where the configuration file should look like:
 
 **IMPORTANT**: 
 - ORCA launchers should be able to copy `.xyz` and `.gbw` files to the `$WorkDir`. We include an example launcher for ORCA in the `data/` folder. This is in order to avoid recoputing the SCF optimization in both states, eventually saving some computation time. 
-
+- The run_opt.sh script should include all module imports required for the calculation. This must include a python version that has ASE installed. 
 ## Using Brewer
 Brewer requires an input file named `brewer.TEMPLATE` input file. The `barista/brewer/brewer_setup.py` script generates a directory with the `brewer.TEMPLATE` input file and copies the required files for the calculation with:
 
