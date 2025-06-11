@@ -163,9 +163,6 @@ class BrewerJobManager:
                 'y_minus_one.dat'
             )
 
-        print('\n\nConical intersection characterization after convergence:')
-        print(f"P = {conical.p[0]:5.3f} -> {conical.p[1]} conical.\nB = {conical.b[0]:5.3f} -> {conical.b[1]} conical.")
-
     def cleanup(self):
         os.system('mkdir AUX_FILES')
         os.system('mv *engrad* AUX_FILES')
