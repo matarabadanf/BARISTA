@@ -5,6 +5,8 @@ from barista.personnel.rodrigo import Rodrigo
 import matplotlib.pyplot as plt 
 import numpy as np 
 
+## RELOCATE
+
 vert_spec = Rodrigo(f'geom001.in.out')
 x_grid,y_grid = vert_spec.export_gaussian_eV()
 print(y_grid)

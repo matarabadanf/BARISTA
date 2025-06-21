@@ -2,6 +2,7 @@
 import numpy as np
 import ase.io
 from ase.calculators.calculator import FileIOCalculator
+import scipy
 
 
 class CICalculator(FileIOCalculator):
