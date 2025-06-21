@@ -419,8 +419,8 @@ class CICalculator(FileIOCalculator):
         # in the first iteration, the (normalized) mean energy gradient vector is chosen as y_0    
         # otherwise the x and y previous steps are loaded
         if first_iter:
-            y = (grad1 + grad2).reshape(-1)/2
-            y /= np.linalg.norm(y)
+            y_space = scypi.linalg.null_space(x)
+            y =  y_space[:, 0]
 
         elif not self.calc_nacme:
             x_minus_one = x_minus_one.reshape(-1)

@@ -49,6 +49,7 @@ setup_launchers.py < configuration.dat
 ```
 
 Where the configuration file should look like:
+
 ```
 ~/bin/run_orca.sh ! orca launcher
 ```
