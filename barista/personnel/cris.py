@@ -957,9 +957,9 @@ class Javi:
 
         # print(polar_energy)
 
-        plt.plot(theta, polar_energy)
-        plt.plot(theta, a_energy, c='rebeccapurple')
-        plt.plot(theta, b_energy)
+        plt.plot(theta, polar_energy, label="Mean Energy Plane")
+        plt.plot(theta, a_energy, c='rebeccapurple', label="Lower energy PES")
+        plt.plot(theta, b_energy, label="Upper Energy PES")
         plt.plot(theta, np.zeros_like(theta), linestyle='--', c='black')
 
         xticks = [0, np.pi/2, np.pi, 3*np.pi/2, 2*np.pi]
@@ -974,6 +974,8 @@ class Javi:
 
         # plt.axvline(x=self.theta_s +np.pi, color='red', linestyle='--', label=r'$\theta = \frac{\pi}{2}$')
         # plt.axvline(x=self.theta_s, color='red', linestyle='--', label=r'$\theta = \frac{\pi}{2}$')
+
+        plt.legend()
 
         plt.show()
 
