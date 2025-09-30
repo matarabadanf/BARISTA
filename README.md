@@ -48,7 +48,8 @@ Brewer needs to be configured: it needs the path to a suitable ORCA (currently o
 setup_launchers.py < configuration.dat
 ```
 
-Where the configuration file should look like:
+Where the configuration file should look like: 
+
 ```
 ~/bin/run_orca.sh ! orca launcher
 ```
@@ -127,7 +128,7 @@ Penalty algorithm:
 UBP and GP algorithms
 | Keyword    | Information|
 |------------|------------|
-| `slow_start`    | Add a weight ion the first steps to rescale the forces in order to ensure a smooth start. Default is False.                    |
+| `slow_start`    | Add a weight on the first steps to rescale the forces in order to ensure a smooth start. Default is False.                    |
 | `slow_increase` | Increase the weight periodically to ensure smooth transition after first steps.  Default is False.                       |
 | `convergence`   | Type of convergence. `Natural` converges when the force is strictly under the threshold. `Forced` consideres converged after 10 steps with a energy deviation smaller than  $0.00001$ Hartree.                   |
 
